@@ -1,0 +1,123 @@
+Philosophy:
+
+- should be simple to use and intuitive
+- it's the user's job to use it correctly though
+- should be flexible
+- should rely more on conventions than rules
+- once a learner trained, should be easy to get a functional system out of it
+
+Where am I:
+- figuring out a class system for the Learners (see Learner and MultinomialNaiveBayesClassifier)
+  using "abstract" classes (i.e. classes with methods that do 'raise NotImplementedError("Subclass should have implemented this method.")')
+- about to do the same with MLProblems
+
+TODO:
+- comment modules and packages
+- write some templates for the different classes
+- generate documentation
+- figure out a way of having test cases
+- write down tutorial
+
+docstrings:
+
+- docstring should give
+  * the Required metadata
+  * the Defined metadata (if applicable)
+  * the options (hyper-parameters) of the object
+  * one or more papers for references, if applicable
+- if any of the aforementioned items are non applicable
+  or if there aren't any of those items (e.g. no required metadata),
+  one can either not put the item or write e.g. 'Required metadata: None' on
+  the same line
+- the format for writing the above items is
+
+  NAME_OF_ITEM:
+  - 'ITEM1'[: possible documentation for ITEM1, giving default value and possibly going over many lines]
+  - 'ITEM2'[: idem]
+
+- in general, add docstrings is strongly encouraged, but the code should also work
+  without it (we want the library to be easy to use)
+- might want to code a script which takes a .py file and says whether its items
+  follow the right format
+- should a name for the concept here refered to as "aforementied items"...
+- question: should information about the expected number of fields in the processed 
+  dataset be given? HUGO: well, can't really, since a learner might be applicable
+  on examples with or without weights (hence for varying numbers of fields)
+
+mlproblems
+
+- question: what about mlproblems that need to be solved (i.e. datasets for which the target
+  is unkown). Should mlproblems be able to handle missing values?
+- they are iterators with a metadata field and a "apply_on" and "setup" method
+- they might receive data in some weird format, but they should "output"
+  data in a (input, target) pair 
+- an input is what can be used by learner.compute_output()
+- might want to design a base class MLProblem which implements __init__ and apply_on
+  with some default behavior (essentially sets data and metadata fields)
+- __init__ should be very fast, so that apply_on is also fast (it's important, as
+  we may whish to apply on just one example, sequentially)
+- if dataset set is not a stream, should define __len__ also
+
+metadata
+
+- metadata are there to pass around information between the different
+  steps, so that they aren't recomputed
+- question: how to deal with metadata used by super classes? should the class
+            mention those as well? Con: requires reading the upper class and repeats information.
+- question: metadata are shared accross the pipeline of preprocs (pointers). 
+  Is that a good thing? Pro: saves memory. Con: looking back at metadata
+  might give weird behavior.
+  HUGO: metadata are dictionaries. So we will copy the key:value pairs,
+  but not the values themselves, which will be shared (seems like
+  a reasonable way of having some of the pro but avoiding the con)
+- the user of the library shouldn't have to be conserned with metadata
+  in the general-use case, but might want to play with them
+  if he/she faces a somewhat weird problem.
+- question: should mlproblems that are the same have the same metadata? 
+  HUGO: only the metadata that are specific to the task (like str to class
+  mapping)
+- should make a list of conventions for the keywords that should be used
+  for the different concepts, in the metadata dictionary
+- NO!!: some learners will try to figure out the value of those concepts from
+  the mlproblem directly
+- any mlproblem or learner (or object in general) that requires metadata
+  should explicitly say which ones in the docstring. If it
+  defines metadata, it should also say so (and which)
+- might want to consider defining functions that would look into a 
+  docstring and would output the required and defined metadata.
+-question: why do we need the setup() function? HUGO: because we only apply it on a training set,
+	   not on a test set
+
+preprocs
+
+- need to distinguish preprocessings on single examples with preprocessings 
+  on a whole dataset (e.g., concatenating, etc.)
+
+learners
+
+- should state which metadata they are expecting
+- the use() function takes an mlproblem and outputs an iterator with the output
+  of the learner (the target of the mlproblem could be missing)
+- the test() function gives the output AND the error
+- should Learner superclass, use() and test() should be implemented, based
+  on the some smaller methods compute_output and compute_error_from_output, which
+  work on an input and an example respectively
+  * con: to avoid memory creation, you need to know what is the size of the output
+         and the number of costs, which is learner specific. Don't want to have to
+	 write methods that say how many outputs and whatever...
+- question: what do I do about the "stage"? Should I standardize its use? 
+            con: not all models have this concept (some are trained in one pass)
+	    HUGO: might want to standardize it only in an "online" subclass of
+	          algorithms?
+- train is the first method to call. Other methods are not expected to
+  work before train is called!
+
+creating learner pipelines
+- we want to have code that does this separately (as opposed to have train or use output
+  a dataset), to deal separately with options like appending or replacing, etc.
+
+combining everything
+
+- should have a some code that taks all the necessary components of an experiment and runs it
+- such a function would make it possible to control and uniformize the sort of output (print) 
+  we can expect in an experiment
