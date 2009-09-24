@@ -1,0 +1,7 @@
+Here is a list of common keywords for the metadata entries. 
+Try to reuse these terms as much as possible, and contribue 
+new terms if some concepts are missing!
+
+- 'input_size': size of the input
+- 'targets': a python set of all possible targets (in string format)
+- 'class_to_id': dictionary mapping a string class label to an index (from 0 to number of classes)
