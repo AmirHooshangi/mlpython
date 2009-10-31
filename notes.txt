@@ -121,3 +121,10 @@ combining everything
 - should have a some code that taks all the necessary components of an experiment and runs it
 - such a function would make it possible to control and uniformize the sort of output (print) 
   we can expect in an experiment
+
+collecting and viewing results
+
+- should just write results in a text file, with \t separated fields
+- then, use a combination of "less" and "sort" to view results
+- might want to code something that format each column to fit in a given 
+  number of characters, so that the output is nicer
