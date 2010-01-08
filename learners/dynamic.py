@@ -18,7 +18,7 @@ class LinearDynamicalSystem(Learner):
     This is a standard linear dynamical system, trained by EM.
 
     Options:
-    - 'n_stages'
+    - 'n_epochs'
     - 'latent_size'
     - 'latent_covariance_matrix_regularizer'
     - 'input_covariance_matrix_regularizer'
@@ -36,7 +36,7 @@ class LinearDynamicalSystem(Learner):
                      I refer to the latent covariance matrix \Gamma as E here.
     """
     def __init__(   self,
-                    n_stages= sys.maxint, # Maximum number of iterations on the training set
+                    n_epochs= sys.maxint, # Maximum number of iterations on the training set
                     latent_size = 10, # Size of the latent variable
                     latent_covariance_matrix_regularizer = 0,
                     input_covariance_matrix_regularizer = 0,
@@ -44,8 +44,8 @@ class LinearDynamicalSystem(Learner):
                     input_transition_matrix_regularizer = 0,
                     seed = 1827,
                     ):
-        self.stage = 0
-        self.n_stages = n_stages
+        self.epoch = 0
+        self.n_epochs = n_epochs
         self.latent_size = latent_size
         self.seed = seed
         self.rng = RandomState(seed)
@@ -226,18 +226,18 @@ class LinearDynamicalSystem(Learner):
 
     def train(self,trainset):
         """
-        Trains model with the EM algorithm, for (n_stages - stage) iterations. 
-        If self.stage == 0, first initialize the model.
+        Trains model with the EM algorithm, for (n_epochs - epoch) iterations. 
+        If self.epoch == 0, first initialize the model.
         """
 
         self.input_size = trainset.metadata['input_size']
 
         # Initialize model
-        if self.stage == 0:
+        if self.epoch == 0:
             self.forget()
 
         # Training with the EM algorithm
-        for it in xrange(self.stage,self.n_stages):
+        for it in xrange(self.epoch,self.n_epochs):
             # E step
             z_n_post, z_n_z_n_1_post, z_n_z_n_post, cond_probs = self.E_step(trainset)
             
@@ -252,7 +252,7 @@ class LinearDynamicalSystem(Learner):
         d_z = self.latent_size
         rng = RandomState(self.seed)
 
-        self.stage = 0 # Model will be untrained after initialization
+        self.epoch = 0 # Model will be untrained after initialization
         self.mu_zero = rng.randn(d_z)/d_z
         self.V_zero = diag(ones(d_z))
         self.A = rng.rand(d_z,d_z)/d_z
@@ -276,7 +276,7 @@ class LinearDynamicalSystem(Learner):
         outputs = self.use(dataset)
         costs = zeros((len(outputs),1))
         # Compute normalized NLLs
-        for seq,t in zip(dataset,len(dataset)):
+        for seq,t in zip(dataset,xrange(len(dataset))):
             costs[t,0] = -outputs[t,0]/len(seq)
 
         return outputs,costs
@@ -329,7 +329,7 @@ class SparseLinearDynamicalSystem(Learner):
     is encouraged to be sparse.
 
     Options:
-    - 'n_stages'
+    - 'n_epochs'
     - 'latent_size'
     - 'latent_covariance_matrix_regularizer'
     - 'input_covariance_matrix_regularizer'
@@ -343,7 +343,7 @@ class SparseLinearDynamicalSystem(Learner):
 
     """
     def __init__(   self,
-                    n_stages= sys.maxint, # Maximum number of iterations on the training set
+                    n_epochs= sys.maxint, # Maximum number of iterations on the training set
                     latent_size = 10, # Size of the latent variable
                     latent_covariance_matrix_regularizer = 0.,
                     input_covariance_matrix_regularizer = 0.,
@@ -352,8 +352,8 @@ class SparseLinearDynamicalSystem(Learner):
                     gamma_prior = 1.,
                     seed = 1827,
                     ):
-        self.stage = 0
-        self.n_stages = n_stages
+        self.epoch = 0
+        self.n_epochs = n_epochs
         self.latent_size = latent_size
         self.seed = seed
         self.rng = RandomState(seed)
@@ -561,24 +561,24 @@ class SparseLinearDynamicalSystem(Learner):
         
     def train(self,trainset):
         """
-        Trains model with the EM algorithm, for (n_stages - stage) iterations. 
-        If self.stage == 0, first initialize the model.
+        Trains model with the EM algorithm, for (n_epochs - epoch) iterations. 
+        If self.epoch == 0, first initialize the model.
         """
 
         self.input_size = trainset.metadata['input_size']
 
         # Initialize model
-        if self.stage == 0:
+        if self.epoch == 0:
             self.forget()
 
         # Initialize the gammas
-        if self.stage == 0:
+        if self.epoch == 0:
             self.gamma_set = []
             for seq in trainset:
                 self.gamma_set = self.gamma_set + [ones((len(seq),self.latent_size))]
 
         # Training with the EM algorithm
-        for it in xrange(self.stage,self.n_stages):
+        for it in xrange(self.epoch,self.n_epochs):
             # E step
             z_n_post, z_n_z_n_1_post, z_n_z_n_post, new_gamma_set, cond_probs = self.E_step(trainset,self.gamma_set)
             self.gamma_set = new_gamma_set
@@ -593,7 +593,7 @@ class SparseLinearDynamicalSystem(Learner):
         d_z = self.latent_size
         rng = RandomState(self.seed)
 
-        self.stage = 0 # Model will be untrained after initialization
+        self.epoch = 0 # Model will be untrained after initialization
         #self.mu_zero = rng.randn(d_z)/d_z
         #self.V_zero = diag(ones(d_z))
         self.A = rng.rand(d_z,d_z)/d_z
@@ -622,7 +622,7 @@ class SparseLinearDynamicalSystem(Learner):
         outputs = self.use(dataset)
         costs = zeros((len(outputs),1))
         # Compute normalized NLLs
-        for seq,t in zip(dataset,len(dataset)):
+        for seq,t in zip(dataset,xrange(len(dataset))):
             costs[t,0] = -outputs[t,0]/len(seq)
 
         return outputs,costs

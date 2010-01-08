@@ -46,8 +46,6 @@ docstrings:
 
 mlproblems
 
-- question: what about mlproblems that need to be solved (i.e. datasets for which the target
-  is unkown). Should mlproblems be able to handle missing values?
 - they are iterators with a metadata field and a "apply_on" and "setup" method
 - they might receive data in some weird format, but they should "output"
   data in a (input, target) pair 
@@ -57,6 +55,14 @@ mlproblems
 - __init__ should be very fast, so that apply_on is also fast (it's important, as
   we may whish to apply on just one example, sequentially)
 - if dataset set is not a stream, should define __len__ also
+- question: what about mlproblems that need to be solved (i.e. datasets for which the target
+  is unkown). Should mlproblems be able to handle missing values?
+- question: mlproblems can be chained. However, you need to remember to put the metadata
+            field of the input mlproblems as a field in the constructor for the
+            new mlproblem (e.g. A = mlpbA(data=raw_data), B = mlpbB(data=A,metadata=A.metadata)
+            Is this too complicated? Should an mlproblem look for metadata in the data field
+            (though that would be quite strange)?
+            Maybe just write a couple of shorthand functions, that would do that for you?
 
 metadata
 
@@ -96,6 +102,10 @@ preprocs
 learners
 
 - should state which metadata they are expecting
+- forget only works when the learner has been trained at least once
+  (this is because part of forget() depends on dataset specific parameters).
+  forget is also the only official way of seting self.stage=0 by the user,
+  otherwise anything can happen!
 - the use() function takes an mlproblem and outputs an iterator with the output
   of the learner (the target of the mlproblem could be missing)
 - the test() function gives the output AND the error
@@ -115,6 +125,18 @@ learners
 creating learner pipelines
 - we want to have code that does this separately (as opposed to have train or use output
   a dataset), to deal separately with options like appending or replacing, etc.
+
+mathutils
+
+- put there whatever Numpy and Scipy aren't doing for me
+- put also utility functions that calling Numpy/Scipy, but in a more convenient way
+- at some point, should decide where the numpy checks are being done: in the c code or in 
+  the python caller?
+- should have methods for creating vectors and matrices of floats and integers, in order 
+  to control the size of those types!
+- WATCHOUT: weave.inline with type_converters = scipy.weave.converters.blitz doesn't seem 
+  to work with fortran arrays! The part of the code that converts to blitz arrays doesn't 
+  look at whether the data is row major or column major!
 
 combining everything
 

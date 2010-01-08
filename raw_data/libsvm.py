@@ -47,6 +47,3 @@ def read(filename):
     metadata['targets'] = targets
     metadata['input_size'] = input_size
     return data, metadata
-        
-            
-            
