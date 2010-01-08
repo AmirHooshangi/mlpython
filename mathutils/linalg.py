@@ -38,6 +38,12 @@ def getdiag(A,x):
     """
     linalg_.getdiag_(A,x)
 
+def setdiag(A,x):
+    """
+    Sets the diagonal of A to x
+    """
+    linalg_.setdiag_(A,x)
+
 def solve(A,B,X,Af=None,Bf=None,pivots=None):
     """
     Solves the linear system A*X = B. If provided,

@@ -4,6 +4,7 @@
 static PyObject *product_matrix_matrix_(PyObject *self, PyObject *args);
 static PyObject *product_matrix_vector_(PyObject *self, PyObject *args);
 static PyObject *getdiag_(PyObject *self, PyObject *args);
+static PyObject *setdiag_(PyObject *self, PyObject *args);
 static PyObject *solve_(PyObject *self, PyObject *args);
 static PyObject *lu_(PyObject *self, PyObject *args);
 

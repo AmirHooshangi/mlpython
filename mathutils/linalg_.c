@@ -9,6 +9,7 @@ static PyMethodDef linalg_[] = {
   {"product_matrix_vector_", product_matrix_vector_, METH_VARARGS, "Interface to dgemv BLAS function. All arguments should be contiguous arrays of doubles."},
   {"product_matrix_matrix_", product_matrix_matrix_, METH_VARARGS, "Interface to dgemm BLAS function. All arguments should be contiguous arrays of doubles."},
   {"getdiag_", getdiag_, METH_VARARGS, "Copies the diagonal of an input matrix in a target vector."},
+  {"setdiag_", setdiag_, METH_VARARGS, "Set the diagonal of an input matrix to the value of an input vector."},
   {"solve_", solve_, METH_VARARGS, "Interface to dgesv LAPACK function. Requires Fortran-contiguous Numpy arrays as input."},
   {"lu_", lu_, METH_VARARGS, "Interface to dgetrf LAPACK function. Requires Fortran-contiguous Numpy arrays as input (the A and pivot arrays). The p, L and U targets should be contiguous, but not necessarly Fortran-ordered."},
   {NULL, NULL, 0, NULL}     /* Sentinel - marks the end of this structure */
@@ -228,7 +229,6 @@ static PyObject *getdiag_(PyObject *self, PyObject *args)
 
   if ( (matrix->descr->type_num != NPY_DOUBLE) || 
        (result->descr->type_num != NPY_DOUBLE) ||
-       (result->descr->type_num != NPY_DOUBLE) ||
        !PyArray_CHKFLAGS(matrix,NPY_ALIGNED) ||
        !(PyArray_CHKFLAGS(matrix,NPY_C_CONTIGUOUS) || PyArray_CHKFLAGS(matrix,NPY_F_CONTIGUOUS)) ||
        !PyArray_CHKFLAGS(result,NPY_C_CONTIGUOUS||NPY_ALIGNED|NPY_WRITEABLE)) {
@@ -261,6 +261,56 @@ static PyObject *getdiag_(PyObject *self, PyObject *args)
   for (i=0; i<diagsize; i++)
   {
     *result_data_iter++ = *((double *)matrix_data_iter);
+    matrix_data_iter += s1 + s2;
+  }
+  Py_RETURN_NONE;
+}
+
+static PyObject *setdiag_(PyObject *self, PyObject *args)
+{
+  PyArrayObject *matrix, *diag;
+  int m, n;
+
+  if (!PyArg_ParseTuple(args, "O!O!", 
+                        &PyArray_Type, &matrix,
+                        &PyArray_Type, &diag)) return NULL;
+
+  if ( (NULL == matrix) || (NULL == diag) ) return NULL;
+
+  if ( (matrix->descr->type_num != NPY_DOUBLE) || 
+       (diag->descr->type_num != NPY_DOUBLE) ||
+       !PyArray_CHKFLAGS(matrix,NPY_ALIGNED|NPY_WRITEABLE) ||
+       !(PyArray_CHKFLAGS(matrix,NPY_C_CONTIGUOUS) || PyArray_CHKFLAGS(matrix,NPY_F_CONTIGUOUS)) ||
+       !PyArray_CHKFLAGS(diag,NPY_C_CONTIGUOUS||NPY_ALIGNED)) {
+    PyErr_SetString(PyExc_ValueError,
+                    "In setdiag: some arguments are of invalid type");
+    return NULL;
+  }
+  
+  if ( (matrix->nd != 2) || (diag->nd != 1) )
+  {
+    PyErr_SetString(PyExc_ValueError,
+                    "In setdiag: not all arguments have the right dimensionality");
+    return NULL;
+  }
+  
+  m = matrix->dimensions[0];
+  n = matrix->dimensions[1];
+  int diagsize = (m<n?m:n);
+  if ( diagsize != diag->dimensions[0] ) {
+    PyErr_SetString(PyExc_ValueError,
+                    "In setdiag: input matrix and target vector dimensions are not compatible");
+    return NULL;
+  }
+
+  char * matrix_data_iter = matrix->data;
+  int s1 = matrix->strides[0];
+  int s2 = matrix->strides[1];
+  double * diag_data_iter = (double *) diag->data;
+  int i;
+  for (i=0; i<diagsize; i++)
+  {
+    *((double *)matrix_data_iter) = *diag_data_iter++;
     matrix_data_iter += s1 + s2;
   }
   Py_RETURN_NONE;

@@ -137,6 +137,9 @@ mathutils
 - WATCHOUT: weave.inline with type_converters = scipy.weave.converters.blitz doesn't seem 
   to work with fortran arrays! The part of the code that converts to blitz arrays doesn't 
   look at whether the data is row major or column major!
+- make sure that math library works on different machines (might be issues with sizes 
+  of double and int)
+
 
 combining everything
 

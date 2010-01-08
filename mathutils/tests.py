@@ -130,6 +130,16 @@ x = np.zeros((20))
 linalg.getdiag(A,x)
 print "Numpy vs mathutils.linalg diff.:",np.sum(np.abs(x-np.diag(A)))
 
+print "Testing setdiag"
+A = np.random.rand(30,20)
+x = np.random.rand(20)
+linalg.setdiag(A,x)
+print "Numpy vs mathutils.linalg diff.:",np.sum(np.abs(x-np.diag(A)))
+A = np.random.rand(30,20).T
+x = np.random.rand(20)
+linalg.setdiag(A,x)
+print "Numpy vs mathutils.linalg diff.:",np.sum(np.abs(x-np.diag(A)))
+
 print "Testing solve"
 A = np.random.rand(30,30)
 A = np.dot(A,A.T)
