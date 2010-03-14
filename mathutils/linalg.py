@@ -56,20 +56,22 @@ def solve(A,B,X,Af=None,Bf=None,pivots=None):
         raise ValueError, 'In solve: inputs have incompatible sizes'
     if A.shape[1] != X.shape[0] or B.shape[1] != X.shape[1]:
         raise ValueError, 'In solve: target has incompatible size'
-
-    if Af is None:    
-        Af = np.array(A,dtype='double',order='fortran')
+    
+    if Af is None:
+       Af = np.array(A,dtype='double',order='fortran')
     else: 
-        Af[:] = A
-
+       Af[:] = A
+    
     if Bf is None:
-        Bf = np.array(B,dtype='double',order='fortran')
+       Bf = np.array(B,dtype='double',order='fortran')
     else:
-        Bf[:] = B
+       Bf[:] = B
         
     if pivots is None:
-        pivots = np.zeros((A.shape[0]),dtype='i',order='fortran')
-        
+       pivots = np.zeros((A.shape[0]),dtype='i',order='fortran')
+    if len(pivots.shape)!= 1 or pivots.shape[0] != A.shape[0]:
+       raise ValueError, 'In solve: pivots is not of the right shape'
+
     linalg_.solve_(Af,Bf,pivots)
     X[:] = Bf
 
@@ -96,6 +98,9 @@ def lu(A,p,L,U,Af=None,pivots=None):
         
     if pivots is None:
         pivots = np.zeros((min(A.shape)),dtype='i',order='fortran')
-        
+
+    if len(pivots.shape)!= 1 or pivots.shape[0] != min(A.shape):
+       raise ValueError, 'In lu: pivots is not of the right shape'
+            
     linalg_.lu_(Af,pivots, p, L, U)
 

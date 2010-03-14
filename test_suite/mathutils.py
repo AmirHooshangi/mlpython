@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.linalg
-import linalg as linalg
+import mlpython.mathutils.linalg as linalg
 
 print "Testing product_matrix_vector"
 A = np.random.rand(30,20)
