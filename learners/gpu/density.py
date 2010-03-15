@@ -1,0 +1,252 @@
+from mlpython.learners.generic import Learner
+import numpy as np
+import cudamat as cm
+
+class RestrictedBoltzmannMachine(Learner):
+    """
+    A Restricted Boltzmann Machine (RBM) density estimator, on the GPU.
+
+    Given an input, the RBM will assign it a score,
+    corresponding to its negative free-energy. This score 
+    corresponds to the RBM unnormalized log-likelihood.
+
+    Most options are self-explanatory. The frequency at which data
+    is obtained from the training set and loaded onto the GPU
+    is controlled by option load_data_every. It specifies
+    the amount of data to be loaded in number of minibatches. 
+    If < 1, then data is loaded just once.
+
+    Options:
+    - 'nstages'
+    - 'latent_size'
+    - 'learning_rate'
+    - 'momentum'
+    - 'n_gibbs_steps'
+    - 'use_persistent_chain'
+    - 'minibatch_size'
+    - 'load_data_every'
+
+    Required metadata:
+    - 'input_size'
+
+    """
+    def __init__(   self,
+                    nstages=10,                 # number of training iterations
+                    latent_size=100,            # hidden layer size
+                    learning_rate=1e-2,         # learning rate
+                    momentum=0,                 # momentum
+                    n_gibbs_steps=1,            # number of Gibbs sampling steps
+                    use_persistent_chain=False, # use persistent CD?
+                    minibatch_size=128,         # size of minibatch
+                    load_data_every=-1          # how frequently to load data to GPU
+                    seed=1234
+                    ):
+        self.stage = 0
+        self.reload_data = True
+        self.nstages = nstages
+        self.latent_size = latent_size
+        self.learning_rate = learning_rate
+        self.momentum = momentum
+        self.n_gibbs_steps = n_gibbs_steps
+        self.use_persistent_chain = use_persistent_chain
+        self.minibatch_size = minibatch_size
+        self.load_data_every = load_data_every
+        self.seed = seed
+
+        cm.cuda_set_device(0)
+        cm.init()
+
+        self.rng = np.random.mtrand.RandomState(seed)
+        cm.CUDAMatrix.init_random(seed = seed)
+
+    def __del__(self):
+        cm.shutdown()
+
+    def train(self,trainset):
+        """
+        Trains the RBM on the GPU
+        """
+
+        if self.stage == 0:
+            self.input_size = trainset.metadata['input_size']
+            self.forget()
+
+        if self.minibatch_size > len(trainset):
+            print 'Warning: minibatch_size is larger than training set.'
+            print '         Setting minibatch_szie to size of training set...'
+
+        if self.load_data_every*self.minibatch_size >= len(trainset):
+            # data fits in one load, so load the data once
+            self.load_data_every = -1
+
+        # Preparing training...
+        if self.load_data_every < 1 and self.reload_data:
+            self.gpu_dataset = cm.empty((self.input_size,len(trainset)))
+            self.gpu_dataset.copy_to_host()
+            # load data to GPU
+            for input,t in zip(trainset,range(len(trainset))):
+                self.gpu_dataset.numpy_array[:,t] = input.T
+            self.gpu_dataset.copy_to_device()
+            self.reload_data = False
+        else:
+            self.gpu_dataset = cm.empty((self.input_size,
+                                          self.load_data_every*self.minibatch_size)) 
+            self.gpu_dataset.copy_to_host()
+            n_loaded = 0
+
+        while self.stage < self.nstages:
+            if self.load_data_every < 1:  # Is the whole dataset loaded...
+                self.train_on_loaded_data(len(trainset))
+            else:                         # ... otherwise load it as you go.
+                for input in trainset:
+                    # load some data on GPU
+                    self.gpu_dataset.numpy_array[:,n_loaded] = input.T
+                    n_loaded += 1
+                    if n_loaded >= self.minibatch_size:
+                        self.gpu_dataset.copy_to_device()
+                        self.train_on_loaded_data(n_loaded)
+                        n_loaded = 0
+                
+                if n_loaded > 0:
+                    # Train on last portion of data
+                    self.gpu_dataset.copy_to_device()
+                    n_loaded = max(n_loaded,self.minibatch_size) # ensure enough data for one minibatch
+                    self.train_on_loaded_data(n_loaded)
+                    n_loaded = 0
+
+            self.stage += 1
+
+    def train_on_loaded_data(self,n_loaded):
+        """
+        Trains on data already loaded on GPU. 
+        There most be enough data for at least one mini-batch.
+        """
+        # Update from first minibatch to previous-to-last one
+        for t in range(self.minibatch_size,n_loaded,self.minibatch_size):
+            self.rbm_update(self.gpu_dataset.slice(t-self.minibatch_size,t))
+            
+        # special case: last minibatch (which might smaller)
+        self.rbm_update(self.gpu_dataset.slice(
+                n_loaded-self.minibatch_size,n_loaded))
+
+    def forget(self):
+        self.stage = 0 # Model will be untrained after initialization
+        self.rng = np.random.mtrand.RandomState(seed)
+        cm.CUDAMatrix.init_random(seed = seed)
+        self.reload_data = True
+
+        # Initializing parameters
+        self.W = cm.CUDAMatrix(0.001*self.rng.randn((self.latent_size,self.input_size)))
+        self.dW = cm.CUDAMatrix(np.zeros((self.latent_size,self.input_size)))
+        self.b = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
+        self.db = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
+        self.c = cm.CUDAMatrix(np.zeros((self.input_size,1)))
+        self.dc = cm.CUDAMatrix(np.zeros((self.input_size,1)))
+
+        # Create data memory allocation (column-wise)
+        self.gpu_x = cm.CUDAMatrix(np.zeros((self.input_size,self.minibatch_size)))
+        self.gpu_x_sample = cm.CUDAMatrix(np.zeros((self.input_size,self.minibatch_size)))
+        self.gpu_h = cm.CUDAMatrix(np.zeros((self.latent_size,self.minibatch_size)))
+        self.gpu_h_sample = cm.CUDAMatrix(np.zeros((self.latent_size,self.minibatch_size)))
+
+        self.gpu_negative_free_energy = cm.CUDAMatrix(np.zeros((1,self.minibatch_size)))
+
+    def rbm_update(self,gpu_data):
+
+        # Positive phase
+        cm.dot(self.W,gpu_data,self.gpu_h)
+        self.gpu_h.add_col_vec(self.b)
+        self.gpu_h.apply_sigmoid()
+
+        self.dW.mult(self.momentum)
+        self.db.mult(self.momentum)
+        self.dc.mult(self.momentum)
+        self.dW.add_dot(self.gpu_h,gpu_data)
+        self.db.add_sums(self.gpu_h,axis=1,mult=1.)
+        self.dc.add_sums(gpu_data,axis=1,mult=1.)
+
+        if self.use_persistent_chain:
+            cm.dot(self.W,self.gpu_x_sample,self.gpu_h)
+            self.gpu_h.add_col_vec(self.b)
+            self.gpu_h.apply_sigmoid()
+
+        for it in range(self.n_gibbs_steps):
+            self.gpu_h_sample.fill_with_rand()
+            self.gpu_h_sample.less_than(self.gpu_h)
+
+            # Down pass
+            cm.dot(self.W.T,self.gpu_h_sample,self.gpu_x)
+            self.gpu_x.add_col_vec(self.c)
+            self.gpu_x.apply_sigmoid()
+            self.gpu_x_sample.fill_with_rand()
+            self.gpu_x_sample.less_than(self.gpu_x)
+
+            # Up pass
+            cm.dot(self.W,self.gpu_x_sample,self.gpu_h)
+            self.gpu_h.add_col_vec(self.b)
+            self.gpu_h.apply_sigmoid()
+        
+        self.dW.subtract_dot(self.gpu_h,self.gpu_x_sample)
+        self.db.add_sums(self.gpu_h,axis=1,mult=-1.)
+        self.dc.add_sums(self.gpu_x_sample,axis=1,mult=-1.)
+
+        # Update RBM
+        self.W.add_mult(self.dW,alpha=self.learning_rate/self.minibatch_size)
+        self.b.add_mult(self.db,alpha=self.learning_rate/self.minibatch_size)
+        self.c.add_mult(self.dc,alpha=self.learning_rate/self.minibatch_size)
+
+    def negative_free_energy(self,gpu_data):
+        """
+        Computes the negative free-energy.
+        Outputs a reference to a pre-allocated GPU variable
+        containing the result.
+        """
+
+        cm.dot(self.W,gpu_data,self.gpu_h)
+        self.gpu_h.add_col_vec(self.b)
+        # to avoid memory creation, using gpu_h
+        # and gpu_h_sample for these computations
+        cm.exp(self.gpu_h,self.gpu_h_sample)
+        gpu_h_sample.add(1.)
+        cm.log(self.gpu_h_sample,self.gpu_h)
+        self.gpu_h.sum(axis=0,target=self.gpu_negative_free_energy)
+        return self.gpu_negative_free_energy
+
+    def use(self,dataset):
+        """
+        Outputs the negative free-energy.
+        """
+        outputs = np.zeros((len(dataset),1))
+        n_loaded = 0
+        self.gpu_x.copy_to_host()
+        for input,t in zip(dataset,range(len(dataset))):
+            # load some data on GPU
+            self.gpu_x.numpy_array[:,n_loaded] = input.T
+            n_loaded += 1
+            if n_loaded >= self.minibatch_size:
+                self.gpu_dataset.copy_to_device()
+                nfe = self.negative_free_energy(self.gpu_x)
+                nfe.copy_to_host()
+                outputs[(t+1-self.minibatch_size):(t+1),:] = nfe.numpy_array.T
+                n_loaded = 0
+                
+        # Compute for last examples!
+        if n_loaded > 0:
+            self.gpu_dataset.copy_to_device()
+            nfe = self.negative_free_energy(self.gpu_x)
+            nfe.copy_to_host()
+            outputs[(len(dataset)-n_loaded):,:] = nfe.numpy_array.T
+            
+        return outputs
+
+    def test(self,dataset):
+        """
+        Outputs the NLLs of each example, normalized
+        by the size of the example's bag.
+        """
+        outputs = self.use(dataset)
+        costs = zeros(len(dataset),1)
+        for o,c in zip(outputs,costs):
+            c[0] = -o[0]
+
+        return outputs,costs
