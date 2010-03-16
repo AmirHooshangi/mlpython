@@ -1,0 +1,21 @@
+#! /usr/bin/python
+
+# A simple script for printing result tables in a nicely formatted columns
+
+import sys,os
+
+if len(sys.argv) != 2:
+    print 'Usage: print_ascii_table file'
+    sys.exit()
+
+file = sys.argv[1]
+stream = open(os.path.expanduser(file))
+
+def format_line(line):
+    tokens = line.split()
+    tokens = [tok[:7] for tok in tokens]
+    return '\t'.join(tokens)
+
+for line in stream:
+    print format_line(line)
+

@@ -16,12 +16,14 @@ TODO:
 - comment modules and packages
 - write some templates for the different classes
 - generate documentation
-- figure out a way of having test cases
+- make sure comments in library are uniformly formatted and complete
+- add tools for generating/viewing results (k-fold, early-stopping, save results, viewing results in tables or plots)
+- figure out a way of having test suites
 - write down tutorial
 - figure out a way to include other people's software (add a directory in learners, 
   which give all the info/code for downloading other people's software, installing it and
   incorporating it to the library)
-- write a couple of raw_data modules (libsvm datasets, mnist dataset, norb, caltech, etc.)
+- write a couple of raw_data modules (libsvm datasets, mnist dataset, norb, caltech, ICML2007, etc.)
 - would be nice if the library gave a good result on caltech!
 
 docstrings:
@@ -149,6 +151,13 @@ learners
 - train is the first method to call. Other methods are not expected to
   work before train is called!
 
+- could create a hierarchy of learners, based on what test() does
+  and on what metadata are required. 
+  For example, for classifiers, it is expected that the first element 
+  of the output (computed by use()) is a class id, and test() compares
+  it to the label to compute the test error. A classifier also
+  requires class_to_id as a metadata.
+
 creating learner pipelines
 - we want to have code that does this separately (as opposed to have train or use output
   a dataset), to deal separately with options like appending or replacing, etc.
@@ -180,3 +189,10 @@ collecting and viewing results
 - then, use a combination of "less" and "sort" to view results
 - might want to code something that format each column to fit in a given 
   number of characters, so that the output is nicer
+
+libsvm
+
+- the sparse version of the data representation currently uses 2 numpy arrays.
+  libsvm uses a dict mapping. Maybe I should switch?
+- TODO: implement "precomputed kernel" option (see libsvm documentation... it would
+        be pretty simple to do...)

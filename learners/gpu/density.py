@@ -17,7 +17,7 @@ class RestrictedBoltzmannMachine(Learner):
     If < 1, then data is loaded just once.
 
     Options:
-    - 'nstages'
+    - 'n_stages'
     - 'latent_size'
     - 'learning_rate'
     - 'momentum'
@@ -31,19 +31,19 @@ class RestrictedBoltzmannMachine(Learner):
 
     """
     def __init__(   self,
-                    nstages=10,                 # number of training iterations
+                    n_stages=10,                # number of training iterations
                     latent_size=100,            # hidden layer size
                     learning_rate=1e-2,         # learning rate
                     momentum=0,                 # momentum
                     n_gibbs_steps=1,            # number of Gibbs sampling steps
                     use_persistent_chain=False, # use persistent CD?
                     minibatch_size=128,         # size of minibatch
-                    load_data_every=-1          # how frequently to load data to GPU
+                    load_data_every=-1,         # how frequently to load data to GPU
                     seed=1234
                     ):
         self.stage = 0
         self.reload_data = True
-        self.nstages = nstages
+        self.n_stages = n_stages
         self.latent_size = latent_size
         self.learning_rate = learning_rate
         self.momentum = momentum
@@ -52,6 +52,7 @@ class RestrictedBoltzmannMachine(Learner):
         self.minibatch_size = minibatch_size
         self.load_data_every = load_data_every
         self.seed = seed
+        self.gpu_dataset = None
 
         cm.cuda_set_device(0)
         cm.init()
@@ -80,6 +81,8 @@ class RestrictedBoltzmannMachine(Learner):
             self.load_data_every = -1
 
         # Preparing training...
+        if self.gpu_dataset is not None:
+            self.gpu_dataset.free_device_memory()
         if self.load_data_every < 1 and self.reload_data:
             self.gpu_dataset = cm.empty((self.input_size,len(trainset)))
             self.gpu_dataset.copy_to_host()
@@ -94,7 +97,7 @@ class RestrictedBoltzmannMachine(Learner):
             self.gpu_dataset.copy_to_host()
             n_loaded = 0
 
-        while self.stage < self.nstages:
+        while self.stage < self.n_stages:
             if self.load_data_every < 1:  # Is the whole dataset loaded...
                 self.train_on_loaded_data(len(trainset))
             else:                         # ... otherwise load it as you go.
@@ -102,7 +105,7 @@ class RestrictedBoltzmannMachine(Learner):
                     # load some data on GPU
                     self.gpu_dataset.numpy_array[:,n_loaded] = input.T
                     n_loaded += 1
-                    if n_loaded >= self.minibatch_size:
+                    if n_loaded >= self.load_data_every*self.minibatch_size:
                         self.gpu_dataset.copy_to_device()
                         self.train_on_loaded_data(n_loaded)
                         n_loaded = 0
@@ -125,18 +128,18 @@ class RestrictedBoltzmannMachine(Learner):
         for t in range(self.minibatch_size,n_loaded,self.minibatch_size):
             self.rbm_update(self.gpu_dataset.slice(t-self.minibatch_size,t))
             
-        # special case: last minibatch (which might smaller)
+        # special case: last minibatch (which might be smaller)
         self.rbm_update(self.gpu_dataset.slice(
                 n_loaded-self.minibatch_size,n_loaded))
 
     def forget(self):
         self.stage = 0 # Model will be untrained after initialization
-        self.rng = np.random.mtrand.RandomState(seed)
-        cm.CUDAMatrix.init_random(seed = seed)
+        self.rng = np.random.mtrand.RandomState(self.seed)
+        cm.CUDAMatrix.init_random(seed = self.seed)
         self.reload_data = True
 
         # Initializing parameters
-        self.W = cm.CUDAMatrix(0.001*self.rng.randn((self.latent_size,self.input_size)))
+        self.W = cm.CUDAMatrix(0.001*self.rng.randn(self.latent_size,self.input_size))
         self.dW = cm.CUDAMatrix(np.zeros((self.latent_size,self.input_size)))
         self.b = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
         self.db = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
@@ -161,7 +164,7 @@ class RestrictedBoltzmannMachine(Learner):
         self.dW.mult(self.momentum)
         self.db.mult(self.momentum)
         self.dc.mult(self.momentum)
-        self.dW.add_dot(self.gpu_h,gpu_data)
+        self.dW.add_dot(self.gpu_h,gpu_data.T)
         self.db.add_sums(self.gpu_h,axis=1,mult=1.)
         self.dc.add_sums(gpu_data,axis=1,mult=1.)
 
@@ -186,7 +189,7 @@ class RestrictedBoltzmannMachine(Learner):
             self.gpu_h.add_col_vec(self.b)
             self.gpu_h.apply_sigmoid()
         
-        self.dW.subtract_dot(self.gpu_h,self.gpu_x_sample)
+        self.dW.subtract_dot(self.gpu_h,self.gpu_x_sample.T)
         self.db.add_sums(self.gpu_h,axis=1,mult=-1.)
         self.dc.add_sums(self.gpu_x_sample,axis=1,mult=-1.)
 
@@ -207,7 +210,7 @@ class RestrictedBoltzmannMachine(Learner):
         # to avoid memory creation, using gpu_h
         # and gpu_h_sample for these computations
         cm.exp(self.gpu_h,self.gpu_h_sample)
-        gpu_h_sample.add(1.)
+        self.gpu_h_sample.add(1.)
         cm.log(self.gpu_h_sample,self.gpu_h)
         self.gpu_h.sum(axis=0,target=self.gpu_negative_free_energy)
         return self.gpu_negative_free_energy
@@ -235,7 +238,7 @@ class RestrictedBoltzmannMachine(Learner):
             self.gpu_dataset.copy_to_device()
             nfe = self.negative_free_energy(self.gpu_x)
             nfe.copy_to_host()
-            outputs[(len(dataset)-n_loaded):,:] = nfe.numpy_array.T
+            outputs[(len(dataset)-n_loaded):,:] = nfe.numpy_array[:,:n_loaded].T
             
         return outputs
 

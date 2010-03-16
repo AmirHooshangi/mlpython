@@ -1,4 +1,4 @@
-import cPickle
+import cPickle,os
 import numpy as np
 import scipy.io
 from gzip import GzipFile as gfile
@@ -43,7 +43,7 @@ class FileDataset():
         self.load_line = load_line
 
     def __iter__(self):
-        stream = open(self.filename)
+        stream = open(os.path.expanduser(self.filename))
         for line in stream:
             yield self.load_line(line)
         stream.close()
@@ -66,7 +66,7 @@ def ascii_load(filename, convert_input=float, last_column_is_target = False, con
 
     """
 
-    f = open(filename)
+    f = open(os.path.expanduser(filename))
     lines = f.readlines()
 
     if last_column_is_target == 0:
@@ -150,7 +150,7 @@ def libsvm_load(filename,convert_non_digit_features=float,sparse=True):
 
     """
 
-    stream = open(filename)
+    stream = open(os.path.expanduser(filename))
     data = []
     metadata = {}
     targets = set()
@@ -169,7 +169,7 @@ def libsvm_load(filename,convert_non_digit_features=float,sparse=True):
 
     if not sparse:
         # Now that we know the input_size, we can load the data
-        stream = open(filename)
+        stream = open(os.path.expanduser(filename))
         for line in stream:
             example = libsvm_load_line(line,convert_non_digit_features,False,input_size)
             data += [example]
