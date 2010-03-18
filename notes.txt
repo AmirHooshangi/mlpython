@@ -8,7 +8,7 @@ Philosophy:
 
 How to present:
 - first way of using mlpython: as a library of learners, which take as inputs 
-  (at training or test time) iterators over examples (i.e. forget about raw_data and mlproblems)
+  (at training or test time) iterators over examples (i.e. forget about datasets and mlproblems)
 - second way of using mlpython: as a way to structure datasets and experiments 
   for machine learning research
 
@@ -23,7 +23,7 @@ TODO:
 - figure out a way to include other people's software (add a directory in learners, 
   which give all the info/code for downloading other people's software, installing it and
   incorporating it to the library)
-- write a couple of raw_data modules (libsvm datasets, mnist dataset, norb, caltech, ICML2007, etc.)
+- write a couple of datasets modules (libsvm datasets, mnist dataset, norb, caltech, ICML2007, etc.)
 - would be nice if the library gave a good result on caltech!
 
 docstrings:
@@ -52,7 +52,7 @@ docstrings:
   dataset be given? HUGO: well, can't really, since a learner might be applicable
   on examples with or without weights (hence for varying numbers of fields)
 
-raw_data
+datasets
 
 - should contain python modules, each defining two function: read(dir_path) and obtain(dir_path)
 - obtain(dir_path) is the function to call to obtain the data. In general, it should
@@ -61,8 +61,14 @@ raw_data
 - read(dir_path) is the function to call get the data, once it has been obtained. 
   dir_path should be the same as the dir_path used by obtain(dir_path). If necessary
   (which is not uncommon), read can have other options, with default values.
-- could consider adding a 'get_mlproblem(problem)', which would create for you
-  some possible problems for a given dataset
+  It can give all the data, a train/valid/test split, a k-fold split, etc.
+- should consider adding a 'get_mlproblem(problem)', which would create for you
+  some possible problems for a given dataset. Need to figure out a simple
+  syntax and use for this function however... The idea would be that it, for
+  a give class of problem (classification, regression, density, etc.) it would
+  spit out an mlproblem that can be used by the type of learner associated to the
+  mlproblem. This will make it possible to automate the evaluation of algorithms.
+  
 
 mlproblems
 
@@ -88,7 +94,7 @@ mlproblems
   is unkown). Should mlproblems be able to handle missing values?
 - question: mlproblems can be chained. However, you need to remember to put the metadata
             field of the input mlproblems as a field in the constructor for the
-            new mlproblem (e.g. A = mlpbA(data=raw_data), B = mlpbB(data=A,metadata=A.metadata)
+            new mlproblem (e.g. A = mlpbA(data=data,metadata=metadata), B = mlpbB(data=A,metadata=A.metadata)
             Is this too complicated? Should an mlproblem look for metadata in the data field
             (though that would be quite strange)?
             Maybe just write a couple of shorthand functions, that would do that for you?

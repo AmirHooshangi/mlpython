@@ -131,6 +131,10 @@ class PreprocessedProblem(MLProblem):
     example from the original data) and returning a 
     preprocessed example.
 
+    IMPORANT: if preprocess changes the size of the inputs, 
+    the metadata (i.e. 'input_size') must be changed 
+    accordingly by the user.
+
     Options
     - 'preprocess'
 

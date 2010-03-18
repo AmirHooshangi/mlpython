@@ -5,7 +5,7 @@ def load(dir_path,set_id=1,sparse=False):
     Loads the Yahoo! Learning to Rank Challenge data.
 
     The data is given by a dictionary mapping from strings
-    'train', 'valid' and 'test' to the corresponding set of examples.
+    'train', 'valid' and 'test' to the associated pair of data and metadata.
     
     Option 'set_id' determines the set that is loaded (1 or 2, default is 1).
 

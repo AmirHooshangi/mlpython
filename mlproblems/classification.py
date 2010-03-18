@@ -4,9 +4,9 @@ class ClassificationProblem(MLProblem):
     """
     Generates a classification problem from data and metadata.
 
-    The data should be an iterator input/target pairs, where the
-    target is a class string. The metadata should contain the 
-    set of possible classes (field 'targets' in metadata).
+    The data should be an iterator input/target pairs. 
+    The metadata should contain the set of possible classes 
+    (field 'targets' in metadata).
     
     Required metadata: 
     - 'targets'

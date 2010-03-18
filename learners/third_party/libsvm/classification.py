@@ -111,7 +111,7 @@ class SVMClassifier(Learner):
                 libsvm_inputs += [dict(zip(input[1],input[0]))]
             else:
                 libsvm_inputs += [input]
-            libsvm_targets += [target]
+            libsvm_targets += [float(target)] # LIBSVM requires double-valued targets
 
         libsvm_problem = libsvm.svm_problem(libsvm_targets,libsvm_inputs)
 
