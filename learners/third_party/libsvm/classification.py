@@ -34,6 +34,7 @@ class SVMClassifier(Learner):
     - label_weights
 
     Required metadata:
+    - 'targets'
     - 'class_to_id'
 
     """
@@ -66,8 +67,7 @@ class SVMClassifier(Learner):
         Trains the SVM.
         """
 
-        self.n_classes = len(trainset.metadata['class_to_id'])
-        class_to_id = trainset.metadata['class_to_id']
+        self.n_classes = len(trainset.metadata['targets'])
 
         # Set LIBSVM parameters
         kernel_types = {'linear':libsvm.LINEAR,'polynomial':libsvm.POLY,
@@ -76,6 +76,7 @@ class SVMClassifier(Learner):
             raise ValueError('Invalid kernel: '+self.kernel+'. Should be either \'linear\', \'polynomial\', \'rbf\' or \'sigmoid\'')
 
         if self.label_weights is not None:
+            class_to_id = trainset.metadata['class_to_id']
             nr_weight = self.n_classes
             weight_label = range(self.n_classes)
             weight = [1]*self.n_classes

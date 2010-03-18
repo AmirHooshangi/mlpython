@@ -14,8 +14,7 @@ def load(dir_path,set_id=1,sparse=False):
 
     Defined metadata: 
     - 'input_size'
-    - 'targets'
-    - 'class_to_id'
+    - 'scores'
     - 'n_queries'
     - 'length'
 
@@ -44,8 +43,7 @@ def load(dir_path,set_id=1,sparse=False):
         lengths = [34815,34881,103174]
 
     train_meta,valid_meta,test_meta = [{'input_size':input_size,
-                                        'targets':set(range(5)),
-                                        'class_to_id':dict([(str(id),id) for id in range(5)]),
+                                        'scores':range(5),
                                         'n_queries':nq,
                                         'length':l} for nq,l in [n_queries,lengths]]
 

@@ -15,7 +15,7 @@ class MultinomialNaiveBayesClassifier(Learner):
     - 'dirichlet_prior_parameter'
 
     Required metadata: 
-    - 'class_to_id'
+    - 'targets'
     - 'input_size'
 
     Reference: A Comparison of Event Models for Naive Bayes Text Classification
@@ -29,7 +29,7 @@ class MultinomialNaiveBayesClassifier(Learner):
 
     def train(self, trainset):
         self.input_size = trainset.metadata['input_size']
-        self.n_classes = len(trainset.metadata['class_to_id'])
+        self.n_classes = len(trainset.metadata['targets'])
 
         # Initialize the model
         self.p_w_given_c = ones((self.input_size,self.n_classes))*self.dirichlet_prior_parameter

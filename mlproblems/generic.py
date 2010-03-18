@@ -48,9 +48,7 @@ class SubsetProblem(MLProblem):
     """
 
     def __init__(self, data=None, metadata={},subset=set([])):
-        self.data = data
-        self.metadata = {}
-        self.metadata.update(metadata)
+        MLProblem(self,data,metadata)
         self.subset = subset
 
     def __iter__(self):
@@ -84,9 +82,7 @@ class SubsetFieldsProblem(MLProblem):
     """
 
     def __init__(self, data=None, metadata={},fields=[0]):
-        self.data = data
-        self.metadata = {}
-        self.metadata.update(metadata)
+        MLProblem(self,data,metadata)
         self.fields = fields
 
     def __iter__(self):
@@ -141,9 +137,7 @@ class PreprocessedProblem(MLProblem):
     """
 
     def __init__(self, data=None, metadata={},preprocess=None):
-        self.data = data
-        self.metadata = {}
-        self.metadata.update(metadata)
+        MLProblem(self,data,metadata)
         self.preprocess = preprocess
 
     def __iter__(self):

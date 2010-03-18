@@ -14,6 +14,9 @@ How to present:
 
 TODO:
 - comment modules and packages
+- make sure classes call parent class's constructor, when appropriate
+- use more options *without* default arguments, for options which are required.
+  If is tricky because of inheritance (e.g. MLProbems), raise exception...
 - write some templates for the different classes
 - generate documentation
 - make sure comments in library are uniformly formatted and complete

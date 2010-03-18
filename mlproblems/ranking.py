@@ -37,3 +37,53 @@ class RankingProblem(MLProblem):
 
     def __len__(self):
         return self.metadata['n_queries']
+
+
+class RankingToClassificationProblem(MLProblem):
+    """
+    Generates a classification problem from a ranking problem.
+
+    Option 'merge_document_and_query' (a function with 2 arguments)
+    is used to generate inputs for the classification problem.
+    
+    The list of possible scores must be provided as a metadata.
+    IMPORTANT: the scores should be ordered from less to more relevant
+    in the list. This list will be used to generate the set of targets
+    and 'class_to_id' mapping.
+
+    Required_metadata:
+    - 'length': number of document/query pairs
+    - 'scores': list of possible scores, ordered from less relevant to more relevant
+
+    Defined metadata:
+    - 'targets'
+    - 'class_to_id'
+
+    """
+
+    def __init__(self, data=None, metadata={},merge_document_and_query=None):
+        MLProblem(self,data,metadata)
+        self.merge_document_and_query = merge_document_and_query
+
+    def __iter__(self):
+        for inputs,targets,query in self.data:
+            for input,target in zip(inputs,targets):
+                yield self.merge_document_and_query(input,query),self.class_to_id[target]
+
+    def setup(self):
+        # Creating class (string) to id (integer) mapping
+        self.class_to_id = {}
+        current_id = 0
+        for score in self.metadata['scores']:
+            self.class_to_id[score] = current_id
+            current_id += 1
+        self.metadata['class_to_id'] = self.class_to_id
+        self.metadata['targets'] = set(self.metadata['scores'])
+
+    def apply_on(self, new_data, new_metadata=None):
+        new_problem = RankingToClassificationProblem(new_data,new_metadata)
+        new_problem.metadata['class_to_id'] = self.metadata['class_to_id']
+        new_problem.metadata['targets'] = self.metadata['targets']
+        new_problem.class_to_id = self.class_to_id
+        new_problem.merge_document_and_query = self.merge_document_and_query
+        return new_problem

@@ -17,7 +17,7 @@ class BayesClassifier(Learner):
     - 'estimators'
 
     Required metadata:
-    - 'class_to_id'
+    - 'targets'
 
     """
     def __init__(   self,
@@ -32,7 +32,7 @@ class BayesClassifier(Learner):
         If self.stage == 0, first initialize the model.
         """
 
-        self.n_classes = len(trainset.metadata['class_to_id'])
+        self.n_classes = len(trainset.metadata['targets'])
 
         # Initialize model
         if self.stage == 0:
