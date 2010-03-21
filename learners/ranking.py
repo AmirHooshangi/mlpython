@@ -1,6 +1,6 @@
 from generic import Learner
 import numpy as np
-import mlpython.mlproblems.classification as mlpb
+import mlpython.mlproblems.ranking as mlpb
 
 # The training set for these models should be an iterator over 
 # triplets (input,target,query), where input is a list of
@@ -44,9 +44,10 @@ class RankingFromClassifier(Learner):
         """
 
         if self.stage == 0:
-            self.classifier_trainset = mlpb.RankingToClassificationProblem(trainset.data,
+            self.classifier_trainset = mlpb.RankingToClassificationProblem(trainset,
                                                                            trainset.metadata,
                                                                            self.merge_document_and_query)
+            self.classifier_trainset.setup()
 
         # Training classifier
         self.classifier.train(self.classifier_trainset)
@@ -69,13 +70,12 @@ class RankingFromClassifier(Learner):
         Inspired from http://learningtorankchallenge.yahoo.com/instructions.php
         """
         
-        cdataset = self.classifier_dataset.apply_on(dataset.data,dataset.metadata)
+        cdataset = self.classifier_trainset.apply_on(dataset,dataset.metadata)
         coutputs = self.classifier.use(cdataset)
         offset = 0
         outputs = []
         for inputs,targets,query in dataset:
-            preds = coutputs[offset:(offset+len(inputs)),0].ravel()
-            preds *= -1
+            preds = [ -co[0] for co in coutputs[offset:(offset+len(inputs))]]
             order = np.argsort(preds)
             outputs += [order]
             offset += len(inputs)
@@ -106,10 +106,10 @@ class RankingFromClassifier(Learner):
             err += p*r/(j+1.0)
             p *= 1-r
         
-        dcg = sum([g/log(j+2) for (j,g) in enumerate(gains[:k])])
+        dcg = sum([g/np.log(j+2) for (j,g) in enumerate(gains[:k])])
         gains.sort()
         gains = gains[::-1]
-        ideal_dcg = sum([g/log(j+2) for (j,g) in enumerate(gains[:k])])
+        ideal_dcg = sum([g/np.log(j+2) for (j,g) in enumerate(gains[:k])])
         if ideal_dcg:
             ndcg += dcg / ideal_dcg
         else:

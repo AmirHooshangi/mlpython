@@ -44,6 +44,7 @@ class BayesClassifier(Learner):
                 trainset_c = mlpb.ClassSubsetProblem(data=trainset,metadata=trainset.metadata,
                                                      subset=set([c]),
                                                      include_class=False)
+                trainset_c.setup()
                 self.class_trainset += [ trainset_c ]
                 self.prior[c] = float(len(trainset_c))/tot_len
 

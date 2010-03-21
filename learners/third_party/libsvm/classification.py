@@ -75,7 +75,7 @@ class SVMClassifier(Learner):
         if self.kernel not in kernel_types:
             raise ValueError('Invalid kernel: '+self.kernel+'. Should be either \'linear\', \'polynomial\', \'rbf\' or \'sigmoid\'')
 
-        if self.label_weights is not None:
+        if self.label_weights != None:
             class_to_id = trainset.metadata['class_to_id']
             nr_weight = self.n_classes
             weight_label = range(self.n_classes)

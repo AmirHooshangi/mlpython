@@ -81,7 +81,7 @@ class RestrictedBoltzmannMachine(Learner):
             self.load_data_every = -1
 
         # Preparing training...
-        if self.gpu_dataset is not None:
+        if self.gpu_dataset != None:
             self.gpu_dataset.free_device_memory()
         if self.load_data_every < 1 and self.reload_data:
             self.gpu_dataset = cm.empty((self.input_size,len(trainset)))

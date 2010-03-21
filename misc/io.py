@@ -80,7 +80,7 @@ def ascii_load(filename, convert_input=float, last_column_is_target = False, con
 
 ### LIBSVM format ###
 
-def libsvm_load_line(line,convert_non_digit_features=float,sparse=True,input_size=-1):
+def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sparse=True,input_size=-1):
     """
     Converts a line (string) of a libsvm file into an example (list).
 
@@ -93,19 +93,25 @@ def libsvm_load_line(line,convert_non_digit_features=float,sparse=True,input_siz
 
     # Remove indices < 1
     n_removed = 0
+    n_feat = 0
     for token,i in zip(tokens, range(len(tokens))):
-        if token.find(':') >= 0 and int(token[:token.find(':')]) < 1:
-            del tokens[i-n_removed]
-            n_removed += 1
+        if token.find(':') >= 0:
+            if token[:token.find(':')].isdigit():
+                if int(token[:token.find(':')]) < 1: # Removing feature ids < 1
+                    del tokens[i-n_removed]
+                    n_removed += 1
+                else:
+                    n_feat += 1
         
     if sparse:
-        inputs = np.zeros((len(tokens)-1))
-        indices = np.zeros((len(tokens)-1),dtype='int')
+        inputs = np.zeros((n_feat))
+        indices = np.zeros((n_feat),dtype='int')
     else:
         input = np.zeros((input_size))
     extra = []
 
-    for token,i in zip(tokens[1:], range(len(tokens)-1)):
+    i = 0
+    for token in tokens[1:]:
         id_str,input_str = token.split(':')
         if id_str.isdigit():
             if sparse:
@@ -113,18 +119,19 @@ def libsvm_load_line(line,convert_non_digit_features=float,sparse=True,input_siz
                 inputs[i] = float(input_str)
             else:
                 input[int(id_str)-1] = float(input_str)
+            i += 1
         else:
             extra += [convert_non_digit_features(id_str,input_str)]
             
     if sparse:
         example = [(inputs, indices), tokens[0]]
     else:
-        example = [input,tokens[0]]
+        example = [input,convert_target(tokens[0])]
     if extra:
         example += [extra]
     return example
 
-def libsvm_load(filename,convert_non_digit_features=float,sparse=True):
+def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,sparse=True):
     """
     Reads a LIBSVM file and returns the list of all examples (data) and metadata information.
 
@@ -156,7 +163,7 @@ def libsvm_load(filename,convert_non_digit_features=float,sparse=True):
     targets = set()
     input_size = 0
     for line in stream:
-        example = libsvm_load_line(line,convert_non_digit_features,True)
+        example = libsvm_load_line(line,convert_non_digit_features,convert_target,True)
         max_non_zero_feature = max(example[0][1])
         if max_non_zero_feature > input_size:
             input_size = max_non_zero_feature
@@ -171,7 +178,7 @@ def libsvm_load(filename,convert_non_digit_features=float,sparse=True):
         # Now that we know the input_size, we can load the data
         stream = open(os.path.expanduser(filename))
         for line in stream:
-            example = libsvm_load_line(line,convert_non_digit_features,False,input_size)
+            example = libsvm_load_line(line,convert_non_digit_features,convert_target,False,input_size)
             data += [example]
         stream.close()
         

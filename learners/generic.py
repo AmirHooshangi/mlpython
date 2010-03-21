@@ -42,10 +42,14 @@ class OnlineLearner(Learner):
     using the given 'example'.
 
     Function use_learner(...) should return the output
-    for the given 'example'. 
+    for the given 'example'. The output should be a sequence
+    (even if it has just one element in it), to allow
+    for multiple outputs.
 
     Function cost(...) should return the cost associated
-    to some 'output' for the given 'example'.
+    to some 'output' for the given 'example'. The returned 
+    cost should be a sequence (even if it has just one 
+    element in it), to allow for multiple costs.
 
     Option n_stages specifies how many iterations over the 
     training set is done at every call of train(...).
@@ -94,11 +98,10 @@ class OnlineLearner(Learner):
     def train(self,trainset):
         if self.stage == 0:
             self.initialize_learner(trainset.metadata)
-
-        for stage in range(self.stage,self.n_stages):
+        for it in range(self.stage,self.n_stages):
             for example in trainset:
                 self.update_learner(example)
-        self.stage = stage+1
+        self.stage = it+1
 
     def forget(self):
         self.stage = 0

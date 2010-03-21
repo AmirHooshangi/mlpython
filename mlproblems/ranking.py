@@ -1,4 +1,6 @@
-class RankingProblem(MLProblem):
+import generic as mlpb
+
+class RankingProblem(mlpb.MLProblem):
     """
     Generates a ranking problem from data and metadata.
 
@@ -23,13 +25,13 @@ class RankingProblem(MLProblem):
         last_query = None
 
         for input,target,query in self.data:
-            tot_input += [input]
-            tot_target += [target]
-            if last_query is not None: # Is not first example
-                if last_query is not query: # Yield ranking example if query changed
+            if last_query != None: # Is not first example
+                if last_query != query: # Yield ranking example if query changed
                     yield (tot_input,tot_target,last_query)
                     tot_input = []
                     tot_target = []
+            tot_input += [input]
+            tot_target += [target]
             last_query = query
 
         if tot_input: # Output last ranking example
@@ -38,8 +40,7 @@ class RankingProblem(MLProblem):
     def __len__(self):
         return self.metadata['n_queries']
 
-
-class RankingToClassificationProblem(MLProblem):
+class RankingToClassificationProblem(mlpb.MLProblem):
     """
     Generates a classification problem from a ranking problem.
 
@@ -62,7 +63,7 @@ class RankingToClassificationProblem(MLProblem):
     """
 
     def __init__(self, data=None, metadata={},merge_document_and_query=None):
-        MLProblem(self,data,metadata)
+        mlpb.MLProblem.__init__(self,data,metadata)
         self.merge_document_and_query = merge_document_and_query
 
     def __iter__(self):

@@ -13,6 +13,8 @@ How to present:
   for machine learning research
 
 TODO:
+- figure out get_problem(), for Toronto face dataset (see code!), yahoo_ltrc, 
+  mnist, icml2007, and more...
 - comment modules and packages
 - make sure classes call parent class's constructor, when appropriate
 - use more options *without* default arguments, for options which are required.
