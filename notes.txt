@@ -142,8 +142,8 @@ learners
 - should state which metadata they are expecting
 - forget only works when the learner has been trained at least once
   (this is because part of forget() depends on dataset specific parameters).
-  forget is also the only official way of seting self.stage=0 by the user,
-  otherwise anything can happen!
+  Also, forget() doesn't necessarily reinitializes the parameters: it only
+  means that the next time train() is called, it'll start learning from scratch.
 - the use() function takes an mlproblem and outputs an iterator with the output
   of the learner (the target of the mlproblem could be missing)
 - the test() function gives the output AND the error
