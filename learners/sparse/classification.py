@@ -57,6 +57,10 @@ class MultinomialNaiveBayesClassifier(Learner):
         for example in dataset:
             values,indices = example[0]
             outputs[count,:] = dot(values,self.log_p_w_given_c[indices,:])+self.log_p_c
+            max_output = np.max(outputs[count,:])
+            outputs[count,:] -= max_output
+            outputs[count,:] = np.exp(outputs[count,:])
+            outputs[count,:] /= np.sum(outputs[count,:])
             count += 1
         return outputs
 
