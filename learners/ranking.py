@@ -13,8 +13,28 @@ class RankingFromClassifier(Learner):
     A ranking model based on a classifier.
  
     This learner trains a given classifier to 
-    predict the target relevance associated to each
+    predict the target relevance score associated to each
     document/query pairs found in the training set.
+    It is assume that the output of the classifier
+    for a given document/query pair is a list of two things:
+    the predicted score and a distribution over possible relevance
+    scores.
+
+    Option 'ranking_measure' determines how a ranking is
+    obtained based on the classifier's outputs: 
+    - ranking_measure='predicted_score': 
+         the predicted relevance score is used (first output 
+         of classifier);
+    - ranking_measure='expected_score':
+         the distribution over scores (second output) is
+         used to computed the expected score, and a ranking
+         is determined by sorting those expectations;
+    - ranking_measure="expected_persistence': 
+         the distribution over scores is used to determine
+         the expected persistence ( (2**score-1)/max_score ).
+         Ranking according to this measure should work well
+         for the ERR ranking error.
+
     Option 'merge_document_and_query' should be a 
     callable function that takes two arguments (the 
     input document and the query) and outputs a 
@@ -33,10 +53,14 @@ class RankingFromClassifier(Learner):
     def __init__(   self,
                     classifier,
                     merge_document_and_query,
+                    ranking_measure = 'expected_score',
                     ):
         self.stage = 0
         self.classifier = classifier
         self.merge_document_and_query=merge_document_and_query
+        self.ranking_measure = ranking_measure
+        if ranking_measure not in set(['expected_score','expected_persistence','predicted_score']):
+            raise ValueError, 'Invalid ranking measure \'%s\''%ranking_measure
 
     def train(self,trainset):
         """
@@ -63,7 +87,7 @@ class RankingFromClassifier(Learner):
     def use(self,dataset):
         """
         Outputs a list corresponding to the position (starting at 0) of each
-        document corresponding to its relevance (from most relevant to least). 
+        document corresponding to its relevance score (from most relevant to least). 
 
         For example, ordering [1,3,0,2] means that the 
         first document is the second most relevant, the second document
@@ -77,8 +101,23 @@ class RankingFromClassifier(Learner):
         coutputs = self.classifier.use(cdataset)
         offset = 0
         outputs = []
+
+        if self.ranking_measure == 'expected_score' or self.ranking_measure == 'expected_persistence':
+            # Create vector of measures appropriate for computing the necessary expectations, 
+            # ordered according to the class ID mapping:
+            score_to_class_id = self.classifier_trainset.metadata['class_to_id']
+            ordered_measures = np.zeros((len(score_to_class_id)))
+            for k,v in score_to_class_id.iteritems():
+                if self.ranking_measure == 'expected_score':
+                    ordered_measures[v] = k
+                elif self.ranking_measure == 'expected_persistence':
+                    ordered_measures[v] = (2.**k-1.0)/(2.**self.max_score)
+
         for inputs,targets,query in dataset:
-            preds = [ -co[0] for co in coutputs[offset:(offset+len(inputs))]]
+            if self.ranking_measure == 'predicted_score':
+                preds = [ -co[0] for co in coutputs[offset:(offset+len(inputs))]]
+            elif self.ranking_measure == 'expected_score' or self.ranking_measure == 'expected_persistence':
+                preds = [ -np.dot(ordered_measures,co[1]) for co in coutputs[offset:(offset+len(inputs))]]
             ordered = np.argsort(preds)
             order = np.zeros(len(ordered))
             order[ordered] = range(len(ordered))
@@ -102,7 +141,7 @@ class RankingFromClassifier(Learner):
         gains = [-1]*nd # The first element is the gain of the first document in the predicted ranking
         assert max(r)<=nd, 'Ranks larger than number of documents (%d).'%(nd)
         for j in range(nd):
-          gains[r[j]-1] = (2**l[j]-1.0)/(2.**self.max_score)
+          gains[r[j]-1] = (2.**l[j]-1.0)/(2.**self.max_score)
         assert min(gains)>=0, 'Not all ranks present.'
         
         p = 1.0

@@ -1,5 +1,5 @@
-from generic import Learner
-from numpy import dot,ones,zeros,log,argmax,sum
+from mlpython.learners.generic import Learner
+import numpy as np
 
 #### Clasifiers ####
 
@@ -32,8 +32,8 @@ class MultinomialNaiveBayesClassifier(Learner):
         self.n_classes = len(trainset.metadata['targets'])
 
         # Initialize the model
-        self.p_w_given_c = ones((self.input_size,self.n_classes))*self.dirichlet_prior_parameter
-        self.p_c = zeros((self.n_classes))
+        self.p_w_given_c = np.ones((self.input_size,self.n_classes))*self.dirichlet_prior_parameter
+        self.p_c = np.zeros((self.n_classes))
 
         # Train the model
         for input,target in trainset:
@@ -42,34 +42,37 @@ class MultinomialNaiveBayesClassifier(Learner):
             self.p_c[target] += 1
 
         # Normalize counts
-        self.p_w_given_c /= sum(self.p_w_given_c,0)
-        self.log_p_w_given_c = log(self.p_w_given_c)
-        self.p_c /= sum(self.p_c)
-        self.log_p_c = log(self.p_c)
+        self.p_w_given_c /= np.sum(self.p_w_given_c,0)
+        self.log_p_w_given_c = np.log(self.p_w_given_c)
+        self.p_c /= np.sum(self.p_c)
+        self.log_p_c = np.log(self.p_c)
 
     def forget(self):        
         self.p_w_given_c[:] = 1./self.dirichlet_prior_parameter
         self.p_c[:] = 1./self.n_classes
 
     def use(self,dataset):
-        outputs = zeros((len(dataset),self.n_classes))
+        probs = np.zeros((len(dataset),self.n_classes))
         count = 0
+        outputs = []
         for example in dataset:
             values,indices = example[0]
-            outputs[count,:] = dot(values,self.log_p_w_given_c[indices,:])+self.log_p_c
-            max_output = np.max(outputs[count,:])
-            outputs[count,:] -= max_output
-            outputs[count,:] = np.exp(outputs[count,:])
-            outputs[count,:] /= np.sum(outputs[count,:])
+            probs[count,:] = np.dot(values,self.log_p_w_given_c[indices,:])+self.log_p_c
+            max_output = np.max(probs[count,:])
+            probs[count,:] -= max_output
+            probs[count,:] = np.exp(probs[count,:])
+            probs[count,:] /= np.sum(probs[count,:])
+            pred = np.argmax(probs[count,:])
+            outputs += [[pred,probs[count,:]]]
             count += 1
         return outputs
 
     def test(self,dataset):
         outputs = self.use(dataset)
-        costs = zeros((len(outputs),1))
+        costs = np.zeros((len(outputs),1))
         count = 0
         for input,target in dataset:
-            pred = int(argmax(outputs[count,:]))
+            pred = int(np.argmax(outputs[count,:]))
             costs[count,:] = int(pred!=target)
             count += 1
 
