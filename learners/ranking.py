@@ -26,7 +26,8 @@ class RankingFromClassifier(Learner):
     - 'merge_document_and_query'
 
     Required metadata:
-    - 'targets'
+    - 'length'
+    - 'scores'
 
     """
     def __init__(   self,
@@ -48,6 +49,7 @@ class RankingFromClassifier(Learner):
                                                                            trainset.metadata,
                                                                            self.merge_document_and_query)
             self.classifier_trainset.setup()
+            self.max_score = max(trainset.metadata['scores'])
 
         # Training classifier
         self.classifier.train(self.classifier_trainset)
@@ -60,12 +62,13 @@ class RankingFromClassifier(Learner):
 
     def use(self,dataset):
         """
-        Outputs a list corresponding to an ordering of the
-        documents, from most relevant to least. 
+        Outputs a list corresponding to the position (starting at 0) of each
+        document corresponding to its relevance (from most relevant to least). 
 
         For example, ordering [1,3,0,2] means that the 
-        second document is most relevant, then the fourth, 
-        then the first and finally the third.
+        first document is the second most relevant, the second document
+        is the fourth most relevant, the third document is the first most
+        relevant and the fourth document is the third most relevant.
 
         Inspired from http://learningtorankchallenge.yahoo.com/instructions.php
         """
@@ -76,7 +79,9 @@ class RankingFromClassifier(Learner):
         outputs = []
         for inputs,targets,query in dataset:
             preds = [ -co[0] for co in coutputs[offset:(offset+len(inputs))]]
-            order = np.argsort(preds)
+            ordered = np.argsort(preds)
+            order = np.zeros(len(ordered))
+            order[ordered] = range(len(ordered))
             outputs += [order]
             offset += len(inputs)
         return outputs
@@ -89,7 +94,7 @@ class RankingFromClassifier(Learner):
 
         err = 0.
         ndcg = 0.
-        l = [int(x)+1 for x in target]
+        l = [int(x) for x in target]
         r = [int(x)+1 for x in output]
         nd = len(target) # Number of documents
         assert len(output)==nd, 'Expected %d ranks, but got %d.'%(nd,len(r))
@@ -97,7 +102,7 @@ class RankingFromClassifier(Learner):
         gains = [-1]*nd # The first element is the gain of the first document in the predicted ranking
         assert max(r)<=nd, 'Ranks larger than number of documents (%d).'%(nd)
         for j in range(nd):
-          gains[r[j]-1] = (2**l[j]-1.0)/16
+          gains[r[j]-1] = (2**l[j]-1.0)/(2.**self.max_score)
         assert min(gains)>=0, 'Not all ranks present.'
         
         p = 1.0

@@ -69,7 +69,10 @@ class RankingToClassificationProblem(mlpb.MLProblem):
     def __iter__(self):
         for inputs,targets,query in self.data:
             for input,target in zip(inputs,targets):
-                yield self.merge_document_and_query(input,query),self.class_to_id[target]
+                if target in self.class_to_id:
+                    yield self.merge_document_and_query(input,query),self.class_to_id[target]
+                else:
+                    yield self.merge_document_and_query(input,query),None # For unlabeled data
 
     def setup(self):
         # Creating class (string) to id (integer) mapping

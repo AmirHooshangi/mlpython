@@ -103,6 +103,11 @@ mlproblems
             Is this too complicated? Should an mlproblem look for metadata in the data field
             (though that would be quite strange)?
             Maybe just write a couple of shorthand functions, that would do that for you?
+- I was think of handling minibatches with the mlproblems, but this makes it hard when the classifier is fed a training set coming from some other learner
+  e.g. RankingFromClassifier gives a RankingToClassificationProblem...
+  the learner should deal with the minibatches
+- To handle unlabeled dataset, might be good to do something like
+  "if target not in targets: return input,None"
 
 metadata
 
@@ -168,6 +173,7 @@ learners
   of the output (computed by use()) is a class id, and test() compares
   it to the label to compute the test error. A classifier also
   requires class_to_id as a metadata.
+
 
 creating learner pipelines
 - we want to have code that does this separately (as opposed to have train or use output

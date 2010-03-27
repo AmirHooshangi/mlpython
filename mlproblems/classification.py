@@ -43,10 +43,14 @@ class ClassSubsetProblem(MLProblem):
     - 'subset'
     - 'include_class'
 
+    Defined metadata: 
+    - 'class_to_id'
+    - 'targets'
+
     """
 
     def __init__(self, data=None, metadata={},
-                 subset={}, # Subset of classes to include
+                 subset=[], # Subset of classes to include
                  include_class=True # Whether to include the class field
                  ):
         self.data = data
@@ -54,14 +58,31 @@ class ClassSubsetProblem(MLProblem):
         self.metadata.update(metadata)
         self.subset=subset
         self.include_class = include_class
+        self.class_to_id = {}
+        self.targets = set([])
+        id = 0
+        for c in subset:
+            self.class_to_id[c] = id
+            self.targets.add(c)
+            id+=1
+        self.metadata['targets'] = self.targets
+        self.metadata['class_to_id'] = self.class_to_id
 
     def __iter__(self):
         for input,target in self.data:
             if target in self.subset:
                 if self.include_class:
-                    yield input,target
+                    yield input,self.class_to_id[target]
                 else:
                     yield input
+
+    def __len__(self):
+        if 'class_subset_length' not in self.metadata:
+            length = 0
+            for example in self:
+                length+=1
+            self.metadata['class_subset_length'] = length
+        return self.metadata['class_subset_length']
 
     def setup(self):
         pass
@@ -69,5 +90,10 @@ class ClassSubsetProblem(MLProblem):
     def apply_on(self, new_data, new_metadata=None):
         new_problem = ClassSubsetProblem(new_data,new_metadata,subset=self.subset,
                                          include_class=self.include_class)
+        
+        new_problem.targets = self.targets
+        new_problem.class_to_id = self.class_to_id
+        new_problem.metadata['targets'] = self.targets
+        new_problem.metadata['class_to_id'] = self.class_to_id
         return new_problem
         

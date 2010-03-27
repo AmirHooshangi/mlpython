@@ -29,6 +29,49 @@ class IteratorWithFields():
             yield [r[beg:end] for (beg,end) in self.fields ]
 
 
+class MemoryDataset():
+    """
+    An iterator over some data, but that puts the content 
+    of the data in memory in Numpy arrays.
+
+    Option 'field_shapes' is a list of tuples, corresponding
+    to the shape of each fields.
+
+    Optionally, the length of the dataset can also be
+    provided. If not, it will be figured out automatically.
+    """
+
+    def __init__(self,data,field_shapes,length=None):
+        self.data = data
+        self.field_shapes = field_shapes
+        self.n_fields = len(field_shapes)
+        self.mem_data = []
+        if length == None:
+            # Figure out length
+            length = 0
+            for example in data:
+                length += 1
+        self.length = length
+        for i in range(self.n_fields):
+            sh = field_shapes[i]
+            if sh == (1,):
+                mem_shape = (length,) # Special case of non-array fields. This will 
+                                      # ensure that a non-array field is yielded
+            else:
+                mem_shape = (length,)+sh
+            self.mem_data += [np.zeros(mem_shape)]
+
+        # Put data in memory
+        t = 0
+        for example in data:
+            for i in range(self.n_fields):
+                self.mem_data[i][t] = example[i]
+            t+=1
+
+    def __iter__(self):
+        for t in range(self.length):
+            yield [ m[t] for m in self.mem_data ]
+
 class FileDataset():
     """
     An iterator over a dataset file, which converts each
@@ -128,7 +171,7 @@ def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sp
     else:
         example = [input,convert_target(tokens[0])]
     if extra:
-        example += [extra]
+        example += extra
     return example
 
 def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,sparse=True):

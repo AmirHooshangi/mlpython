@@ -44,7 +44,8 @@ class OnlineLearner(Learner):
     Function use_learner(...) should return the output
     for the given 'example'. The output should be a sequence
     (even if it has just one element in it), to allow
-    for multiple outputs.
+    for multiple outputs. For instance, the output could
+    be a Numpy array.
 
     Function cost(...) should return the cost associated
     to some 'output' for the given 'example'. The returned 
@@ -76,10 +77,10 @@ class OnlineLearner(Learner):
              self.b += self.lr * target
        
        def use_learner(self,example):
-          return np.sign(np.dot(self.w,example[0])+self.b)
+          return [np.sign(np.dot(self.w,example[0])+self.b)]
        
        def cost(self,output,example):
-          return int(output != 2*example[1]-1)
+          return [int(output != 2*example[1]-1)]
 
     When creating an instance, must provide the
     value of the hyper-parameter lr:
@@ -101,7 +102,7 @@ class OnlineLearner(Learner):
         for it in range(self.stage,self.n_stages):
             for example in trainset:
                 self.update_learner(example)
-        self.stage = it+1
+        self.stage = self.n_stages
 
     def forget(self):
         self.stage = 0

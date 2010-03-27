@@ -1,7 +1,7 @@
 import mlpython.misc.io as mlio
 import os
 
-def load(dir_path,set_id=0,sparse=False):
+def load(dir_path,set_id=0,sparse=False,load_to_memory=False):
     """
     Loads the Yahoo! Learning to Rank Challenge data.
 
@@ -40,10 +40,13 @@ def load(dir_path,set_id=0,sparse=False):
         n_queries = [13944,6000]
         lengths = [294336,178798]
 
-        # Get data file paths
         train_file,valid_file = [os.path.join(dir_path, 'set1.' + ds + '.txt') for ds in ['small_train','small_valid']]
         # Get data
         train,valid = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file]]
+
+        if load_to_memory:
+            train,valid = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],l) for d,l in zip([train,valid],lengths)]
+
         # Get metadata
         train_meta,valid_meta = [{'input_size':input_size,
                                   'scores':range(5),
@@ -59,12 +62,19 @@ def load(dir_path,set_id=0,sparse=False):
             n_queries = [1266,1266,3798]
             lengths = [34815,34881,103174]
 
-            train_meta,valid_meta,test_meta = [{'input_size':input_size,
-                                                'scores':range(5),
-                                                'n_queries':nq,
-                                                'length':l} for nq,l in zip(n_queries,lengths)]
+        # Get data file paths
+        train_file,valid_file,test_file = [os.path.join(dir_path, 'set' + str(set_id) + '.' + ds + '.txt') for ds in ['train','valid','test']]
+        # Get data
+        train,valid,test = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file,test_file]]
+        if load_to_memory:
+            train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],l) for d,l in zip([train,valid,test],lengths)]
 
-            return {'train':(train,train_meta),'valid':(valid,valid_meta),'test':(test,test_meta)}
+        train_meta,valid_meta,test_meta = [{'input_size':input_size,
+                                            'scores':range(5),
+                                            'n_queries':nq,
+                                            'length':l} for nq,l in zip(n_queries,lengths)]
+
+        return {'train':(train,train_meta),'valid':(valid,valid_meta),'test':(test,test_meta)}
 
 def obtain(dir_path):
 
