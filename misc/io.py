@@ -167,7 +167,7 @@ def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sp
             extra += [convert_non_digit_features(id_str,input_str)]
             
     if sparse:
-        example = [(inputs, indices), tokens[0]]
+        example = [(inputs, indices), convert_target(tokens[0])]
     else:
         example = [input,convert_target(tokens[0])]
     if extra:
