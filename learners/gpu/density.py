@@ -98,8 +98,11 @@ class RestrictedBoltzmannMachine(Learner):
             n_loaded = 0
 
         while self.stage < self.n_stages:
+            err = 0.
+            count = 0
             if self.load_data_every < 1:  # Is the whole dataset loaded...
-                self.train_on_loaded_data(len(trainset))
+                err += self.train_on_loaded_data(len(trainset))
+                count += 1
             else:                         # ... otherwise load it as you go.
                 for input in trainset:
                     # load some data on GPU
@@ -107,30 +110,40 @@ class RestrictedBoltzmannMachine(Learner):
                     n_loaded += 1
                     if n_loaded >= self.load_data_every*self.minibatch_size:
                         self.gpu_dataset.copy_to_device()
-                        self.train_on_loaded_data(n_loaded)
+                        err += self.train_on_loaded_data(n_loaded)
+                        count += 1
                         n_loaded = 0
                 
                 if n_loaded > 0:
                     # Train on last portion of data
                     self.gpu_dataset.copy_to_device()
                     n_loaded = max(n_loaded,self.minibatch_size) # ensure enough data for one minibatch
-                    self.train_on_loaded_data(n_loaded)
+                    err += self.train_on_loaded_data(n_loaded)
+                    count += 1
                     n_loaded = 0
 
             self.stage += 1
+            print 'Average mini-batch reconstruction error:',err/count
 
     def train_on_loaded_data(self,n_loaded):
         """
         Trains on data already loaded on GPU. 
         There most be enough data for at least one mini-batch.
         """
+        err = 0.
+        count = 0
+        #self.print_first_row = True
         # Update from first minibatch to previous-to-last one
         for t in range(self.minibatch_size,n_loaded,self.minibatch_size):
-            self.rbm_update(self.gpu_dataset.slice(t-self.minibatch_size,t))
-            
+            err += self.rbm_update(self.gpu_dataset.slice(t-self.minibatch_size,t))
+            count += 1
+        #    self.print_first_row = False
+
         # special case: last minibatch (which might be smaller)
-        self.rbm_update(self.gpu_dataset.slice(
+        err += self.rbm_update(self.gpu_dataset.slice(
                 n_loaded-self.minibatch_size,n_loaded))
+        count += 1
+        return err/count
 
     def forget(self):
         self.stage = 0 # Model will be untrained after initialization
@@ -139,7 +152,7 @@ class RestrictedBoltzmannMachine(Learner):
         self.reload_data = True
 
         # Initializing parameters
-        self.W = cm.CUDAMatrix(0.001*self.rng.randn(self.latent_size,self.input_size))
+        self.W = cm.CUDAMatrix(self.rng.randn(self.latent_size,self.input_size)/float(self.input_size))
         self.dW = cm.CUDAMatrix(np.zeros((self.latent_size,self.input_size)))
         self.b = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
         self.db = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
@@ -198,6 +211,19 @@ class RestrictedBoltzmannMachine(Learner):
         self.b.add_mult(self.db,alpha=self.learning_rate/self.minibatch_size)
         self.c.add_mult(self.dc,alpha=self.learning_rate/self.minibatch_size)
 
+        #if self.print_first_row:
+        #    gpu_data.copy_to_host()
+        #    print gpu_data.numpy_array[:,0]
+        #    self.gpu_x.copy_to_host()
+        #    print self.gpu_x.numpy_array[:,0]
+
+        # Compute reconstruction error
+        self.gpu_x.subtract(gpu_data)
+        err = self.gpu_x.euclid_norm()
+        err = err**2
+        err /= self.gpu_x.shape[1]
+        return err
+
     def negative_free_energy(self,gpu_data):
         """
         Computes the negative free-energy.
@@ -227,7 +253,7 @@ class RestrictedBoltzmannMachine(Learner):
             self.gpu_x.numpy_array[:,n_loaded] = input.T
             n_loaded += 1
             if n_loaded >= self.minibatch_size:
-                self.gpu_dataset.copy_to_device()
+                self.gpu_x.copy_to_device()
                 nfe = self.negative_free_energy(self.gpu_x)
                 nfe.copy_to_host()
                 outputs[(t+1-self.minibatch_size):(t+1),:] = nfe.numpy_array.T
@@ -235,7 +261,7 @@ class RestrictedBoltzmannMachine(Learner):
                 
         # Compute for last examples!
         if n_loaded > 0:
-            self.gpu_dataset.copy_to_device()
+            self.gpu_x.copy_to_device()
             nfe = self.negative_free_energy(self.gpu_x)
             nfe.copy_to_host()
             outputs[(len(dataset)-n_loaded):,:] = nfe.numpy_array[:,:n_loaded].T
