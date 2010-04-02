@@ -81,21 +81,27 @@ class RestrictedBoltzmannMachine(Learner):
             self.load_data_every = -1
 
         # Preparing training...
-        if self.gpu_dataset != None:
-            self.gpu_dataset.free_device_memory()
         if self.load_data_every < 1 and self.reload_data:
-            self.gpu_dataset = cm.empty((self.input_size,len(trainset)))
-            self.gpu_dataset.copy_to_host()
-            # load data to GPU
-            for input,t in zip(trainset,range(len(trainset))):
-                self.gpu_dataset.numpy_array[:,t] = input.T
-            self.gpu_dataset.copy_to_device()
-            self.reload_data = False
+            if self.reload_data:
+                if self.gpu_dataset != None:
+                    self.gpu_dataset.free_device_memory()
+                self.gpu_dataset = cm.empty((self.input_size,len(trainset)))
+                self.gpu_dataset.copy_to_host()
+
+                # load data to GPU
+                for input,t in zip(trainset,range(len(trainset))):
+                    self.gpu_dataset.numpy_array[:,t] = input.T
+                        
+                self.gpu_dataset.copy_to_device()
+                self.reload_data = False
         else:
-            self.gpu_dataset = cm.empty((self.input_size,
-                                          self.load_data_every*self.minibatch_size)) 
-            self.gpu_dataset.copy_to_host()
             n_loaded = 0
+            if self.gpu_dataset == None or self.gpu_dataset.shape != (self.input_size,self.load_data_every*self.minibatch_size):
+                if self.gpu_dataset != None:
+                    self.gpu_dataset.free_device_memory()
+                self.gpu_dataset = cm.empty((self.input_size,
+                                             self.load_data_every*self.minibatch_size)) 
+                self.gpu_dataset.copy_to_host()
 
         while self.stage < self.n_stages:
             err = 0.
@@ -154,10 +160,10 @@ class RestrictedBoltzmannMachine(Learner):
         # Initializing parameters
         self.W = cm.CUDAMatrix(self.rng.randn(self.latent_size,self.input_size)/float(self.input_size))
         self.dW = cm.CUDAMatrix(np.zeros((self.latent_size,self.input_size)))
-        self.b = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
-        self.db = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
-        self.c = cm.CUDAMatrix(np.zeros((self.input_size,1)))
-        self.dc = cm.CUDAMatrix(np.zeros((self.input_size,1)))
+        self.c = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
+        self.dc = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
+        self.b = cm.CUDAMatrix(np.zeros((self.input_size,1)))
+        self.db = cm.CUDAMatrix(np.zeros((self.input_size,1)))
 
         # Create data memory allocation (column-wise)
         self.gpu_x = cm.CUDAMatrix(np.zeros((self.input_size,self.minibatch_size)))
@@ -171,19 +177,19 @@ class RestrictedBoltzmannMachine(Learner):
 
         # Positive phase
         cm.dot(self.W,gpu_data,self.gpu_h)
-        self.gpu_h.add_col_vec(self.b)
+        self.gpu_h.add_col_vec(self.c)
         self.gpu_h.apply_sigmoid()
 
         self.dW.mult(self.momentum)
-        self.db.mult(self.momentum)
         self.dc.mult(self.momentum)
+        self.db.mult(self.momentum)
         self.dW.add_dot(self.gpu_h,gpu_data.T)
-        self.db.add_sums(self.gpu_h,axis=1,mult=1.)
-        self.dc.add_sums(gpu_data,axis=1,mult=1.)
+        self.dc.add_sums(self.gpu_h,axis=1,mult=1.)
+        self.db.add_sums(gpu_data,axis=1,mult=1.)
 
         if self.use_persistent_chain:
             cm.dot(self.W,self.gpu_x_sample,self.gpu_h)
-            self.gpu_h.add_col_vec(self.b)
+            self.gpu_h.add_col_vec(self.c)
             self.gpu_h.apply_sigmoid()
 
         for it in range(self.n_gibbs_steps):
@@ -192,24 +198,24 @@ class RestrictedBoltzmannMachine(Learner):
 
             # Down pass
             cm.dot(self.W.T,self.gpu_h_sample,self.gpu_x)
-            self.gpu_x.add_col_vec(self.c)
+            self.gpu_x.add_col_vec(self.b)
             self.gpu_x.apply_sigmoid()
             self.gpu_x_sample.fill_with_rand()
             self.gpu_x_sample.less_than(self.gpu_x)
 
             # Up pass
             cm.dot(self.W,self.gpu_x_sample,self.gpu_h)
-            self.gpu_h.add_col_vec(self.b)
+            self.gpu_h.add_col_vec(self.c)
             self.gpu_h.apply_sigmoid()
         
         self.dW.subtract_dot(self.gpu_h,self.gpu_x_sample.T)
-        self.db.add_sums(self.gpu_h,axis=1,mult=-1.)
-        self.dc.add_sums(self.gpu_x_sample,axis=1,mult=-1.)
+        self.dc.add_sums(self.gpu_h,axis=1,mult=-1.)
+        self.db.add_sums(self.gpu_x_sample,axis=1,mult=-1.)
 
         # Update RBM
         self.W.add_mult(self.dW,alpha=self.learning_rate/self.minibatch_size)
-        self.b.add_mult(self.db,alpha=self.learning_rate/self.minibatch_size)
         self.c.add_mult(self.dc,alpha=self.learning_rate/self.minibatch_size)
+        self.b.add_mult(self.db,alpha=self.learning_rate/self.minibatch_size)
 
         #if self.print_first_row:
         #    gpu_data.copy_to_host()
@@ -232,7 +238,7 @@ class RestrictedBoltzmannMachine(Learner):
         """
 
         cm.dot(self.W,gpu_data,self.gpu_h)
-        self.gpu_h.add_col_vec(self.b)
+        self.gpu_h.add_col_vec(self.c)
         # to avoid memory creation, using gpu_h
         # and gpu_h_sample for these computations
         cm.exp(self.gpu_h,self.gpu_h_sample)
