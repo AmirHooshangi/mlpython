@@ -101,20 +101,55 @@ class MergedProblem(MLProblem):
     Merges several datasets together.
     
     Each element of data should itself be an iterator
-    over examples.
+    over examples. All examples of the first dataset
+    are first iterated over, then all examples of the second,
+    and so on.
+
+    If option 'serial' is False, then instead of iterating 
+    over the examples of one dataset at a time, it cycles 
+    over datasets and each time returns only one example.
+    The iterator stops when all examples in all datasets
+    have been iterated over at least once. Notice that
+    if the datasets don't all have the same size, then
+    some examples will be iterated over at least twice.
 
     """
 
+    def __init__(self, data=None, metadata={},serial=True):
+        MLProblem.__init__(self,data,metadata)
+        self.serial = serial
+
     def __iter__(self):
-        for dataset in self.data:
-            for example in dataset:
-                yield example
+        if self.serial:
+            for dataset in self.data:
+                for example in dataset:
+                    yield example
+        else:
+            iterated_over_once = [False]*len(self.data)
+            # Initialize iterators
+            iterators = [dataset.__iter__() for dataset in self.data]
+            examples = [ iter.next() for iter in iterators ]
+            while not all(iterated_over_once):
+                for example in examples:
+                    yield example
+                for t,iter in enumerate(iterators):
+                    try:
+                        example = iter.next() 
+                    except StopIteration:
+                        iterators[t] = self.data[t].__iter__()
+                        iterated_over_once[t] = True
+                        example = iterators[t].next()
+                    examples[t] = example
 
     def __len__(self):
-        l = 0
-        for dataset in self.data:
-            l += len(dataset)
-        return l
+        if self.serial:
+            l = 0
+            for dataset in self.data:
+                l += len(dataset)
+            return l
+        else:
+            max_l = max([len(dataset) for dataset in self.data])
+            return max_l * len(self.data)
     
 class PreprocessedProblem(MLProblem):
     """

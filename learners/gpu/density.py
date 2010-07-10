@@ -245,6 +245,7 @@ class RestrictedBoltzmannMachine(Learner):
         self.gpu_h_sample.add(1.)
         cm.log(self.gpu_h_sample,self.gpu_h)
         self.gpu_h.sum(axis=0,target=self.gpu_negative_free_energy)
+        self.gpu_negative_free_energy.add_dot(self.b.T,gpu_data)
         return self.gpu_negative_free_energy
 
     def use(self,dataset):
@@ -254,7 +255,9 @@ class RestrictedBoltzmannMachine(Learner):
         outputs = np.zeros((len(dataset),1))
         n_loaded = 0
         self.gpu_x.copy_to_host()
-        for input,t in zip(dataset,range(len(dataset))):
+        t = 0
+        for input in dataset:
+        #for input,t in zip(dataset,range(len(dataset))):
             # load some data on GPU
             self.gpu_x.numpy_array[:,n_loaded] = input.T
             n_loaded += 1
@@ -264,7 +267,8 @@ class RestrictedBoltzmannMachine(Learner):
                 nfe.copy_to_host()
                 outputs[(t+1-self.minibatch_size):(t+1),:] = nfe.numpy_array.T
                 n_loaded = 0
-                
+            t += 1
+
         # Compute for last examples!
         if n_loaded > 0:
             self.gpu_x.copy_to_device()
@@ -276,8 +280,7 @@ class RestrictedBoltzmannMachine(Learner):
 
     def test(self,dataset):
         """
-        Outputs the NLLs of each example, normalized
-        by the size of the example's bag.
+        Outputs the NLLs of each example.
         """
         outputs = self.use(dataset)
         costs = zeros(len(dataset),1)

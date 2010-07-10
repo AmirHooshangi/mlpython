@@ -1,7 +1,8 @@
 import mlpython.misc.io as mlio
+import numpy as np
 import os
 
-def load(dir_path,set_id=0,sparse=False,load_to_memory=False):
+def load(dir_path,set_id=0,sparse=False,load_to_memory=False,dtype=np.float64):
     """
     Loads the Yahoo! Learning to Rank Challenge data.
 
@@ -46,7 +47,7 @@ def load(dir_path,set_id=0,sparse=False,load_to_memory=False):
         train,valid = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file]]
 
         if load_to_memory:
-            train,valid = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],l) for d,l in zip([train,valid],lengths)]
+            train,valid = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],dtype,l) for d,l in zip([train,valid],lengths)]
 
         # Get metadata
         train_meta,valid_meta = [{'input_size':input_size,
@@ -68,7 +69,7 @@ def load(dir_path,set_id=0,sparse=False,load_to_memory=False):
         # Get data
         train,valid,test = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file,test_file]]
         if load_to_memory:
-            train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],l) for d,l in zip([train,valid,test],lengths)]
+            train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],dtype,l) for d,l in zip([train,valid,test],lengths)]
 
         train_meta,valid_meta,test_meta = [{'input_size':input_size,
                                             'scores':range(5),

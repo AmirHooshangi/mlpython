@@ -53,7 +53,7 @@ class RankingToClassificationProblem(mlpb.MLProblem):
     and 'class_to_id' mapping.
 
     Required_metadata:
-    - 'length': number of document/query pairs
+    - 'length': number of document/query pairs (if not present, will figure it out, but might be slow)
     - 'scores': list of possible scores, ordered from less relevant to more relevant
 
     Defined metadata:
@@ -73,6 +73,14 @@ class RankingToClassificationProblem(mlpb.MLProblem):
                     yield self.merge_document_and_query(input,query),self.class_to_id[target]
                 else:
                     yield self.merge_document_and_query(input,query),None # For unlabeled data
+
+    def __len__(self):
+        if 'length' not in self.metadata:
+            length = 0
+            for inputs,targets,query in self.data:
+                length += min(len(inputs),len(targets))
+            self.metadata['length'] = length
+        return self.metadata['length']
 
     def setup(self):
         # Creating class (string) to id (integer) mapping

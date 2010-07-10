@@ -83,7 +83,6 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
         """
         Trains the RBM on the GPU
         """
-
         if self.stage == 0:
             self.input_size = trainset.metadata['input_size']
             self.n_classes = len(trainset.metadata['targets'])
@@ -118,12 +117,13 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
                 self.dataset_targets = np.zeros((len(trainset)),dtype=int)
 
                 # load data to GPU
-                for example,t in zip(trainset,range(len(trainset))):
+                self.gpu_dataset.numpy_array[:] = 0
+                for t,example in enumerate(trainset):
                     input,target = example
-                    self.gpu_dataset.numpy_array[:,t] = input.T
+                    self.gpu_dataset.numpy_array[:,t] = input
                     if target != None:  self.dataset_targets[t] = target
                     else:               self.dataset_targets[t] = -1
-                        
+
                 self.gpu_dataset.copy_to_device()
                 self.reload_data = False
         else:
@@ -136,32 +136,32 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
                 self.dataset_targets = np.zeros((self.load_data_every*self.minibatch_size),
                                                 dtype=int)
                 self.gpu_dataset.copy_to_host()
-        
+
         while self.stage < self.n_stages:
             if self.load_data_every < 1:  # Is the whole dataset loaded...
-                self.train_on_loaded_data(len(trainset))
+                self.train_on_loaded_data()
             else:                         # ... otherwise load it as you go.
                 for example in trainset:
                     input,target = example
                     # load some data on GPU
                     self.gpu_dataset.numpy_array[:,n_loaded] = input.T
-                    if target != None:   self.datatset_targets[n_loaded] = target
-                    else:                self.datatset_targets[n_loaded] = -1
+                    if target != None:   self.dataset_targets[n_loaded] = target
+                    else:                self.dataset_targets[n_loaded] = -1
                     n_loaded += 1
                     if n_loaded >= self.load_data_every*self.minibatch_size:
                         self.gpu_dataset.copy_to_device()
-                        self.train_on_loaded_data(n_loaded)
+                        self.train_on_loaded_data()
                         n_loaded = 0
                 
                 if n_loaded > 0:
                     # Train on last portion of data
                     self.gpu_dataset.copy_to_device()
-                    self.train_on_loaded_data(n_loaded)
+                    self.train_on_loaded_data()
                     n_loaded = 0
 
             self.stage += 1
 
-    def train_on_loaded_data(self,n_loaded):
+    def train_on_loaded_data(self):
         """
         Trains on data already loaded on GPU. 
         """
@@ -177,8 +177,8 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
             else:
                 self.gpu_labeled_x.slice(n_labeled,n_labeled+1).assign(
                     self.gpu_dataset.slice(t,t+1))
-                self.gpu_target_for_x.numpy_array[n_labeled,:] = 0
-                self.gpu_target_for_x.numpy_array[n_labeled,target] = 1
+                self.gpu_target_for_x.numpy_array[:,n_labeled] = 0
+                self.gpu_target_for_x.numpy_array[target,n_labeled] = 1
                 n_labeled += 1
             
             if n_labeled == self.minibatch_size:
@@ -231,12 +231,13 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
         # Containers for data on which to do an update
         self.gpu_labeled_x = cm.CUDAMatrix(np.zeros((self.input_size,self.minibatch_size)))
         self.gpu_unlabeled_x = cm.CUDAMatrix(np.zeros((self.input_size,self.minibatch_size)))
-        self.gpu_target_for_x = cm.CUDAMatrix(np.zeros((self.minibatch_size.self.n_classes)))
+        self.gpu_target_for_x = cm.CUDAMatrix(np.zeros((self.n_classes,self.minibatch_size)))
         self.gpu_target_for_x.copy_to_device()
 
         # Temporary computations variables
         self.gpu_act_from_x = cm.CUDAMatrix(np.zeros((self.latent_size,self.minibatch_size)))
-        self.gpu_act_from_y = cm.CUDAMatrix(np.zeros((self.latent_size,self.minibatch_size)))
+        self.gpu_act_from_y = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
+        self.gpu_bias_from_y = cm.CUDAMatrix(np.zeros((1,1)))
         self.gpu_p_y_given_x = cm.CUDAMatrix(np.zeros((self.minibatch_size,self.n_classes)))
         self.gpu_p_y_given_x_norm = cm.CUDAMatrix(np.zeros((self.minibatch_size,1)))
         self.gpu_p_y_given_x_trans = cm.CUDAMatrix(np.zeros((self.n_classes,self.minibatch_size)))
@@ -247,7 +248,9 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
         self.gpu_dhidact = cm.CUDAMatrix(np.zeros((self.latent_size,self.minibatch_size)))
         self.gpu_dhidact_sum = cm.CUDAMatrix(np.zeros((self.latent_size,1)))
         self.gpu_doutput = cm.CUDAMatrix(np.zeros((self.n_classes,self.minibatch_size)))
-        self.gpu_doutput_trans = cm.CUDAMatrix(np.zeros((self.minibatch_size,1)))
+        self.gpu_doutput_sum = cm.CUDAMatrix(np.zeros((self.n_classes,1)))
+        self.gpu_doutput_row = cm.CUDAMatrix(np.zeros((1,self.minibatch_size)))
+        self.gpu_doutput_trans = cm.CUDAMatrix(np.zeros((self.minibatch_size,self.n_classes)))
 
         
         # CD stats
@@ -264,6 +267,7 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
         """
         
         cm.dot(self.W,gpu_data,self.gpu_act_from_x)
+        self.gpu_act_from_x.add_col_vec(self.c)
         for c in range(self.n_classes):
             cm.dot(self.U,self.gpu_target_vectors.slice(c,c+1),self.gpu_act_from_y)
             # to avoid memory creation, using gpu_h
@@ -273,17 +277,19 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
             self.gpu_h_sample.add(1.)
             cm.log(self.gpu_h_sample,self.gpu_h)
             self.gpu_h.sum(axis=0,target=self.gpu_negative_free_energy_for_y)
+            cm.dot(self.d.T,self.gpu_target_vectors.slice(c,c+1),target=self.gpu_bias_from_y)
+            self.gpu_negative_free_energy_for_y.add_col_vec(self.gpu_bias_from_y)
             self.gpu_negative_free_energy_for_y.transpose(target=self.gpu_negative_free_energy.slice(c,c+1))
         # Subtracting mean for more stable softmax computation
         self.gpu_negative_free_energy.sum(axis=1,target=self.gpu_mean_negative_free_energy)
-        self.gpu_mean_negative_free_energy.scalar_div(-self.n_classes)
-        self.gpu_negative_free_energy.add_col_vec(gpu_mean_negative_free_energy)
+        self.gpu_mean_negative_free_energy.divide(-self.n_classes)
+        self.gpu_negative_free_energy.add_col_vec(self.gpu_mean_negative_free_energy)
 
-        self.gpu_negative_free_energy.exp(target=self.gpu_negative_free_energy)
+        cm.exp(self.gpu_negative_free_energy,target=self.gpu_negative_free_energy)
         self.gpu_negative_free_energy.sum(axis=1,target=self.gpu_p_y_given_x_norm)
         for c in range(self.n_classes):
-            self.gpu_negative_free_energy.divide(self.gpu_p_y_given_x_norm,
-                                                     target=self.gpu_p_y_given_x.slice(c,c+1))
+            self.gpu_negative_free_energy.slice(c,c+1).divide(self.gpu_p_y_given_x_norm,
+                                                              target=self.gpu_p_y_given_x.slice(c,c+1))
         self.gpu_p_y_given_x.transpose(target=self.gpu_p_y_given_x_trans)
 
     def rbm_update(self,gpu_data,gpu_target_for_data=None,n_first_update=None):
@@ -291,7 +297,7 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
         is_labeled = gpu_target_for_data != None
 
         if n_first_update != None:
-            self.gpu_data.slice(n_first_update,self.minibatch_size).assign(0)
+            gpu_data.slice(n_first_update,self.minibatch_size).assign(0)
 
         self.dW.mult(self.momentum)
         self.dU.mult(self.momentum)
@@ -311,8 +317,9 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
                 # Making sure gradient is non-zero only for n_first_update first examples
                 self.gpu_doutput.slice(n_first_update,self.minibatch_size).assign(0)
 
-            self.dd.add_sums(self.gpu_doutput,axis=1)
-            self.dhidact.assign_scalar(0)
+            self.gpu_doutput.sum(axis=1,target=self.gpu_doutput_sum)
+            self.dd.add_dot(self.gpu_target_vectors,self.gpu_doutput_sum)
+            self.gpu_dhidact.assign(0)
             self.gpu_doutput.transpose(self.gpu_doutput_trans)
             for c in range(self.n_classes):
                 cm.dot(self.U,self.gpu_target_vectors.slice(c,c+1),self.gpu_act_from_y)
@@ -320,7 +327,9 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
                 # and gpu_h_sample for these computations
                 self.gpu_act_from_x.add_col_vec(self.gpu_act_from_y,target=self.gpu_h)
                 self.gpu_h.apply_sigmoid()
-                self.gpu_h.mult_by_row(self.gpu_doutput_trans.slice(c,c+1))
+                self.gpu_doutput_trans.slice(c,c+1).transpose(target=self.gpu_doutput_row)
+                self.gpu_h.mult_by_row(self.gpu_doutput_row)
+                self.gpu_dhidact.add(self.gpu_h)
                 self.dc.add_sums(self.gpu_h,axis=1)
                 self.gpu_h.sum(axis=1,target=self.gpu_dhidact_sum)
                 self.dU.add_dot(self.gpu_dhidact_sum,self.gpu_target_vectors.slice(c,c+1).T)
@@ -332,18 +341,18 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
             # ... actually, we use the softmax probs, it's much simpler
             gpu_target_for_data = self.gpu_p_y_given_x_trans
 
-        if (is_labeled and self.gen_learning_weight > 0) or (not is_labeled and self.semisup_learning_weight):
+        if (is_labeled and self.gen_learning_weight > 0) or (not is_labeled and self.semisup_learning_weight > 0):
 
-            self.cd_W.assign_scalar(0)
-            self.cd_U.assign_scalar(0)
-            self.cd_c.assign_scalar(0)
-            self.cd_b.assign_scalar(0)
-            self.cd_d.assign_scalar(0)
+            self.cd_W.assign(0)
+            self.cd_U.assign(0)
+            self.cd_c.assign(0)
+            self.cd_b.assign(0)
+            self.cd_d.assign(0)
 
             # Positive phase
             cm.dot(self.W,gpu_data,self.gpu_h)
             self.gpu_h.add_col_vec(self.c)
-            cm.dot(self.gpu_target_vectors,self.gpu_target_for_data,self.gpu_target_vec_pos)
+            cm.dot(self.gpu_target_vectors,gpu_target_for_data,self.gpu_target_vec_pos)
             self.gpu_h.add_dot(self.U,self.gpu_target_vec_pos)
             self.gpu_h.apply_sigmoid()
             
@@ -356,7 +365,7 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
             self.cd_U.subtract_dot(self.gpu_h,self.gpu_target_vec_pos.T)
             self.cd_c.add_sums(self.gpu_h,axis=1,mult=-1.)
             self.cd_b.add_sums(gpu_data,axis=1,mult=-1.)
-            self.cd_d.add_sums(self.gpu_target_vec_pos,axis=1,mult=1.)
+            self.cd_d.add_sums(self.gpu_target_vec_pos,axis=1,mult=-1.)
 
             if self.use_persistent_chain:
                 cm.dot(self.W,self.gpu_x_persistent,self.gpu_h)
@@ -377,9 +386,10 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
 
                 cm.dot(self.U.T,self.gpu_h_sample,self.gpu_y)
                 self.gpu_y.add_col_vec(self.d)
-                self.gpu_y.transpose(self.gpu_y_trans)
+                cm.dot(self.gpu_target_vectors.T,self.gpu_y,self.gpu_target_vec_neg)
+                self.gpu_target_vec_neg.transpose(self.gpu_y_trans)
                 self.gpu_y_trans.sum(axis=1,target=self.gpu_y_trans_mean)
-                self.gpu_y_trans_mean.scalar_div(-self.n_classes)
+                self.gpu_y_trans_mean.divide(-self.n_classes)
                 self.gpu_y_trans.add_col_vec(self.gpu_y_trans_mean)
                 cm.exp(self.gpu_y_trans,target=self.gpu_y_trans)
                 self.gpu_y_trans.sum(axis=1,target=self.gpu_y_trans_norm)
@@ -408,8 +418,8 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
             self.cd_W.add_dot(self.gpu_h,self.gpu_x_sample.T)
             self.cd_U.add_dot(self.gpu_h,self.gpu_target_vec_neg.T)
             self.cd_c.add_sums(self.gpu_h,axis=1)
-            self.cd_b.add_sums(gpu_x_sample,axis=1)
-            self.cd_d.add_sums(gpu_target_vec_neg,axis=1)
+            self.cd_b.add_sums(self.gpu_x_sample,axis=1)
+            self.cd_d.add_sums(self.gpu_target_vec_neg,axis=1)
 
             # Update RBM
             if is_labeled:
@@ -449,23 +459,24 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
 
     def use(self,dataset):
         """
-        Outputs the negative free-energy.
+        Outputs the class prediction and distribution.
         """
         
         pred_class = np.zeros((len(dataset)))
         pred_probs = np.zeros((len(dataset),self.n_classes))
         n_loaded = 0
         self.gpu_x.copy_to_host()
-        for input,t in zip(dataset,range(len(dataset))):
+        for t,example in enumerate(dataset):
+            input,target = example
             # load some data on GPU
-            self.gpu_x.numpy_array[:,n_loaded] = input.T
+            self.gpu_x.numpy_array[:,n_loaded] = input
             n_loaded += 1
             if n_loaded >= self.minibatch_size:
                 self.gpu_x.copy_to_device()
                 self.compute_output(self.gpu_x)
                 self.gpu_p_y_given_x.copy_to_host()
-                pred_class[(t+1-self.minibatch_size):(t+1)] = self.gpu_p_y_given_x.argmax(axis=0).T
-                pred_probs[(t+1-self.minibatch_size):(t+1),:] = self.gpu_p_y_given_x.numpy_array.T
+                pred_class[(t+1-self.minibatch_size):(t+1)] = self.gpu_p_y_given_x.numpy_array.argmax(axis=1)
+                pred_probs[(t+1-self.minibatch_size):(t+1),:] = self.gpu_p_y_given_x.numpy_array
                 n_loaded = 0
                 
         # Compute for last examples!
@@ -473,8 +484,8 @@ class ClassificationRestrictedBoltzmannMachine(Learner):
             self.gpu_x.copy_to_device()
             self.compute_output(self.gpu_x)
             self.gpu_p_y_given_x.copy_to_host()
-            pred_class[(len(dataset)-n_loaded):] = self.gpu_p_y_given_x.argmax(axis=0).T
-            pred_probs[(len(dataset)-n_loaded):,:] = self.gpu_p_y_given_x.numpy_array.T
+            pred_class[(len(dataset)-n_loaded):] = self.gpu_p_y_given_x.numpy_array.argmax(axis=1)[:n_loaded]
+            pred_probs[(len(dataset)-n_loaded):,:] = self.gpu_p_y_given_x.numpy_array[:n_loaded,:]
             
         return zip(pred_class,pred_probs)
 

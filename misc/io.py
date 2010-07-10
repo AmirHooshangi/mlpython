@@ -41,7 +41,7 @@ class MemoryDataset():
     provided. If not, it will be figured out automatically.
     """
 
-    def __init__(self,data,field_shapes,length=None):
+    def __init__(self,data,field_shapes,dtype=np.float64,length=None):
         self.data = data
         self.field_shapes = field_shapes
         self.n_fields = len(field_shapes)
@@ -59,7 +59,7 @@ class MemoryDataset():
                                       # ensure that a non-array field is yielded
             else:
                 mem_shape = (length,)+sh
-            self.mem_data += [np.zeros(mem_shape)]
+            self.mem_data += [np.zeros(mem_shape,dtype=dtype)]
 
         # Put data in memory
         t = 0

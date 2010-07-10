@@ -68,21 +68,33 @@ class RankingFromClassifier(Learner):
         Each call to train increments self.stage by 1.
         """
 
-        if self.stage == 0:
-            self.classifier_trainset = mlpb.RankingToClassificationProblem(trainset,
-                                                                           trainset.metadata,
-                                                                           self.merge_document_and_query)
-            self.classifier_trainset.setup()
-            self.max_score = max(trainset.metadata['scores'])
+        #if self.stage == 0:
+        #    self.classifier_trainset = mlpb.RankingToClassificationProblem(trainset,
+        #                                                                   trainset.metadata,
+        #                                                                   self.merge_document_and_query)
+        #    self.classifier_trainset.setup()
+        #    self.max_score = max(trainset.metadata['scores'])
+        #
+        ## Training classifier
+        #self.classifier.train(self.classifier_trainset)
 
+        classifier_trainset = mlpb.RankingToClassificationProblem(trainset,
+                                                                  trainset.metadata,
+                                                                  self.merge_document_and_query)
+        classifier_trainset.setup()
+        self.classifier_trainset_metadata = classifier_trainset.metadata
+        self.max_score = max(trainset.metadata['scores'])
+        
         # Training classifier
-        self.classifier.train(self.classifier_trainset)
+        self.classifier.train(classifier_trainset)
+
         self.stage += 1
 
     def forget(self):
         self.stage = 0 # Model will be untrained after initialization
         self.classifier.forget()
-        self.classifier_trainset=None
+        #self.classifier_trainset=None
+        self.classifier_trainset_metadata=None
 
     def use(self,dataset):
         """
@@ -97,7 +109,13 @@ class RankingFromClassifier(Learner):
         Inspired from http://learningtorankchallenge.yahoo.com/instructions.php
         """
         
-        cdataset = self.classifier_trainset.apply_on(dataset,dataset.metadata)
+        #cdataset = self.classifier_trainset.apply_on(dataset,dataset.metadata)
+        cdataset = mlpb.RankingToClassificationProblem(dataset,dataset.metadata)
+        cdataset.metadata['class_to_id'] = self.classifier_trainset_metadata['class_to_id']
+        cdataset.metadata['targets'] = self.classifier_trainset_metadata['targets']
+        cdataset.class_to_id = cdataset.metadata['class_to_id']
+        cdataset.merge_document_and_query = self.merge_document_and_query
+
         coutputs = self.classifier.use(cdataset)
         offset = 0
         outputs = []
@@ -105,7 +123,8 @@ class RankingFromClassifier(Learner):
         if self.ranking_measure == 'expected_score' or self.ranking_measure == 'expected_persistence':
             # Create vector of measures appropriate for computing the necessary expectations, 
             # ordered according to the class ID mapping:
-            score_to_class_id = self.classifier_trainset.metadata['class_to_id']
+            #score_to_class_id = self.classifier_trainset.metadata['class_to_id']
+            score_to_class_id = self.classifier_trainset_metadata['class_to_id']
             ordered_measures = np.zeros((len(score_to_class_id)))
             for k,v in score_to_class_id.iteritems():
                 if self.ranking_measure == 'expected_score':

@@ -12,6 +12,36 @@ How to present:
 - second way of using mlpython: as a way to structure datasets and experiments 
   for machine learning research
 
+Issues:
+- Some learners keep a pointer to the training set. This is problematic however when 
+  making a deepcopy of a learner (e.g. see RankingFromClassifier)!
+  * instead of remembering the underlying training, better to remember the metadata and do 
+    what apply_on would do
+
+- MergedProblem needs to be adjusted (HUGO: maybe shouldn't even be an MLProblem)
+  * the length of a dataset changes, so the field 'length' should be
+adjusted (maybe in setup()
+  * apply_on should do something not too stupid, e.g. call apply_on for
+    first mlproblem. Could be an option determining which mlproblem is supposed to be used
+
+- apply_on does not do the right thing for an MLProblem of an MLProblem! (e.g. ClassSubsetProblem on a PreprocessedProblem)!
+  * should have a MLProblemPipeline, which remembers each subsequent MLProblem
+    HUGO: NO! don't need to add another special type of class, would just complicate things
+  * Solution:
+    - in the constructor, add a check of whether data is an MLProblem, in which case its metadata is added
+    - add a class attribute source_mlproblem for that particular case, and use that pointer during the apply_on operation
+
+- what to do with the 'length' field? It is annoying when passing data through something like ClassSubsetProblem, where length is not the total length of data...
+  Solution:
+    * have a __length__ attribute to MLProblems, which is initialized to -1 and is computed when required 
+    * in the constructor, look at metadata for a length (or some other key, e.g. n_queries) to set __length__
+      and avoid its explicit computation. Then, REMOVE that keyword from the metadata (so it isn't passed to
+      other MLProblems
+    * In the base class, __len__() should do the following:
+       if __length__ > 0 : len(this) = __length__
+       elif len(data) works: len(this) = len(data)
+       else: compute explicitly from the iterator
+
 TODO:
 - figure out get_problem(), for Toronto face dataset (see code!), yahoo_ltrc, 
   mnist, icml2007, and more...
@@ -108,6 +138,7 @@ mlproblems
   the learner should deal with the minibatches
 - To handle unlabeled dataset, might be good to do something like
   "if target not in targets: return input,None"
+- question: what about mlpb like SubsetProblem and it's method apply_on? Does it make sense to take the same subset of examples as the training set?
 
 metadata
 
@@ -174,6 +205,9 @@ learners
   it to the label to compute the test error. A classifier also
   requires class_to_id as a metadata.
 
+- tip: do not use zip(dataset,range(...)), since it appears like this doesn't work
+       well with very big datasets (keeps pointers to the examples, and memory
+       is not freed, and memories explodes)
 
 creating learner pipelines
 - we want to have code that does this separately (as opposed to have train or use output
