@@ -45,7 +45,9 @@ class OnlineLearner(Learner):
     for the given 'example'. The output should be a sequence
     (even if it has just one element in it), to allow
     for multiple outputs. For instance, the output could
-    be a Numpy array.
+    be a Numpy array. Make sure not to return an object
+    that is referenced internally and is still
+    being used by the class object.
 
     Function cost(...) should return the cost associated
     to some 'output' for the given 'example'. The returned 
@@ -86,6 +88,9 @@ class OnlineLearner(Learner):
     value of the hyper-parameter lr:
 
     perceptron = Perceptron(1,lr=0.01)
+
+    Options:
+    - 'n_stages'
 
     """
     

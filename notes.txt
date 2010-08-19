@@ -94,16 +94,13 @@ datasets
   download the data to the given dir_path. If that is not possible, then it should
   at least print details on where/how to obtain the data
 - read(dir_path) is the function to call get the data, once it has been obtained. 
-  dir_path should be the same as the dir_path used by obtain(dir_path). If necessary
-  (which is not uncommon), read can have other options, with default values.
+  dir_path should be the same as the dir_path used by obtain(dir_path). It should have
+  usefull options, such as 'load_to_memory', 'sparse', 'dtype', and perhaps others.
+  Those options should have default values.
   It can give all the data, a train/valid/test split, a k-fold split, etc.
-- should consider adding a 'get_mlproblem(problem)', which would create for you
-  some possible problems for a given dataset. Need to figure out a simple
-  syntax and use for this function however... The idea would be that it, for
-  a give class of problem (classification, regression, density, etc.) it would
-  spit out an mlproblem that can be used by the type of learner associated to the
-  mlproblem. This will make it possible to automate the evaluation of algorithms.
-  
+- should consider adding a module which lists all datasets for different problems
+  (classification, regression, etc.) and will spit those out in the current format
+  This will make it possible to automate the evaluation of algorithms.
 
 mlproblems
 
