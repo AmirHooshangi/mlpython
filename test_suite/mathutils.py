@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.linalg
 import mlpython.mathutils.linalg as linalg
+import mlpython.mathutils.nonlinear as nonlinear
 
 print "Testing product_matrix_vector"
 A = np.random.rand(30,20)
@@ -198,3 +199,14 @@ print "Scipy vs mathutils.linalg diff. P:",np.sum(np.abs(P-P2))
 print "Scipy vs mathutils.linalg diff. L:",np.sum(np.abs(L-L2))
 print "Scipy vs mathutils.linalg diff. U:",np.sum(np.abs(U-U2))
 
+print 'Testing nonlinear sigmoid'
+input = np.random.randn(30,20)
+output = np.zeros((30,20))
+nonlinear.sigmoid(input,output)
+print 'Numpy vs mathutils.nonlinear diff. output:',np.sum(np.abs(output-1/(1+np.exp(-input))))
+
+print 'Testing nonlinear sigmoid deriv.'
+dinput = np.zeros((30,20))
+doutput = np.random.randn(30,20)
+nonlinear.dsigmoid(output,doutput,dinput)
+print 'Numpy vs mathutils.nonlinear diff. output:',np.sum(np.abs(dinput-doutput*output*(1-output)))

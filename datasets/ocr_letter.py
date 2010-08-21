@@ -1,8 +1,9 @@
 import mlpython.misc.io as mlio
 import numpy as np
 import os
+from gzip import GzipFile as gfile
 
-def load(dir_path,sparse=False,load_to_memory=False,dtype=np.float64):
+def load(dir_path,load_to_memory=False,dtype=np.float64):
     """
     Loads the OCR letter dataset.
 
@@ -19,14 +20,16 @@ def load(dir_path,sparse=False,load_to_memory=False,dtype=np.float64):
     dir_path = os.path.expanduser(dir_path)
 
     def load_line(line):
-        return mlio.libsvm_load_line(line,float,int,sparse,input_size)
+        tokens = line.split()
+        return (np.array([float(i) for i in tokens[:-1]]),int(tokens[-1]))
+        #return mlio.libsvm_load_line(line,float,int,sparse,input_size)
 
     train_file,valid_file,test_file = [os.path.join(dir_path, 'ocr_letter_' + ds + '.txt') for ds in ['train','valid','test']]
     # Get data
     train,valid,test = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file,test_file]]
 
+    lengths = [32152,10000,10000]
     if load_to_memory:
-        lengths = [32152,10000,10000]
         train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],dtype,l) for d,l in zip([train,valid,test],lengths)]
         
     # Get metadata
@@ -38,31 +41,45 @@ def load(dir_path,sparse=False,load_to_memory=False,dtype=np.float64):
 def obtain(dir_path):
 
     dir_path = os.path.expanduser(dir_path)
-    train_file,valid_file,test_file = [os.path.join(dir_path, 'ocr_letter_' + ds + '.txt') for ds in ['train','valid','test']]
-    try:
+    print 'Downloading the dataset'
+    import urllib
+    urllib.urlretrieve('http://ai.stanford.edu/~btaskar/ocr/letter.data.gz',os.path.join(dir_path,'letter.data.gz'))
 
-        print 'TODO!'
-        #file = open(train_file)
-        #n_queries = 0
-        #small_train_file = os.path.join(dir_path, 'set1.small_train.txt')
-        #small_valid_file = os.path.join(dir_path, 'set1.small_valid.txt')
-        #train_file = open(small_train_file,'w')
-        #valid_file = open(small_valid_file,'w')
-        #qid_split = 13944
-        #print 'Seperating training into smaller training/validation sets'
-        #qid = 0
-        #for line in file:
-        #    new_qid = int(line.split('qid:')[1].split(' ')[0])
-        #    if qid != new_qid:
-        #        print '...reading query %i\r' % new_qid,
-        #    qid = new_qid
-        #    if qid <= qid_split:
-        #        train_file.write(line)
-        #    else:
-        #        valid_file.write(line)
-        #train_file.close()
-        #valid_file.close()
+    print 'Splitting dataset into training/validation/test sets'
+    file = gfile(os.path.join(dir_path,'letter.data.gz'))
+    train_file,valid_file,test_file = [open(os.path.join(dir_path, 'ocr_letter_' + ds + '.txt'),'w') for ds in ['train','valid','test']]
+    letters = 'abcdefghijklmnopqrstuvwxyz'
+    all_data = []
+    # Putting all data in memory
+    for line in file:
+        tokens = line.strip('\n').strip('\t').split('\t')
+        s = ''        
+        for t in range(6,len(tokens)):
+            s = s + tokens[t] + ' '
+        target = letters.find(tokens[1])
+        if target < 0:
+            print 'Target ' + tokens[1] + ' not found!'
+        s = s + str(target) + '\n'
+        all_data += [s]
 
-        print 'Done                     '
-    except IOError:
-        print 'Could not retrieve and format the data somehow.'
+    # Shuffle data
+    import random
+    random.seed(12345)
+    perm = range(len(all_data))
+    random.shuffle(perm)
+    line_id = 0
+    train_valid_split = 32152
+    valid_test_split = 42152
+    for i in perm:
+        s = all_data[i]
+        if line_id < train_valid_split:
+            train_file.write(s)
+        elif line_id < valid_test_split:
+            valid_file.write(s)
+        else:
+            test_file.write(s)
+        line_id += 1
+    train_file.close()
+    valid_file.close()
+    test_file.close()
+    print 'Done                     '
