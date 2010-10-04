@@ -5,18 +5,23 @@ from gzip import GzipFile as gfile
 
 def load(dir_path,load_to_memory=False,dtype=np.float64):
     """
-    Loads the OCR letter dataset.
+    Loads the OCR letters dataset.
 
     The data is given by a dictionary mapping from strings
     'train', 'valid' and 'test' to the associated pair of data and metadata.
     
     Defined metadata: 
     - 'input_size'
+    - 'targets'
     - 'length'
 
+    Reference: Tractable Multivariate Binary Density Estimation and the Restricted Boltzmann Forest
+               Larochelle, Bengio and Turian
+               link: http://www.cs.toronto.edu/~larocheh/publications/NECO-10-09-1100R2-PDF.pdf
     """
     
     input_size=128
+    targets = set(range(26))
     dir_path = os.path.expanduser(dir_path)
 
     def load_line(line):
@@ -24,17 +29,17 @@ def load(dir_path,load_to_memory=False,dtype=np.float64):
         return (np.array([float(i) for i in tokens[:-1]]),int(tokens[-1]))
         #return mlio.libsvm_load_line(line,float,int,sparse,input_size)
 
-    train_file,valid_file,test_file = [os.path.join(dir_path, 'ocr_letter_' + ds + '.txt') for ds in ['train','valid','test']]
+    train_file,valid_file,test_file = [os.path.join(dir_path, 'ocr_letters_' + ds + '.txt') for ds in ['train','valid','test']]
     # Get data
     train,valid,test = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file,test_file]]
 
     lengths = [32152,10000,10000]
     if load_to_memory:
-        train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],dtype,l) for d,l in zip([train,valid,test],lengths)]
+        train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],[dtype,int],l) for d,l in zip([train,valid,test],lengths)]
         
     # Get metadata
     train_meta,valid_meta,test_meta = [{'input_size':input_size,
-                              'length':l} for l in lengths]
+                              'length':l,'targets':targets} for l in lengths]
     
     return {'train':(train,train_meta),'valid':(valid,valid_meta),'test':(test,test_meta)}
 
@@ -47,7 +52,7 @@ def obtain(dir_path):
 
     print 'Splitting dataset into training/validation/test sets'
     file = gfile(os.path.join(dir_path,'letter.data.gz'))
-    train_file,valid_file,test_file = [open(os.path.join(dir_path, 'ocr_letter_' + ds + '.txt'),'w') for ds in ['train','valid','test']]
+    train_file,valid_file,test_file = [open(os.path.join(dir_path, 'ocr_letters_' + ds + '.txt'),'w') for ds in ['train','valid','test']]
     letters = 'abcdefghijklmnopqrstuvwxyz'
     all_data = []
     # Putting all data in memory

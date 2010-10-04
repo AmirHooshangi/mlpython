@@ -37,11 +37,13 @@ class MemoryDataset():
     Option 'field_shapes' is a list of tuples, corresponding
     to the shape of each fields.
 
+    Option dtypes determines the type of each field (float,int,etc.).
+
     Optionally, the length of the dataset can also be
     provided. If not, it will be figured out automatically.
     """
 
-    def __init__(self,data,field_shapes,dtype=np.float64,length=None):
+    def __init__(self,data,field_shapes,dtypes,length=None):
         self.data = data
         self.field_shapes = field_shapes
         self.n_fields = len(field_shapes)
@@ -59,18 +61,28 @@ class MemoryDataset():
                                       # ensure that a non-array field is yielded
             else:
                 mem_shape = (length,)+sh
-            self.mem_data += [np.zeros(mem_shape,dtype=dtype)]
+            self.mem_data += [np.zeros(mem_shape,dtype=dtypes[i])]
 
         # Put data in memory
         t = 0
-        for example in data:
-            for i in range(self.n_fields):
-                self.mem_data[i][t] = example[i]
-            t+=1
+        if self.n_fields == 1:
+            for example in data:
+                self.mem_data[0][t] = example
+                t+=1
+        else:
+            for example in data:
+                for i in range(self.n_fields):
+                    self.mem_data[i][t] = example[i]
+                t+=1
 
     def __iter__(self):
-        for t in range(self.length):
-            yield [ m[t] for m in self.mem_data ]
+        if self.n_fields == 1:
+            for example in self.mem_data[0]:
+                yield example
+        else:
+            for t in range(self.length):
+                yield [ m[t] for m in self.mem_data ]
+
 
 class FileDataset():
     """
@@ -174,7 +186,7 @@ def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sp
         example += extra
     return example
 
-def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,sparse=True):
+def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,sparse=True,input_size=None):
     """
     Reads a LIBSVM file and returns the list of all examples (data) and metadata information.
 
@@ -194,6 +206,10 @@ def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,spa
     where 'feature_str' and 'value_str' are 'feature' and 'value' in string format.
     Its output will be appended to the list of the given example.
 
+    The input_size can be given by the user. Otherwise, will try to figure
+    it out from the file (won't work if the file format is sparse and some of the
+    last features are all 0!).
+
     Defined metadata: 
     - 'targets'
     - 'input_size'
@@ -204,11 +220,16 @@ def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,spa
     data = []
     metadata = {}
     targets = set()
-    input_size = 0
+    if input_size is None:
+        given_input_size = None
+        input_size = 0
+    else:
+        given_input_size = input_size
+
     for line in stream:
         example = libsvm_load_line(line,convert_non_digit_features,convert_target,True)
         max_non_zero_feature = max(example[0][1])
-        if max_non_zero_feature > input_size:
+        if (given_input_size is None) and (max_non_zero_feature > input_size):
             input_size = max_non_zero_feature
         targets.add(example[1])
         # If not sparse, first pass through libsvm file just 

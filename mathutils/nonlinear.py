@@ -15,3 +15,9 @@ def dsigmoid(output,doutput,dinput):
     """
     nonlinear_.dsigmoid_(output,doutput,dinput)
 
+def softmax(input,output):
+    """
+    Computes the softmax function softmax(input) = exp(input)/sum(exp(input)) = output.
+    """
+    nonlinear_.softmax_vec_(input,output)
+

@@ -9,6 +9,7 @@
 static PyMethodDef nonlinear_[] = {
   {"sigmoid_", sigmoid_, METH_VARARGS, "Computes the sigmoid function."},
   {"dsigmoid_", dsigmoid_, METH_VARARGS, "Computes the derivative of the sigmoid function."},
+  {"softmax_vec_", softmax_vec_, METH_VARARGS, "Computes the softmax function for an input vector."},
   {NULL, NULL, 0, NULL}     /* Sentinel - marks the end of this structure */
 };
 
@@ -118,3 +119,71 @@ static PyObject *dsigmoid_(PyObject *self, PyObject *args)
   }
   Py_RETURN_NONE;
 }
+
+static PyObject *softmax_vec_(PyObject *self, PyObject *args)
+{
+  PyArrayObject *input, *output;
+  int i;
+
+  if (!PyArg_ParseTuple(args, "O!O!", 
+                        &PyArray_Type, &input, 
+                        &PyArray_Type, &output)) return NULL;
+
+  if ( (NULL == input) || (NULL == output) ) return NULL;
+  
+  if ( (input->descr->type_num != NPY_DOUBLE) || 
+       (output->descr->type_num != NPY_DOUBLE) ||
+       !PyArray_CHKFLAGS(input,NPY_C_CONTIGUOUS|NPY_ALIGNED) ||
+       !PyArray_CHKFLAGS(output,NPY_C_CONTIGUOUS|NPY_ALIGNED|NPY_WRITEABLE) ) {
+    PyErr_SetString(PyExc_ValueError,
+                    "In softmax_vec_: all arguments must be of type double, C contiguous and aligned, and output should be writeable");
+    return NULL;
+  }
+      
+  if ( (input->nd != output->nd) )
+  {
+    PyErr_SetString(PyExc_ValueError,
+                    "In softmax_vec_: both arguments should have the same dimensionality");
+    return NULL;
+  }
+
+  int tot_dim = 1;
+  for (i=0; i<input->nd; i++)
+  {
+    if ( (input->dimensions[i] != output->dimensions[i]) )
+    {
+      PyErr_SetString(PyExc_ValueError,
+		      "In softmax_vec_: all dimensions of both arguments should be equal");
+      return NULL;
+    }
+    tot_dim *= input->dimensions[i];
+  }
+  
+  double * input_data_iter = (double *) input->data;
+  double * output_data_iter = (double *) output->data;
+  double max = 0;
+  for (i=0; i<tot_dim; i++)
+  {
+    if (max < *input_data_iter){ max = *input_data_iter; }
+    input_data_iter++;
+  }
+
+  input_data_iter = (double *) input->data;
+  output_data_iter = (double *) output->data;
+  double sum = 0;
+  for (i=0; i<tot_dim; i++)
+  {
+    *output_data_iter = exp(*input_data_iter++ - max);
+    sum += *output_data_iter++;
+  }
+
+  output_data_iter = (double *) output->data;
+  for (i=0; i<tot_dim; i++)
+  {
+    *output_data_iter++ /= sum;
+  }
+
+
+  Py_RETURN_NONE;
+}
+

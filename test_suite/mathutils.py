@@ -210,3 +210,10 @@ dinput = np.zeros((30,20))
 doutput = np.random.randn(30,20)
 nonlinear.dsigmoid(output,doutput,dinput)
 print 'Numpy vs mathutils.nonlinear diff. output:',np.sum(np.abs(dinput-doutput*output*(1-output)))
+
+print 'Testing nonlinear softmax'
+input = np.random.randn(20)
+output = np.zeros((20))
+nonlinear.softmax(input,output)
+print 'Numpy vs mathutils.nonlinear diff. output:',np.sum(np.abs(output-np.exp(input)/np.sum(np.exp(input))))
+

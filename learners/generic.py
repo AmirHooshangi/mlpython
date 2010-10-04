@@ -44,8 +44,7 @@ class OnlineLearner(Learner):
     Function use_learner(...) should return the output
     for the given 'example'. The output should be a sequence
     (even if it has just one element in it), to allow
-    for multiple outputs. For instance, the output could
-    be a Numpy array. Make sure not to return an object
+    for multiple outputs. Make sure not to return an object
     that is referenced internally and is still
     being used by the class object.
 

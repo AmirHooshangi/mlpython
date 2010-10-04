@@ -87,7 +87,7 @@ class SubsetFieldsProblem(MLProblem):
 
     def __iter__(self):
         for example in self.data:
-            if len(self.subset_fields) == 1:
+            if len(self.fields) == 1:
                 yield example[self.fields[0]]
             else:
                 yield [example[i] for i in self.fields]

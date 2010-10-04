@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.weave
 import linalg_
 
 def product_matrix_vector(A,b,x):

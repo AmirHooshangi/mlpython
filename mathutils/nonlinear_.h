@@ -3,3 +3,4 @@
 
 static PyObject *sigmoid_(PyObject *self, PyObject *args);
 static PyObject *dsigmoid_(PyObject *self, PyObject *args);
+static PyObject *softmax_vec_(PyObject *self, PyObject *args);
