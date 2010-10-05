@@ -15,6 +15,19 @@ def dsigmoid(output,doutput,dinput):
     """
     nonlinear_.dsigmoid_(output,doutput,dinput)
 
+def reclin(input,output):
+    """
+    Computes the rectified linear function reclin(input) = 1_{input>0}*input = output
+    """
+    nonlinear_.reclin_(input,output)
+
+def dreclin(output,doutput,dinput):
+    """
+    Computes the derivative of a rectified linear function with respect to its input, 
+    given its output and the derivative on the output.
+    """
+    nonlinear_.dreclin_(output,doutput,dinput)
+
 def softmax(input,output):
     """
     Computes the softmax function softmax(input) = exp(input)/sum(exp(input)) = output.
