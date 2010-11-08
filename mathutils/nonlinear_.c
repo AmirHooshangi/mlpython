@@ -234,7 +234,7 @@ static PyObject *reclin_(PyObject *self, PyObject *args)
   for (i=0; i<tot_dim; i++)
   {
     input_data = *input_data_iter++;
-    if(input_data < 0)
+    if(input_data <= 0)
       *output_data_iter++ = 0;
     else
       *output_data_iter++ = input_data;
@@ -289,7 +289,7 @@ static PyObject *dreclin_(PyObject *self, PyObject *args)
   double * dinput_data_iter = (double *) dinput->data;
   for (i=0; i<tot_dim; i++)
   {
-    if (*output_data_iter++<0)
+    if (*output_data_iter++<=0)
       *dinput_data_iter++ = 0;
     else
       *dinput_data_iter++ = *doutput_data_iter;

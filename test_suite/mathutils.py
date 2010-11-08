@@ -217,3 +217,14 @@ output = np.zeros((20))
 nonlinear.softmax(input,output)
 print 'Numpy vs mathutils.nonlinear diff. output:',np.sum(np.abs(output-np.exp(input)/np.sum(np.exp(input))))
 
+print 'Testing nonlinear reclin'
+input = np.random.randn(30,20)
+output = np.zeros((30,20))
+nonlinear.reclin(input,output)
+print 'Numpy vs mathutils.nonlinear diff. output:',np.sum(np.abs(output-(input>0)*input))
+
+print 'Testing nonlinear reclin deriv.'
+dinput = np.zeros((30,20))
+doutput = np.random.randn(30,20)
+nonlinear.dreclin(output,doutput,dinput)
+print 'Numpy vs mathutils.nonlinear diff. output:',np.sum(np.abs(dinput-(input>0)*doutput))
