@@ -1,8 +1,19 @@
+"""
+The ``mlproblems.ranking`` module contains MLProblems specifically
+for ranking problems.
+
+This module contains the following classes:
+
+* ``RankingProblem``:   .              Generates a ranking problem.
+* ``RankingToClassificationProblem``:  Generates a classification problem from a ranking problem.
+
+"""
+
 import generic as mlpb
 
 class RankingProblem(mlpb.MLProblem):
     """
-    Generates a ranking problem from data and metadata.
+    Generates a ranking problem.
 
     The data should be an iterator input/target/query pairs, where the
     target is a relevance score. When grouping query data together,
@@ -14,10 +25,20 @@ class RankingProblem(mlpb.MLProblem):
     where inputs_for_query and target_for_query are the lists of inputs and targets
     for a given query.
 
-    Required metadata:
-    - 'n_queries'
+    **Required metadata:**
+    
+    * ``'n_queries'``: number of queries (optional, will set the output of ``__len__(self)``)
 
     """
+
+    def __init__(self, data=None, metadata={},call_setup=True):
+        mlpb.MLProblem.__init__(self,data,metadata)
+        self.__length__ = None
+        if 'n_queries' in self.metadata:  # Gives a chance to set length through metadata
+            self.__length__ = self.metadata['n_queries']
+            del self.metadata['n_queries'] # So that it isn't passed to subsequent mlproblems
+
+        if call_setup: RankingProblem.setup(self)
 
     def __iter__(self):
         tot_input = []
@@ -37,34 +58,40 @@ class RankingProblem(mlpb.MLProblem):
         if tot_input: # Output last ranking example
             yield (tot_input,tot_target,last_query)
 
-    def __len__(self):
-        return self.metadata['n_queries']
-
 class RankingToClassificationProblem(mlpb.MLProblem):
     """
     Generates a classification problem from a ranking problem.
 
-    Option 'merge_document_and_query' (a function with 2 arguments)
+    Option ``'merge_document_and_query'`` (a function with 2 arguments)
     is used to generate inputs for the classification problem.
     
     The list of possible scores must be provided as a metadata.
-    IMPORTANT: the scores should be ordered from less to more relevant
+    **IMPORTANT:** the scores should be ordered from less to more relevant
     in the list. This list will be used to generate the set of targets
     and 'class_to_id' mapping.
 
-    Required_metadata:
-    - 'length': number of document/query pairs (if not present, will figure it out, but might be slow)
-    - 'scores': list of possible scores, ordered from less relevant to more relevant
+    **Required_metadata:**
 
-    Defined metadata:
-    - 'targets'
-    - 'class_to_id'
+    * ``'scores'``: list of possible scores, ordered from less relevant to more relevant
+    * ``'n_pairs'``: number of document/query pairs (optional, will set the output of ``__len__(self)``)
+
+    **Defined metadata:**
+    
+    * ``'targets'``
+    * ``'class_to_id'``
 
     """
 
-    def __init__(self, data=None, metadata={},merge_document_and_query=None):
+    def __init__(self, data=None, metadata={},call_setup=True,merge_document_and_query=None):
         mlpb.MLProblem.__init__(self,data,metadata)
         self.merge_document_and_query = merge_document_and_query
+
+        self.__length__ = None
+        if 'n_pairs' in self.metadata:  # Gives a chance to set length through metadata
+            self.__length__ = self.metadata['n_pairs']
+            del self.metadata['n_pairs'] # So that it isn't passed to subsequent mlproblems
+
+        if call_setup: RankingToClassificationProblem.setup(self)
 
     def __iter__(self):
         for inputs,targets,query in self.data:
@@ -73,14 +100,6 @@ class RankingToClassificationProblem(mlpb.MLProblem):
                     yield self.merge_document_and_query(input,query),self.class_to_id[target]
                 else:
                     yield self.merge_document_and_query(input,query),None # For unlabeled data
-
-    def __len__(self):
-        if 'length' not in self.metadata:
-            length = 0
-            for inputs,targets,query in self.data:
-                length += min(len(inputs),len(targets))
-            self.metadata['length'] = length
-        return self.metadata['length']
 
     def setup(self):
         # Creating class (string) to id (integer) mapping
@@ -93,9 +112,13 @@ class RankingToClassificationProblem(mlpb.MLProblem):
         self.metadata['targets'] = set(self.metadata['scores'])
 
     def apply_on(self, new_data, new_metadata=None):
-        new_problem = RankingToClassificationProblem(new_data,new_metadata)
+        if self.__source_mlproblem__ is not None:
+            new_data = self.__source_mlproblem__.apply_on(new_data,new_metadata)
+            new_metadata = {}   # new_data should already contain the new_metadata, since it is an mlproblem
+
+        new_problem = RankingToClassificationProblem(new_data,new_metadata,call_setup=False,
+                                                     merge_document_and_query=self.merge_document_and_query)
         new_problem.metadata['class_to_id'] = self.metadata['class_to_id']
         new_problem.metadata['targets'] = self.metadata['targets']
         new_problem.class_to_id = self.class_to_id
-        new_problem.merge_document_and_query = self.merge_document_and_query
         return new_problem

@@ -54,7 +54,8 @@ def load(dir_path,set_id=0,load_to_memory=False,dtype=np.float64):
         train_meta,valid_meta = [{'input_size':input_size,
                                   'scores':range(5),
                                   'n_queries':nq,
-                                  'length':l} for nq,l in zip(n_queries,lengths)]
+                                  'length':l,
+                                  'n_pairs':l} for nq,l in zip(n_queries,lengths)]
 
         return {'train':(train,train_meta),'valid':(valid,valid_meta)}
     else:

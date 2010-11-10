@@ -1,3 +1,12 @@
+"""
+The ``learners.third_party.libsvm.classification`` module contains 
+an SVN classifier based on the LIBSVM library:
+
+* ``SVMClassifier``:  Classifier using LIBSVM's Support Vector Machine implementation.
+
+"""
+
+
 from mlpython.learners.generic import Learner
 import svm as libsvm
 import numpy as np
@@ -6,36 +15,26 @@ class SVMClassifier(Learner):
     """ 
     Classifier using LIBSVM's Support Vector Machine implementation
  
-    Examples can use either a sparse or coarse representation, as
-    returned by the mlpython.misc.io.libsvm_load function.
-    Option 'kernel' (which can be either 'linear', 'polynomial', 'rbf' 
-    or 'sigmoid') determines the type of kernel. 
+    Examples should be input and target pairs. The input can use
+    either a sparse or coarse representation, as returned by the
+    ``mlpython.misc.io.libsvm_load`` function.  Option ``kernel`` (which
+    can be either ``'linear'``, ``'polynomial'``, ``'rbf'`` or
+    ``'sigmoid'``) determines the type of kernel.
 
     Weights to examples of different classes can be given using 
-    option 'label_weights', which must be a dictionary mapping from 
+    option ``label_weights``, which must be a dictionary mapping from 
     the label (string) to the weight (float).
 
-    The SVM will also output probabilities if option 'output_probabilities'
+    The SVM will also output probabilities if option ``'output_probabilities'``
     is True.
 
     Other options are the same as those in the LIBSVM implementation
     (see http://www.csie.ntu.edu.tw/~cjlin/libsvm for more details).
 
-    Options:
-    - kernel
-    - degree
-    - gamma
-    - coef0
-    - C
-    - tolerance
-    - cache_size
-    - shrinking
-    - output_probabilities
-    - label_weights
+    **Required metadata:**
 
-    Required metadata:
-    - 'targets'
-    - 'class_to_id'
+    * ``'targets'``
+    * ``'class_to_id'``
 
     """
     def __init__(self,
@@ -126,7 +125,7 @@ class SVMClassifier(Learner):
     def use(self,dataset):
         """
         Outputs the class_id chosen by the algorithm. If 
-        output_probabilities is True, also outputs the vector
+        ``output_probabilities`` is True, also outputs the vector
         of probabilities.
         """
         if self.output_probabilities:
@@ -151,7 +150,7 @@ class SVMClassifier(Learner):
 
     def test(self,dataset):
         """
-        Outputs the result of use(dataset) and 
+        Outputs the result of ``use(dataset)`` and 
         the classification error cost for each example in the dataset
         """
         outputs = self.use(dataset)

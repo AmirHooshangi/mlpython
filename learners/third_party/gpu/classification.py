@@ -1,3 +1,12 @@
+"""
+The ``learners.third_party.gpu.classification`` module contains 
+classification algorithms that uses a GPU.
+
+* ``ClassificationRestrictedBoltzmannMachine``:      A Classification Restricted Boltzmann Machine on the GPU.
+
+"""
+
+
 from mlpython.learners.generic import Learner
 import numpy as np
 import cudamat as cm

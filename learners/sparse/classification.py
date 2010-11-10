@@ -1,7 +1,17 @@
+"""
+Learners in this module are meant for classification problems on sparse data. 
+They normally will require (at least) the metadata ``'targets'``.
+The mlproblems for these learners should be iterators over pairs
+of inputs and targets, with the target being a class index.
+
+The currently implemented algorithms are:
+
+* ``MultinomialNaiveBayesClassifier``: a multinomial naive Bayes classifier.
+
+"""
+
 from mlpython.learners.generic import Learner
 import numpy as np
-
-#### Clasifiers ####
 
 class MultinomialNaiveBayesClassifier(Learner):
     """
@@ -11,16 +21,17 @@ class MultinomialNaiveBayesClassifier(Learner):
     Each non-zero input feature is treated as indication of the presence
     of a word, and its value is treated as the frequency of that word.
 
-    Options:
-    - 'dirichlet_prior_parameter'
+    Options ``'dirichlet_prior_parameter'`` controls the amount of regularization.
 
-    Required metadata: 
-    - 'targets'
-    - 'input_size'
+    **Required metadata:**
 
-    Reference: A Comparison of Event Models for Naive Bayes Text Classification
-               McCallum and Nigam
-               link: http://www.cs.cmu.edu/~knigam/papers/multinomial-aaaiws98.pdf
+    * ``'targets'``
+    * ``'input_size'``
+
+    | **Reference:** 
+    | A Comparison of Event Models for Naive Bayes Text Classification
+    | McCallum and Nigam
+    | http://www.cs.cmu.edu/~knigam/papers/multinomial-aaaiws98.pdf
 
     """
 

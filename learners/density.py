@@ -1,3 +1,14 @@
+"""
+The ``learners.density`` module contains Learners meant for density or
+distribution estimation problems.  The MLProblems for these Learners
+should be iterators over inputs.
+
+The currently implemented algorithms are:
+
+* ``BagDensity``: a density estimation learner where each example is a bag of inputs.
+
+"""
+
 from generic import Learner
 import numpy as np
 import mlpython.mlproblems.generic as mlpb
@@ -9,10 +20,7 @@ class BagDensity(Learner):
     Given a density learner (given by the user), this learner
     will train it on all inputs in all bags. It is
     assumed that the density learner outputs its estimate
-    of the log-density (when calling use).
-
-    Options:
-    - 'estimator'
+    of the log-density (when calling ``use(...)``).
 
     """
     def __init__(   self,
@@ -24,7 +32,7 @@ class BagDensity(Learner):
     def train(self,trainset):
         """
         Trains the estimator on all examples in all bags.
-        Each call to train increments self.stage by 1.
+        Each call to train increments ``self.stage`` by 1.
         """
 
         self.density_trainset = mlpb.MergedProblem(data=trainset,metadata=trainset.metadata)

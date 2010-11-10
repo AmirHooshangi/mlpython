@@ -1,23 +1,31 @@
+"""
+The ``learners.classification`` module contains Learners meant for classification problems. 
+They normally will require (at least) the metadata ``'targets'``.
+The MLProblems for these Learners should be iterators over pairs
+of inputs and targets, with the target being a class index.
+
+The currently implemented algorithms are:
+
+* ``BayesClassifier``: a Bayes classifier obtained from density estimators.
+
+"""
+
 from generic import Learner
 import numpy as np
 import mlpython.mlproblems.classification as mlpb
 
-# The training set for these models should be an iterator over pairs
-# of inputs and targets, with the target being a class index.
 
 class BayesClassifier(Learner):
     """ 
     Bayes classifier from density estimators
  
-    Given one density learner per class, this learner
-    will train each one on a separate class and
-    classify examples using Bayes' rule.
+    Given one density learner per class (option ``estimators``), this
+    learner will train each one on a separate class and classify
+    examples using Bayes' rule.
 
-    Options:
-    - 'estimators'
-
-    Required metadata:
-    - 'targets'
+    **Required metadata:**
+    
+    * ``'targets'``
 
     """
     def __init__(   self,
@@ -28,8 +36,8 @@ class BayesClassifier(Learner):
 
     def train(self,trainset):
         """
-        Trains each estimator. Each call to train increments self.stage by 1.
-        If self.stage == 0, first initialize the model.
+        Trains each estimator. Each call to train increments ``self.stage`` by 1.
+        If ``self.stage == 0``, first initialize the model.
         """
 
         self.n_classes = len(trainset.metadata['targets'])

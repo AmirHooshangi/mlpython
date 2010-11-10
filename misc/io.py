@@ -1,13 +1,31 @@
+"""
+Module ``misc.io`` includes useful functions 
+for loading and saving datasets or objects in general
+
+This module contains the following functions:
+
+* ``load_from_file``:        Loads a dataset from a file without allocating memory for it.
+* ``ascii_load``:            Reads an ASCII file and returns its data and metadata.
+* ``libsvm_load``:           Reads a LIBSVM file and returns its data and metadata.
+* ``libsvm_load_line``:      Converts a line from a LIBSVM file in an example.
+* ``save``:                  Saves an object into a file.
+* ``load``:                  Loads an object from a file.
+* ``gsave``:                 Saves an object into a gzipped file
+* ``gload``:                 Loads an object from a gzipped file
+
+and the following classes:
+
+* ``IteratorWithFields``:   Iterator which separates the rows of a Numpy array into fields.
+* ``MemoryDataset``:        Iterator over some data put in memory as a Numpy array.
+* ``FileDataset``:          Iterator over a file whose lines are converted in examples.    
+
+"""
+
 import cPickle,os
 import numpy as np
 import scipy.io
 from gzip import GzipFile as gfile
 
-# This module includes useful functions for loading and saving datasets or objects in general
-
-# Functions to load datasets in different formats.
-# Those functions output a pair (data,metadata), where 
-# metadata is a dictionary.
 
 ### Some helper classes ###
 
@@ -34,10 +52,10 @@ class MemoryDataset():
     An iterator over some data, but that puts the content 
     of the data in memory in Numpy arrays.
 
-    Option 'field_shapes' is a list of tuples, corresponding
+    Option ``'field_shapes'`` is a list of tuples, corresponding
     to the shape of each fields.
 
-    Option dtypes determines the type of each field (float,int,etc.).
+    Option ``dtypes`` determines the type of each field (float, int, etc.).
 
     Optionally, the length of the dataset can also be
     provided. If not, it will be figured out automatically.
@@ -89,7 +107,7 @@ class FileDataset():
     An iterator over a dataset file, which converts each
     line of the file into an example.
 
-    The option 'load_line' is a function which, given 
+    The option ``'load_line'`` is a function which, given 
     a string (a line in the file) outputs an example.
     """
 
@@ -103,21 +121,42 @@ class FileDataset():
             yield self.load_line(line)
         stream.close()
 
+### For loading large datasets which don't fit in memory ###
+
+def load_line_default(line):
+    return np.array([float(i) for i in line.split()]) # Converts each element to a float
+
+def load_from_file(filename,load_line=load_line_default):
+    """
+    Loads a dataset from a file, without loading it in memory.
+
+    It returns an iterator over the examples from that fine. This is based
+    on class ``FileDataset``.
+    """
+    return FileDataset(filename,load_line)
+    
+
+# Functions to load datasets in different common formats.
+# Those functions output a pair (data,metadata), where 
+# metadata is a dictionary.
 
 ### ASCII format ###
 
 def ascii_load(filename, convert_input=float, last_column_is_target = False, convert_target=float):
     """
-    Reads an ascii file and returns its data and metadata.
+    Reads an ASCII file and returns its data and metadata.
 
-    Data can either be a simple numpy array (matrix), or an iterator over (numpy array,target)
-    pairs if the last column of the ascii file is to be considered a target.
+    Data can either be a simple Numpy array (matrix), or an iterator
+    over (numpy array,target) pairs if the last column of the ASCII
+    file is to be considered a target.
 
-    Options 'convert_input' and 'convert_target' are functions which must convert
-    an element of the ascii file from the string format to the desired format (default: float).
+    Options ``'convert_input'`` and ``'convert_target'`` are functions
+    which must convert an element of the ASCII file from the string
+    format to the desired format.
 
-    Defined metadata: 
-    - 'input_size'
+    **Defined metadata:**
+
+    * ``'input_size'``
 
     """
 
@@ -137,10 +176,10 @@ def ascii_load(filename, convert_input=float, last_column_is_target = False, con
 
 def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sparse=True,input_size=-1):
     """
-    Converts a line (string) of a libsvm file into an example (list).
+    Converts a line (string) of a LIBSVM file into an example (list).
 
-    This function is used by libsvm_load().
-    If sparse is False, option 'input_size' is used to determine the size 
+    This function is used by ``libsvm_load()``.
+    If ``sparse`` is False, option ``'input_size'`` is used to determine the size 
     of the returned 1D array  (it must be big enough to fit all features).
     """
     line = line.strip()
@@ -188,31 +227,36 @@ def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sp
 
 def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,sparse=True,input_size=None):
     """
-    Reads a LIBSVM file and returns the list of all examples (data) and metadata information.
+    Reads a LIBSVM file and returns the list of all examples (data)
+    and metadata information.
 
-    In general, each example in the list is a two items list [input, target] where
-    - if sparse is True, input is a pair (values, indices) of two vectors 
+    In general, each example in the list is a two items list ``[input, target]`` where
+
+    * if ``sparse`` is True, ``input`` is a pair (values, indices) of two vectors 
       (vector of values and of indices). Indices start at 1;
-    - if sparse is False, input is a 1D array such that its elements
+    * if ``sparse`` is False, ``input`` is a 1D array such that its elements
       at the positions given by indices-1 are set to the associated values, and the
       other elemnents are 0;
-    - target is a string corresponding to the target to predict.
+    * ``target`` is a string corresponding to the target to predict.
 
-    If a 'feature:value' pair is such that 'feature' is not an integer, 
-    'value' will be converted to the desired format using option
-    'convert_non_digit_features'. This option must be a callable function
-    taking 2 string arguments, and will be called as follows:
-         output = convert_non_digit_features(feature_str,value_str)
-    where 'feature_str' and 'value_str' are 'feature' and 'value' in string format.
+    If a ``feature:value`` pair in the file is such that ``feature`` is not an integer, 
+    ``value`` will be converted to the desired format using option
+    ``convert_non_digit_features``. This option must be a callable function
+    taking 2 string arguments, and will be called as follows: ::
+
+       output = convert_non_digit_features(feature_str,value_str)
+
+    where ``feature_str`` and ``value_str`` are ``feature`` and ``value`` in string format.
     Its output will be appended to the list of the given example.
 
     The input_size can be given by the user. Otherwise, will try to figure
     it out from the file (won't work if the file format is sparse and some of the
     last features are all 0!).
 
-    Defined metadata: 
-    - 'targets'
-    - 'input_size'
+    **Defined metadata:**
+
+    * 'targets'
+    * 'input_size'
 
     """
 
@@ -253,36 +297,36 @@ def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,spa
 ### Generic save/load functions, using cPickle ###
 
 def save(p, filename):
+    """
+    Pickles object ``p`` and saves it to file ``filename``.
+    """
     f=file(filename,'wb')
     cPickle.dump(p,f,cPickle.HIGHEST_PROTOCOL) 
     f.close()
 
 def load(filename): 
+    """
+    Loads pickled object in file ``filename``.
+    """
     f=file(filename,'rb')
     y=cPickle.load(f)
     f.close()
     return y
 
 def gsave(p, filename):
+    """
+    Same as ``save(p,filname)``, but saves into a gzipped file.
+    """
     f=gfile(filename,'wb')
     cPickle.dump(p,f,cPickle.HIGHEST_PROTOCOL) 
     f.close()
 
 def gload(filename):
+    """
+    Same as ``load(filname)``, but loads from a gzipped file.
+    """    
     f=gfile(filename,'rb')
     y=cPickle.load(f)
     f.close()
     return y
 
-
-### For loading large datasets which don't fit in memory ###
-
-def load_line_default(line):
-    return np.array([float(i) for i in line.split()]) # Converts each element to a float
-
-def load_from_file(filename,load_line=load_line_default):
-    """
-    Loads a dataset from a file, without loading it in memory.
-    """
-    return FileDataset(filename,load_line)
-    

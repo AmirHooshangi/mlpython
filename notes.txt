@@ -13,43 +13,31 @@ How to present:
   for machine learning research
 
 Issues:
-- Some learners keep a pointer to the training set. This is problematic however when 
-  making a deepcopy of a learner (e.g. see RankingFromClassifier)!
-  * instead of remembering the underlying training, better to remember the metadata and do 
-    what apply_on would do
+- Add instructions for how to add an mlproblem
+  * needs to say that the constructor of the parent must be called first
+  * talk about how __length__ is used (i.e. it overrides len(data), unless __len__ is redefined)
+  * talk about how the metadata given explicitly overrides the metadata from "data" if it is an mlproblem
+  * talk about how apply_on needs the first lines which call apply_on on the source, and needs to share the relevant
+    field from self to the newly created MLProblem
+  * mention that apply_on show be called on an input which is "similar" to the original, raw training data (becase it will
+    apply the same sequence of mlproblems as on the raw_data)
+  * talk about the difference between __init__() and setup() (the later computes trainset related things that should be shared with the valid and test sets)
 
-- MergedProblem needs to be adjusted (HUGO: maybe shouldn't even be an MLProblem)
-  * the length of a dataset changes, so the field 'length' should be
-adjusted (maybe in setup()
-  * apply_on should do something not too stupid, e.g. call apply_on for
-    first mlproblem. Could be an option determining which mlproblem is supposed to be used
+- add a summary of currently used metadata keys
 
-- apply_on does not do the right thing for an MLProblem of an MLProblem! (e.g. ClassSubsetProblem on a PreprocessedProblem)!
-  * should have a MLProblemPipeline, which remembers each subsequent MLProblem
-    HUGO: NO! don't need to add another special type of class, would just complicate things
-  * Solution:
-    - in the constructor, add a check of whether data is an MLProblem, in which case its metadata is added
-    - add a class attribute source_mlproblem for that particular case, and use that pointer during the apply_on operation
-
-- what to do with the 'length' field? It is annoying when passing data through something like ClassSubsetProblem, where length is not the total length of data...
-  Solution:
-    * have a __length__ attribute to MLProblems, which is initialized to -1 and is computed when required 
-    * in the constructor, look at metadata for a length (or some other key, e.g. n_queries) to set __length__
-      and avoid its explicit computation. Then, REMOVE that keyword from the metadata (so it isn't passed to
-      other MLProblems
-    * In the base class, __len__() should do the following:
-       if __length__ > 0 : len(this) = __length__
-       elif len(data) works: len(this) = len(data)
-       else: compute explicitly from the iterator
-
-- PreprocessedProblem is annoying because the preprocess function can require arbitrary
-  changes to the metadata, which must be entered manually by the user.
-  SOLUTION: add an update, "metadata_updater", which updates the metadata appropriately
-            in the constructor
-
-- The preprocess function of PreprocessedProblem doesn't have access to the metadata, 
-  which could be convenient
-  SOLUTION: preprocess be changed so that it can access the metadata
+- dynamic module should be sequential, and should be a directory (for unsup. and sup. sequential problems)
+- should be a section in the documentation about the common metadata keywords and about how to document 
+  learners and mlproblems so that the required and defined keywords are given
+- change theme to sphinxdoc
+- should add the simple learners (nnet, ranking learners, etc.) that I already have
+- once the documentation is done, should go back and add some cross references
+- put snippet code on first page
+- write tutorial
+  * would be nice if one of the examples in the tutorial was about getting 1.2% on MNIST
+- add ranking to datasets.store, with support for Yahoo Ranking Challenge Dataset
+- add a "template" (or better name) section
+- add FreeBSD license to library
+- add download instructions
 
 TODO:
 - figure out get_problem(), for Toronto face dataset (see code!), yahoo_ltrc, 
@@ -98,18 +86,24 @@ docstrings:
 
 datasets
 
-- should contain python modules, each defining two function: read(dir_path) and obtain(dir_path)
-- obtain(dir_path) is the function to call to obtain the data. In general, it should
-  download the data to the given dir_path. If that is not possible, then it should
-  at least print details on where/how to obtain the data
-- read(dir_path) is the function to call get the data, once it has been obtained. 
-  dir_path should be the same as the dir_path used by obtain(dir_path). It should have
-  usefull options, such as 'load_to_memory', 'sparse', 'dtype', and perhaps others.
-  Those options should have default values.
-  It can give all the data, a train/valid/test split, a k-fold split, etc.
-- should consider adding a module which lists all datasets for different problems
-  (classification, regression, etc.) and will spit those out in the current format
-  This will make it possible to automate the evaluation of algorithms.
+- need to add the option of asking for a fold, by adding a ``fold`` option to get_*_problem. 
+  By default it would be None, and it would only work for datasets that support it.
+
+- could add support for extra arguments using **kwargs, which can be used to pass arbitrary keywords.
+  This could have some unwanted effect, so perhaps I would need to be careful. Here's an example of how
+  useful this can be (see http://www.saltycrane.com/blog/2008/01/how-to-use-args-and-kwargs-in-python/ for more):
+
+>>> def f(x,**kwargs):
+...    return g(x,**kwargs)
+... 
+>>> def g(x,blu=0,bla=0):
+...    return x+blu+bla/2.
+... 
+>>> f(1,blu=10,bla=20)
+21.0
+>>> f(1,bla=10,blu=20)
+26.0
+
 
 mlproblems
 
