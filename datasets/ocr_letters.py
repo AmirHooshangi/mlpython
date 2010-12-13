@@ -1,3 +1,13 @@
+"""
+Module ``datasets.ocr_letters`` gives access to the OCR letters dataset.
+
+| **Reference:** 
+| Tractable Multivariate Binary Density Estimation and the Restricted Boltzmann Forest
+| Larochelle, Bengio and Turian
+| http://www.cs.toronto.edu/~larocheh/publications/NECO-10-09-1100R2-PDF.pdf
+
+"""
+
 import mlpython.misc.io as mlio
 import numpy as np
 import os
@@ -8,16 +18,14 @@ def load(dir_path,load_to_memory=False,dtype=np.float64):
     Loads the OCR letters dataset.
 
     The data is given by a dictionary mapping from strings
-    'train', 'valid' and 'test' to the associated pair of data and metadata.
+    ``'train'``, ``'valid'`` and ``'test'`` to the associated pair of data and metadata.
     
-    Defined metadata: 
-    - 'input_size'
-    - 'targets'
-    - 'length'
+    **Defined metadata:**
+    
+    * ``'input_size'``
+    * ``'targets'``
+    * ``'length'``
 
-    Reference: Tractable Multivariate Binary Density Estimation and the Restricted Boltzmann Forest
-               Larochelle, Bengio and Turian
-               link: http://www.cs.toronto.edu/~larocheh/publications/NECO-10-09-1100R2-PDF.pdf
     """
     
     input_size=128
@@ -44,6 +52,9 @@ def load(dir_path,load_to_memory=False,dtype=np.float64):
     return {'train':(train,train_meta),'valid':(valid,valid_meta),'test':(test,test_meta)}
 
 def obtain(dir_path):
+    """
+    Downloads the dataset to ``dir_path``.
+    """
 
     dir_path = os.path.expanduser(dir_path)
     print 'Downloading the dataset'

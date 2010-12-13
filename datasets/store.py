@@ -1,28 +1,61 @@
-density_list = ['adult',
-                'binarized_mnist',
-                'connect4',
-                'dna',
-                'mnist',
-                'mushrooms',
-                'nips',
-                'ocr_letters',
-                'rcv1',
-                'web']
+"""
+The ``datasets.store`` module provides a unique interface for downloading datasets
+and creating MLProblems from those datasets.
 
-classification_list = ['adult',
-                       'connect4',
-                       'dna',
-                       'mnist',
-                       'mushrooms',
-                       'newsgroups',
-                       'ocr_letters',
-                       'rcv1',
-                       'web']
+So far, it supports the creation of classification and density estimation problems.
 
-all_list = density_list + classification_list
+It defines the following variables:
+
+* ``datasets.store.all_names``:             set of all dataset names
+* ``datasets.store.classification_names``:  set of dataset names for classification
+* ``datasets.store.density_names``:         set of dataset names for density estimation
+
+It also defines the following functions:
+
+* ``datasets.store.download``:                    downloads a given dataset
+* ``datasets.store.get_classification_problem``:  returns a classification MLProblem from some given dataset name
+* ``datasets.store.get_density_problem``:         returns a density estimation MLProblem from some given dataset name
+
+"""
+
+density_names = set(['adult',
+                    'binarized_mnist',
+                    'connect4',
+                    'dna',
+                    'mnist',
+                    'mushrooms',
+                    'nips',
+                    'ocr_letters',
+                    'rcv1',
+                    'web'])
+
+classification_names = set(['adult',
+                            'connect4',
+                            'dna',
+                            'mnist',
+                            'mushrooms',
+                            'newsgroups',
+                            'ocr_letters',
+                            'rcv1',
+                            'web'])
+
+all_names = density_names | classification_names
 
 def download(name,dataset_dir=None):
-    if name not in all_list:
+    """
+    Downloads dataset ``name``.
+
+    ``name`` must be one of the supported dataset (see variable
+    ``all_names`` of this module).
+
+    If environment variable MLPYTHON_DATASET_REPO has been set to a
+    valid directory path, a subdirectory will be created and the
+    dataset will be downloaded there. Alternatively a directory path
+    (where to create the subdirectory) can be given by the user
+    through option ``dataset_dir``.
+    """
+
+    if name not in all_names:
         raise ValueError('dataset '+name+' unknown')
     
     exec 'import mlpython.datasets.'+name+' as mldataset'
@@ -38,8 +71,23 @@ def download(name,dataset_dir=None):
     mldataset.obtain(dataset_dir)
 
 def get_density_problem(name,load_to_memory=True,dataset_dir=None):
+    """
+    Creates a density estimation MLProblem from dataset ``name``.
 
-    if name not in density_list:
+    ``name`` must be one of the supported dataset (see variable
+    ``density_names`` of this module).
+
+    Option ``load_to_memory`` determines whether the dataset should
+    be loaded into memory or always read from its files.
+
+    If environment variable MLPYTHON_DATASET_REPO has been set to a
+    valid directory path, this function will look into its appropriate
+    subdirectory to find the dataset. Alternatively a directory path
+    (in which the dataset subdirectory is) can be given by the user
+    through option ``dataset_dir``.
+    """
+
+    if name not in density_names:
         raise ValueError('dataset '+name+' unknown for density learning')
     
     exec 'import mlpython.datasets.'+name+' as mldataset'
@@ -69,8 +117,23 @@ def get_density_problem(name,load_to_memory=True,dataset_dir=None):
     return trainset,validset,testset
 
 def get_classification_problem(name,load_to_memory=True,dataset_dir=None):
+    """
+    Creates a classification MLProblem from dataset ``name``.
 
-    if name not in classification_list:
+    ``name`` must be one of the supported dataset (see variable
+    ``classification_names`` of this module).
+
+    Option ``load_to_memory`` determines whether the dataset should
+    be loaded into memory or always read from its files.
+
+    If environment variable MLPYTHON_DATASET_REPO has been set to a
+    valid directory path, this function will look into its appropriate
+    subdirectory to find the dataset. Alternatively a directory path
+    (in which the dataset subdirectory is) can be given by the user
+    through option ``dataset_dir``.
+    """
+
+    if name not in classification_names:
         raise ValueError('dataset '+name+' unknown for classification learning')
     
     exec 'import mlpython.datasets.'+name+' as mldataset'

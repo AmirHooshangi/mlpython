@@ -62,26 +62,26 @@ class OnlineLearner(Learner):
     * ``use_learner(self,example)``
     * ``cost(self,output,example)``
     
-    Method ``initialize_learner(...)`` simply initializes
+    Method ``initialize_learner()`` simply initializes
     the learner. The training set's 'metadata' is also available.
     
-    Method ``update_learner(...)`` updates the learner's parameters
+    Method ``update_learner()`` updates the learner's parameters
     using the given 'example'.
     
-    Method ``use_learner(...)`` should return the output
+    Method ``use_learner()`` should return the output
     for the given 'example'. The output should be a sequence
     (even if it has just one element in it), to allow
     for multiple outputs. Make sure not to return an object
     that is referenced internally and is still
     being used by the class object.
     
-    Method ``cost(...)`` should return the cost associated
+    Method ``cost()`` should return the cost associated
     to some 'output' for the given 'example'. The returned 
     cost should be a sequence (even if it has just one 
     element in it), to allow for multiple costs.
     
     Option ``n_stages`` specifies how many iterations over the 
-    training set is done at every call of ``train(...)``.
+    training set is done at every call of ``train()``.
     
     All other hyper-parameters for the learner supplied
     through the constructor will be assigned as attributes

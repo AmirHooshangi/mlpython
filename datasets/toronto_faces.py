@@ -1,3 +1,8 @@
+"""
+Module ``datasets.toronto_faces`` gives access to the Toronto Face Dataset.
+
+"""
+
 import scipy.io
 import os
 import numpy as np
@@ -7,32 +12,34 @@ def load(dir_path,fold_id=0,small_images=False,binary_images=False,aligned_image
     Loads the Toronto Face Dataset.
 
     The data is given by a dictionary mapping from strings
-    'train', 'valid' and 'test' to the associated pair of data and metadata.
+    ``'train'``, ``'valid'`` and ``'test'`` to the associated pair of data and metadata.
     
-    The data has been separated into 5 folds, and option 'fold_id' 
+    The data has been separated into 5 folds, and option ``fold_id`` 
     (from 0 to 4, default is 0) determines which fold is given.
 
     Each input is a 100x100 image (uint8 values pixels). A smaller (48x48)
-    version is also available (set option 'small_images' to True). A binary
-    version of those small images is available too (set option 'binary_images'
+    version is also available (set option ``small_images`` to True). A binary
+    version of those small images is available too (set option ``binary_images``
     to True). An aligned version of the non-binary images is also available
-    (set option 'aligned_images' to True). An alignement that isn't using
+    (set option ``aligned_images`` to True). An alignement that isn't using
     rotations is also available for 100x100 images (set option no_rotations to 
     True).
 
-    The targets are expression ids. There are 7 expresions, with ids from 0 to 6.
+    The targets are expression IDs. There are 7 expresions, with IDs from 0 to 6.
 
-    Defined metadata: 
-    - 'input_size'
-    - 'targets'
-    - 'class_to_id'
-    - 'length'
+    **Defined metadata:**
 
-    TODO:
-    - add a 'unlabeled' key to the mapping, giving unlabeled
+    * ``'input_size'``
+    * ``'targets'``
+    * ``'class_to_id'``
+    * ``'length'``
+
+    **TODO:**
+
+    * add a ``'unlabeled'`` key to the mapping, giving unlabeled
       data on which unsupervised learning can be done.
-    - add possibility to include example meta-information
-      (identity ids, original dataset of origin, etc.).
+    * add possibility to include example meta-information
+      (identity IDs, original dataset of origin, etc.).
 
     """
     dir_path = os.path.expanduser(dir_path)
@@ -98,5 +105,9 @@ def load(dir_path,fold_id=0,small_images=False,binary_images=False,aligned_image
     return {'train':(train,train_meta),'valid':(valid,valid_meta),'test':(test,test_meta)}
 
 def obtain(dir_path):
+    """
+    Gives information about how to obtain this dataset (``dir_path`` is ignored).
+    """
+
     print 'Ask Josh Susskind (http://aclab.ca/users/josh/) for the data.'
  

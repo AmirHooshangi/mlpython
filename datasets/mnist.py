@@ -1,3 +1,22 @@
+"""
+Module ``datasets.mnist`` gives access to the binarized version of the
+MNIST dataset.  
+
+The original dataset from http://yann.lecun.com/exdb/mnist/ has been
+preprocessed so that the inputs are between 0 and 1. The original
+training set also has been separated into a new training set and a
+validation set.
+
+| **References:**
+| The MNIST database of handwritten digits
+| LeCun and Cortes
+| http://yann.lecun.com/exdb/mnist/
+| Classification using Discriminative Restricted Boltzmann Machines (for the train/valid split)
+| Larochelle and Bengio
+| http://www.cs.toronto.edu/~larocheh/publications/icml-2008-discriminative-rbm.pdf
+
+"""
+
 import mlpython.misc.io as mlio
 import numpy as np
 import os
@@ -8,22 +27,16 @@ def load(dir_path,load_to_memory=False,dtype=np.float64):
     Loads the MNIST dataset.
 
     The data is given by a dictionary mapping from strings
-    'train', 'valid' and 'test' to the associated pair of data and metadata.
+    ``'train'``, ``'valid'`` and ``'test'`` to the associated pair of data and metadata.
     
     The inputs have been normalized between 0 and 1.
 
-    Defined metadata: 
-    - 'input_size'
-    - 'targets'
-    - 'length'
+    **Defined metadata:**
 
-    Reference: The MNIST database of handwritten digits
-               LeCun and Cortes
-               link: http://yann.lecun.com/exdb/mnist/
+    * ``'input_size'``
+    * ``'targets'``
+    * ``'length'``
 
-               Classification using Discriminative Restricted Boltzmann Machines (for the train/valid split)
-               Larochelle and Bengio
-               link: http://www.cs.toronto.edu/~larocheh/publications/icml-2008-discriminative-rbm.pdf
     """
     
     input_size=784
@@ -50,6 +63,9 @@ def load(dir_path,load_to_memory=False,dtype=np.float64):
     return {'train':(train,train_meta),'valid':(valid,valid_meta),'test':(test,test_meta)}
 
 def obtain(dir_path):
+    """
+    Downloads the dataset to ``dir_path``.
+    """
 
     dir_path = os.path.expanduser(dir_path)
     print 'Downloading the dataset'

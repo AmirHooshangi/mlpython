@@ -1,5 +1,5 @@
 """
-Module for the Adult dataset.
+Module ``datasets.adult`` gives access to the Adult dataset.
 
 | **Reference:** 
 | Tractable Multivariate Binary Density Estimation and the Restricted Boltzmann Forest
@@ -17,7 +17,7 @@ def load(dir_path,load_to_memory=False,dtype=np.float64):
     Loads the Adult dataset.
 
     The data is given by a dictionary mapping from strings
-    'train', 'valid' and 'test' to the associated pair of data and metadata.
+    ``'train'``, ``'valid'`` and ``'test'`` to the associated pair of data and metadata.
     
     **Defined metadata:**
     

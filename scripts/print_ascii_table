@@ -1,6 +1,11 @@
 #! /usr/bin/python
 
-# A simple script for printing result tables in a nicely formatted columns
+"""
+Usage: print_ascii_table file
+
+This is a simple script for printing result tables into nicely aligned columns.
+The columns in the file are assumed to be separated by tabs ('\t').
+"""
 
 import sys,os
 
@@ -11,11 +16,18 @@ if len(sys.argv) != 2:
 file = sys.argv[1]
 stream = open(os.path.expanduser(file))
 
-def format_line(line):
+def format_line(line,max_lengths):
     tokens = line.split()
-    tokens = [tok[:7] for tok in tokens]
-    return '\t'.join(tokens)
+    tokens = [' '*(max_lengths[i]-len(tokens[i]))+tokens[i] for i in range(len(tokens))]
+    return '  '.join(tokens)
 
-for line in stream:
-    print format_line(line)
+lines = [ line for line in stream]
 
+# figure out the length of all elements in the table
+all_lengths = [ [ len(elem) for elem in line.split('\t') ] for line in lines]
+
+# figure max length in each column
+max_lengths = [ max([ lengths[i] for lengths in all_lengths ]) for i in range(len(all_lengths[0]))]
+
+for line in lines:
+    print format_line(line,max_lengths)

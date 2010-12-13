@@ -28,6 +28,12 @@ def dreclin(output,doutput,dinput):
     """
     nonlinear_.dreclin_(output,doutput,dinput)
 
+def softplus(input,output):
+    """
+    Computes the softplus function softplus(input) = log(1+exp(input))
+    """
+    nonlinear_.softplus_(input,output)
+
 def softmax(input,output):
     """
     Computes the softmax function softmax(input) = exp(input)/sum(exp(input)) = output.

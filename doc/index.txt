@@ -5,30 +5,22 @@
 Welcome to MLPython's documentation!
 ====================================
 
-MLPython is a library for organising machine learning
-research. It features:
-
-* a framework for consistently organising a collection of datasets
-  and comes with several datasets readily accessible;
-
-* a set of tools for manipulating these datasets and rapidly
-  constructing machine learning experiments;
-
-* a class system for easily developing new learning algorithms,
-  with several standard baselines already implemented.
-
-So there are two reasons why you might be interested in MLPython:
+MLPython is a library for organizing machine learning
+research. There are two reasons why you might be interested in MLPython:
 
 1. to rapidly gain access to many datasets and learning algorithms or
-2. to organize your own machine learning research into a consistent and simple framework.
+2. to organize your own machine learning research into a consistent,
+   flexible and simple framework.
 
 I developed MLPython to support my own research. I wanted a system that would
 allow me to quickly experiment with new research ideas. Having found it
 to deliver well on this account, I decided to share MLPython with others.
 I hope you enjoy it!
 
-Sneak Peek
-=================
+* :ref:`install` -- details on how to download and install MLPython
+* :ref:`tutorial` -- a walk-through over several examples using MLPython
+* :ref:`extend` -- guidelines for contributing to MLPython and extending it
+* :ref:`library` -- detailed documentation, extracted from the source code docstrings
 
 Here's a quick peek at what MLPython let's you do: ::
 
@@ -45,58 +37,18 @@ Here's a quick peek at what MLPython let's you do: ::
    outputs,costs = nnet.test(testset)
    print 'Classification error on test set is',np.mean(costs,axis=0)
 
-As is probably obvious, this code snippet trains a feed-forward neural network for
-10 iterations on the MNIST dataset, and then computes the average classification error
-on a test set.
-
-Library Documentation
-=====================
+As is probably obvious, this code snippet downloads the MNIST dataset,
+trains a feed-forward neural network for 10 iterations on it and
+finally computes the average classification error on a test set.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1	
+   :hidden:
 
-   datasets
-   mlproblems
-   learners
-   mathutils
-   misc
-
-Philosophy
-==========
-
-The main guiding philosophy behind MLPython is simplicity, not just of
-use (dah!) but also of implementation. While this later choice can't seem odd
-and is admittedly due to my lack of Python expertise, it is also
-inspired by my experience with other libraries. I've found that many libraries
-would often try to gain flexibility or expressiveness by sacrificing 
-the simplicity of the underlying implementation. This would in turn make
-it hard to contribute to such libraries, which is crucial if one
-is to develop new learning algorithms.
-
-The combined simplicity and expressiveness of Python means that many
-aspects of a machine learning framework need not be implemented by a
-complex class hierarchy. Often, a simple script can do the job and
-be much easier to understand. MLPython follows this intuition by using a
-class system only for the learning algorithms and for processed
-datasets (refered to as :ref:`mlproblems`).  The rest of the framework
-relies on a set of functions (to load the raw dataset) and script
-templates (to design and run experiments). 
-
-Moreover, a lot of thought
-has been put into the class hierarchies in order to strip down their
-complexity, mainly by restricting each class to only a few methods.
-For example, a learning algorihtm or Learner object only requires four
-methods (excluding the constructor). 
-The most complicated component of MLPython probably corresponds to the
-:ref:`mlproblems`, but even then, :ref:`mlproblems` are really just iterator
-objects, with some additional properties (refered to as metadata).
-
-Finally, MLPython relies a lot on conventions and on duck-typing
-("if it looks like a duck and quacks like a duck, it must be a duck").
-The user should focus on making sure that the different objects being
-combined behave correctly (e.g. that an MLProblem passed to some
-Learner defines all the metadata that this Learner expects), and less
-on what types these objects are.
+   install
+   tutorial
+   extend
+   library
 
 Indices and tables
 ==================
@@ -104,7 +56,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-.. automodule:: mlpython
-   :members:
 

@@ -48,7 +48,7 @@ Mushrooms
 .. automodule:: datasets.mushrooms
    :members:
 
-20newsgroups
+20-newsgroups
 --------------------
 
 .. automodule:: datasets.newsgroups

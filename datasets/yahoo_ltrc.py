@@ -1,3 +1,8 @@
+"""
+Module ``datasets.yahoo_ltrc`` gives access to the Yahoo! Learning to Rank Challenge data.
+
+"""
+
 import mlpython.misc.io as mlio
 import numpy as np
 import os
@@ -7,22 +12,20 @@ def load(dir_path,set_id=0,load_to_memory=False,dtype=np.float64):
     Loads the Yahoo! Learning to Rank Challenge data.
 
     The data is given by a dictionary mapping from strings
-    'train', 'valid' and 'test' to the associated pair of data and metadata.
+    ``'train'``, ``'valid'`` and ``'test'`` to the associated pair of data and metadata.
     
-    Option 'set_id' determines the set that is loaded (0, 1 or 2, default is 0).
+    Option ``set_id`` determines the set that is loaded (0, 1 or 2, default is 0).
 
     Set 0 is a "home made" train/valid split of the original training set, 
     required since only the training set is labeled (until all the data is
-    released). Not test set is generated for that purpose.
+    released). No test set is generated for that purpose.
 
-    Note that, because the data is quite big, it is not loaded in memory and is
-    instead always read directly from the associated files.
+    **Defined metadata:**
 
-    Defined metadata: 
-    - 'input_size'
-    - 'scores'
-    - 'n_queries'
-    - 'length'
+    * ``'input_size'``
+    * ``'scores'``
+    * ``'n_queries'``
+    * ``'length'``
 
     """
     
@@ -81,6 +84,9 @@ def load(dir_path,set_id=0,load_to_memory=False,dtype=np.float64):
         return {'train':(train,train_meta),'valid':(valid,valid_meta),'test':(test,test_meta)}
 
 def obtain(dir_path):
+    """
+    Gives information about how to obtain this dataset (``dir_path`` is ignored).
+    """
 
     dir_path = os.path.expanduser(dir_path)
     train_file = os.path.join(dir_path, 'set1.train.txt')
