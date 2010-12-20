@@ -64,7 +64,7 @@ class MLProblem:
                     self.__length__ += 1
                 return self.__length__
         else:
-            return __length__
+            return self.__length__
 
     def setup(self):
         """

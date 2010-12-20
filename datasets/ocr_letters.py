@@ -13,7 +13,7 @@ import numpy as np
 import os
 from gzip import GzipFile as gfile
 
-def load(dir_path,load_to_memory=False,dtype=np.float64):
+def load(dir_path,load_to_memory=False):
     """
     Loads the OCR letters dataset.
 
@@ -43,7 +43,7 @@ def load(dir_path,load_to_memory=False,dtype=np.float64):
 
     lengths = [32152,10000,10000]
     if load_to_memory:
-        train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],[dtype,int],l) for d,l in zip([train,valid,test],lengths)]
+        train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],[np.float64,int],l) for d,l in zip([train,valid,test],lengths)]
         
     # Get metadata
     train_meta,valid_meta,test_meta = [{'input_size':input_size,

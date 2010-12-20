@@ -12,7 +12,7 @@ import mlpython.misc.io as mlio
 import numpy as np
 import os
 
-def load(dir_path,load_to_memory=False,dtype=np.float64):
+def load(dir_path,load_to_memory=False):
     """
     Loads the Mushrooms dataset.
 
@@ -44,7 +44,7 @@ def load(dir_path,load_to_memory=False,dtype=np.float64):
 
     lengths = [2000,500,5624]
     if load_to_memory:
-        train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],[dtype,int],l) for d,l in zip([train,valid,test],lengths)]
+        train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],[np.float64,int],l) for d,l in zip([train,valid,test],lengths)]
         
     # Get metadata
     train_meta,valid_meta,test_meta = [{'input_size':input_size,

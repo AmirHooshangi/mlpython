@@ -15,7 +15,7 @@ import mlpython.misc.io as mlio
 import numpy as np
 import os
 
-def load(dir_path,load_to_memory=False,dtype=np.float64):
+def load(dir_path,load_to_memory=False):
     """
     Loads a binarized version of MNIST. 
 
@@ -41,7 +41,7 @@ def load(dir_path,load_to_memory=False,dtype=np.float64):
 
     lengths = [50000,10000,10000]
     if load_to_memory:
-        train,valid,test = [mlio.MemoryDataset(d,[(input_size,)],[dtype],l) for d,l in zip([train,valid,test],lengths)]
+        train,valid,test = [mlio.MemoryDataset(d,[(input_size,)],[np.float64],l) for d,l in zip([train,valid,test],lengths)]
         
     # Get metadata
     train_meta,valid_meta,test_meta = [{'input_size':input_size,

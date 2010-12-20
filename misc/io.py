@@ -44,7 +44,7 @@ class IteratorWithFields():
 
     def __iter__(self):
         for r in self.data:
-            yield [r[beg:end] for (beg,end) in self.fields ]
+            yield [ (r[beg] if beg+1==end else r[beg:end]) for (beg,end) in self.fields ]
 
 
 class MemoryDataset():
