@@ -1,6 +1,11 @@
 TODO:
 
 - write tutorial
+- add in documentation that deepcopy should be used to copy the iterated elements of an mlproblem
+  (think of example where the underlying mlproblem always yields the same container or nparray
+  but changes its content)
+- figure out a way to fascilitate the compilation of mathutils (i.e. without having to edit the setup.py file)
+- figure out a way to allow for having compiled mathutils for different platforms at the same time
 - figure out a way to include other people's software (add a directory in learners, 
   which give all the info/code for downloading other people's software, installing it and
   incorporating it to the library)

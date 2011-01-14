@@ -14,9 +14,10 @@ It defines the following variables:
 It also defines the following functions:
 
 * ``datasets.store.download``:                    downloads a given dataset
-* ``datasets.store.get_classification_problem``:  returns a classification MLProblem from some given dataset name
-* ``datasets.store.get_density_problem``:         returns a density estimation MLProblem from some given dataset name
-* ``datasets.store.get_multilabel_problem``:      returns a multilabel classification MLProblem from some given dataset name
+* ``datasets.store.get_classification_problem``:  returns train/valid/test classification MLProblems from some given dataset name
+* ``datasets.store.get_density_problem``:         returns train/valid/test density estimation MLProblems from some given dataset name
+* ``datasets.store.get_multilabel_problem``:      returns train/valid/test multilabel classification MLProblems from some given dataset name
+* ``datasets.store.get_k_fold_experiment``:       returns a list of train/valid/test MLProblems for a k-fold experiment
 
 """
 
@@ -77,7 +78,7 @@ def download(name,dataset_dir=None):
 
 def get_density_problem(name,dataset_dir=None,load_to_memory=True):
     """
-    Creates a density estimation MLProblem from dataset ``name``.
+    Creates train/valid/test density estimation MLProblems from dataset ``name``.
 
     ``name`` must be one of the supported dataset (see variable
     ``density_names`` of this module).
@@ -122,7 +123,7 @@ def get_density_problem(name,dataset_dir=None,load_to_memory=True):
 
 def get_classification_problem(name,dataset_dir=None,load_to_memory=True):
     """
-    Creates a classification MLProblem from dataset ``name``.
+    Creates train/valid/test classification MLProblems from dataset ``name``.
 
     ``name`` must be one of the supported dataset (see variable
     ``classification_names`` of this module).
@@ -164,7 +165,7 @@ def get_classification_problem(name,dataset_dir=None,load_to_memory=True):
 
 def get_multilabel_problem(name,dataset_dir=None,load_to_memory=True):
     """
-    Creates a multilabel classification MLProblem from dataset ``name``.
+    Creates train/valid/test multilabel classification MLProblems from dataset ``name``.
 
     ``name`` must be one of the supported dataset (see variable
     ``multilabel_names`` of this module).
@@ -203,3 +204,51 @@ def get_multilabel_problem(name,dataset_dir=None,load_to_memory=True):
     testset = trainset.apply_on(test_data,test_metadata)
 
     return trainset,validset,testset
+
+def get_k_fold_experiment(datasets,k=10,seed=1234):
+    """
+    Creates a k-fold experiment from a list of MLProblems ``datasets``.
+
+    ``k`` determines the number of folds, and ``seed`` is for the
+    random number generator that will shuffle all the examples before
+    creating the folds.
+
+    The output is a list of ``k`` triplets ``(train,valid,test)``, which
+    determine the experiment to be run for each ``test`` fold. ``valid``
+    is also an individual fold and ``train`` corresponds to the concatenation
+    of the remaining folds.
+
+    """
+
+    import mlpython.mlproblems.generic as mlpb
+    import numpy as np
+
+    all_data = mlpb.MergedProblem(datasets)
+
+    # Shuffle data ids
+    ids = range(len(all_data))
+    rng = np.random.mtrand.RandomState(seed)
+    rng.shuffle(ids)
+
+    # Create folds
+    fold_size = int(np.floor(float(len(all_data))/k))
+    fold_ids = []
+    beg = 0
+    for f in range(k-1):
+        fold_ids += [ids[beg:(beg+fold_size)]]
+        beg += fold_size
+    # Put rest of data in last fold
+    fold_ids += [ids[beg:]]
+    folds = [ mlpb.SubsetProblem(all_data,subset=set(f_ids)) for f_ids in fold_ids ]
+
+    # Create each fold's experiment
+    k_fold_experiment = []
+    for f in range(k):
+        train_folds = folds[:f] + folds[(f+1):]
+        test = folds[f]
+        valid = train_folds[-1]
+        train_folds = train_folds[:-1]
+        train = mlpb.MergedProblem(train_folds)
+        k_fold_experiment += [(train,valid,test)]
+
+    return k_fold_experiment

@@ -347,7 +347,7 @@ static PyObject *softplus_(PyObject *self, PyObject *args)
     if(input_data > 35)
       *output_data_iter++ = input_data;
     else
-      if(input_data < 40)
+      if(input_data < -40)
 	*output_data_iter++ = 0;
       else
 	*output_data_iter++ = log(1+exp(input_data));
