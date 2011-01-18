@@ -313,11 +313,9 @@ class MinibatchProblem(MLProblem):
         return int(np.ceil(float(len(self.data))/self.minibatch_size))
 
     def __iter__(self):
-        minibatch_container = None
         minibatch_filling_count = 0
         for example in self.data:
-            if minibatch_container == None:
-                # Create minibatch container only once
+            if minibatch_filling_count == 0:
                 if self.has_single_field:
                     if (not hasattr(example,'shape')) or example.shape == (1,):
                         minibatch_container = np.zeros((self.minibatch_size,))

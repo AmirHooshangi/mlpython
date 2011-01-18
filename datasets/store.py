@@ -43,6 +43,7 @@ classification_names = set(['adult',
                             'web'])
 
 multilabel_names = set(['mediamill',
+                        'occluded_mnist',
                         'scene',
                         'yeast'])
 
