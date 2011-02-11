@@ -17,7 +17,7 @@ file = sys.argv[1]
 stream = open(os.path.expanduser(file))
 
 def format_line(line,max_lengths):
-    tokens = line.split()
+    tokens = line.rstrip('\n').split('\t')
     tokens = [' '*(max_lengths[i]-len(tokens[i]))+tokens[i] for i in range(len(tokens))]
     return '  '.join(tokens)
 
@@ -28,6 +28,9 @@ all_lengths = [ [ len(elem) for elem in line.split('\t') ] for line in lines]
 
 # figure max length in each column
 max_lengths = [ max([ lengths[i] for lengths in all_lengths ]) for i in range(len(all_lengths[0]))]
+
+col_numbers = '\t'.join([ '#'+str(i) for i in range(1,len(max_lengths)+1) ]) + '\n'
+print format_line(col_numbers,max_lengths)
 
 for line in lines:
     print format_line(line,max_lengths)

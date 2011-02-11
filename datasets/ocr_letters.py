@@ -1,6 +1,8 @@
 """
 Module ``datasets.ocr_letters`` gives access to the OCR letters dataset.
 
+The OCR letters dataset is obtained here: http://ai.stanford.edu/~btaskar/ocr/letter.data.gz.
+
 | **Reference:** 
 | Tractable Multivariate Binary Density Estimation and the Restricted Boltzmann Forest
 | Larochelle, Bengio and Turian

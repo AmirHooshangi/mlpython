@@ -13,6 +13,7 @@ TODO:
 - dynamic module should be sequential, and should be a directory (for unsup. and sup. sequential problems)
 - add the simple learners (nnet, ranking learners, etc.) that I already have
 - might want to consider adding a 'n_fields' option. See "has_single_field" option of MinibatchProblem to understand why...
+- change calls to zip() to itertools.izip(), which doesn't output a list but instead outputs an iterator
 - once the documentation is done, should go back and add some cross references
 - add ranking to datasets.store, with support for Yahoo Ranking Challenge Dataset
 - add FreeBSD license to library

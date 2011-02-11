@@ -1,6 +1,6 @@
 """
 Module ``misc.io`` includes useful functions 
-for loading and saving datasets or objects in general
+for loading and saving datasets, result tables or objects in general
 
 This module contains the following functions:
 
@@ -15,6 +15,7 @@ This module contains the following functions:
 
 and the following classes:
 
+* ``ASCIIResultTable``:     Object that loads an ASCII table and implements many useful operations.
 * ``IteratorWithFields``:   Iterator which separates the rows of a Numpy array into fields.
 * ``MemoryDataset``:        Iterator over some data put in memory as a Numpy array.
 * ``FileDataset``:          Iterator over a file whose lines are converted in examples.    
@@ -28,6 +29,128 @@ from gzip import GzipFile as gfile
 
 
 ### Some helper classes ###
+
+class ASCIIResult():
+    """
+    Object representing a line in an ASCIIResultTable.
+    """
+
+    def __init__(self,values,fields):
+        if len(values) != len(fields):
+            raise ValueError('values and fields should be of the same size')
+
+        self.values = values
+        self.fields = fields
+
+    def __getitem__(self,id):
+        if isinstance(id,str):
+            if id not in self.fields:
+                raise TypeError('index %s is not a valid field' % id)
+            if self.fields.count(id) > 1:
+                raise ValueError('index %s is ambiguous: many fields have this name' % id)
+            return self.values[self.fields.index(id)]
+        else:
+            return self.values[id]
+
+    def __iter__(self):
+        for val in self.values:
+            yield val
+
+    def __len__(self):
+        return len(self.values)
+
+    def __str__(self):
+        return self.values.__str__()
+    
+
+class ASCIIResultTable():
+    """
+    Object that loads an ASCII table and implements many useful operations.
+
+    The first row of in the ASCII table's file is assumed to be a header
+    providing names for each field of the table. The remaining rows correspond
+    to the results. Each field (column) of the table must be separated by 
+    character ``separator`` (default is ``'\t'``). 
+    """
+
+    def __init__(self,file,separator='\t'):
+
+        self.file = file
+        self.separator = separator
+
+        stream = open(os.path.expanduser(self.file))
+
+        self.all_results = [ line.rstrip('\n').split(self.separator) for line in stream]
+        self.fields = self.all_results[0]
+        self.all_results = [ ASCIIResult(result,self.fields) for result in self.all_results[1:] ]
+        def filter_func(item):
+            return True
+
+        self.filter_func = filter_func
+        self.results = filter(self.filter_func,self.all_results)
+
+    def sort(self,field,numerical=False):
+        """
+        Sorts the rows of the table based on the value of the field at
+        position ``field``. ``field`` can also be a string field name. 
+        If ``numerical`` is True, then the
+        numerical values are used for sorting, otherwise sorting is
+        based on the string value.
+        """
+
+        if numerical:
+            def key(a):
+                return float(a[field])
+        else:
+            def key(a):
+                return a[field]
+
+        self.all_results.sort(key=key)
+        self.results = filter(self.filter_func,self.all_results)
+
+    def filter(self,filter_func):
+        """
+        Filters the rows of the table by keeping those for which
+        the output of function ``filter_func`` is True. This will
+        overwrite any previous filtering function (i.e. filtering
+        functions are not sequentially composed).
+        """
+        self.filter_func = filter_func
+        self.results = filter(self.filter_func,self.all_results)
+
+    def __getitem__(self,row_id):
+        if isinstance(row_id,tuple):
+            if len(row_id) != 2:
+                raise TypeError('indices must be integers or pairs')
+            return self.results[row_id[0]][row_id[1]]
+        else:
+            return self.results[row_id]
+
+    def __iter__(self):
+        for result in self.results:
+            yield result
+
+    def __len__(self):
+        return len(self.results)
+
+    def __str__(self):
+        # figure out the length of all elements in the table
+        all_lengths = [ [ len(elem) for elem in elements ] for elements in [self.fields] + self.results]
+
+        # figure max length in each column
+        max_lengths = [ max([ lengths[i] for lengths in all_lengths ]) for i in range(len(all_lengths[0]))]
+        
+        def format_line(line,max_lengths):
+            tokens = line.split(self.separator)
+            tokens = [' '*(max_lengths[i]-len(tokens[i]))+tokens[i] for i in range(len(tokens))]
+            return '  '.join(tokens)
+
+        ret = format_line(self.separator.join(self.fields),max_lengths)
+        for result in self.results:
+            ret += '\n' + format_line(self.separator.join(result),max_lengths)
+
+        return ret
+
 
 class IteratorWithFields():
     """

@@ -11,10 +11,12 @@ This module contains the following classes:
 * ``MergedProblem``:          Merges several datasets together.
 * ``PreprocessedProblem``:    Applies an arbitrary preprocessing on a dataset.
 * ``MinibatchProblem``:       Puts examples of datasets into mini-batches.
+* ``SemisupervisedProblem``:  Removes the labels of a subset of the examples in a dataset.
 
 """
 
 import numpy as np
+import copy
 
 class MLProblem:
     """
@@ -362,4 +364,44 @@ class MinibatchProblem(MLProblem):
             new_metadata = {}   # new_data should already contain the new_metadata, since it is an mlproblem
 
         new_problem = MinibatchProblem(new_data,new_metadata,call_setup=False,minibatch_size=self.minibatch_size,has_single_field=self.has_single_field)
+        return new_problem
+
+class SemisupervisedProblem(MLProblem):
+    """
+    Removes the labels of a subset of the examples in a dataset.
+    
+    The examples that have their ID (i.e. the example number
+    from 0 to ``len(data)-1``, as defined by the order
+    in which the iterator yields the examples) in ``unlabeled_ids``
+    will have their labels be replaced by None.
+
+    The index of the label field can be given by option ``label_field``.
+
+    """
+
+    def __init__(self, data=None, metadata={},call_setup=True,unlabeled_ids=set([]),label_field=1):
+        MLProblem.__init__(self,data,metadata)
+        self.unlabeled_ids = unlabeled_ids
+        self.label_field = label_field
+        if call_setup: SemisupervisedProblem.setup(self)
+
+    def __iter__(self):
+        id = 0
+        for example in self.data:
+            if id in self.unlabeled_ids:
+                unlabeled_example = copy.deepcopy(example)
+                unlabeled_example[self.label_field] = None
+                yield unlabeled_example
+            else:
+                yield example
+            id += 1
+
+    def apply_on(self, new_data, new_metadata={}):
+        # Don't apply the same unlabeling to new_data.
+        # We either return a basic mlproblem or the output from the source mlproblem
+        if self.__source_mlproblem__ is not None:
+            new_problem = self.__source_mlproblem__.apply_on(new_data,new_metadata)
+        else:
+            new_problem = MLProblem(new_data,new_metadata,call_setup=False)
+
         return new_problem

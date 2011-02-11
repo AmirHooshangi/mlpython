@@ -166,7 +166,7 @@ Practical tips
   the metadata and do what apply_on would do
 * do not use zip(dataset,range(...)), since it appears like this doesn't work
   well with very big datasets (keeps pointers to the examples, and memory
-  is not freed, and memory explodes)
+  is not freed, and memory explodes). Use itertools.izip() instead!
 
 Mathutils
 ---------
