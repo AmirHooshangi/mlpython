@@ -1,0 +1,18 @@
+.. _learners:
+
+Learners
+========
+
+.. automodule:: learners
+   :members:
+
+Follow the links below to learn more about these modules and subpackages:
+
+.. toctree::
+   :maxdepth: 2
+
+   learners_generic
+   learners_classification
+   learners_density
+   learners_ranking
+   learners_sparse

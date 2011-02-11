@@ -1,0 +1,80 @@
+.. _extend:
+
+Extending MLPython
+======================
+
+You'd like to contribute new pieces to MLPython? Great! Here are some
+guidelines for how to do it.
+
+Implementation Philosophy
+-------------------------
+
+
+First, a few words about the main guiding philosophy behind MLPython.
+
+When I started designing MLPython, I decided that it should not only
+be simple to use (dah!) but also be based on a simple implementation.
+While this later choice can seem odd and is admittedly due to my limited
+Python expertise, it is also motivated by the wish that other
+programmers with equal or worse Python programming experience be able
+to contribute to it. This is important, since the machine
+learning community includes not just to computer scientists but also
+mathematicians and statisticians with varying programming skills.
+Hence, given the vaste array of learning algorithms in the literature,
+it made sense to focus on an implementation which would require
+as little time as possible for someone to start contributing to it.
+
+Moreover, the combined simplicity and expressiveness of Python means
+that many aspects of a machine learning framework need not be
+implemented by complex class hierarchies. Often, a simple script can
+do the job and be much easier to understand. MLPython follows this
+intuition by using a class system only for the learning algorithms and
+for processed datasets (:ref:`mlproblems`).  The rest of the framework
+relies on a set of functions (to load the raw dataset) and script
+templates (to design and run experiments).
+
+A lot of thought has also been put into the class hierarchies in
+order to strip down their complexity, mainly by restricting each class
+to only a few methods.  For example, a learning algorihtm or :ref:`Learners`
+object only requires four methods (excluding the constructor).  The
+most complicated component of MLPython probably corresponds to the
+MLProblems, but even then, MLProblems are really just
+iterator objects, with some additional properties (refered to as
+metadata).
+
+Finally, MLPython relies a lot on conventions and on duck-typing
+("if it looks like a duck and quacks like a duck, it must be a duck").
+The user should focus on making sure that the different objects being
+combined behave correctly (e.g. that an MLProblem passed to some
+Learner defines all the metadata that this Learner expects), and less
+on what types these objects are. Consequently, all code should be well
+documented, with docstrings that are explicit about how each object should
+be used.
+
+Learners
+--------
+
+MLProblems
+----------
+
+* needs to say that the constructor of the parent must be called first
+* talk about how __length__ is used (i.e. it overrides len(data), unless __len__ is redefined)
+* talk about how the metadata given explicitly overrides the metadata from "data" if it is an mlproblem
+* talk about how apply_on needs the first lines which call apply_on on the source, and needs to share the relevant
+  field from self to the newly created MLProblem
+* mention that apply_on show be called on an input which is "similar" to the original, raw training data (becase it will
+  apply the same sequence of mlproblems as on the raw_data)
+* talk about the difference between __init__() and setup() (the later computes trainset related things that should be shared with the valid and test sets)
+
+Common Metadata Keywords
+------------------------
+
+Datasets
+--------
+
+Documentating your code
+-----------------------
+
+* think about how sphinx is going to interpret the docstring
+* always add a refence to a paper when possible (show how this is done
+* if the object/function defines or requires metadata, put it in docstring

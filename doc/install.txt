@@ -1,0 +1,17 @@
+.. _install:
+
+Installation Instructions
+=========================
+
+Getting MLPython
+----------------
+
+Installing MLPython
+-------------------
+
+* ``hg clone whatever`` or put links to tar balls
+* set up MLPYTHON_DATASET_REPO
+
+Required libraries
+------------------
+
