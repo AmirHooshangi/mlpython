@@ -1,6 +1,5 @@
 """
-Module ``datasets.mnist`` gives access to the binarized version of the
-MNIST dataset.  
+Module ``datasets.mnist`` gives access to the MNIST dataset.  
 
 The original dataset from http://yann.lecun.com/exdb/mnist/ has been
 preprocessed so that the inputs are between 0 and 1. The original

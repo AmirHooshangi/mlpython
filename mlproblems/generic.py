@@ -10,8 +10,11 @@ This module contains the following classes:
 * ``SubsetFieldsProblem``:    Extracts a subset of the fields in a dataset.
 * ``MergedProblem``:          Merges several datasets together.
 * ``PreprocessedProblem``:    Applies an arbitrary preprocessing on a dataset.
+* ``MinibatchProblem``:       Puts examples of datasets into mini-batches.
 
 """
+
+import numpy as np
 
 class MLProblem:
     """
@@ -25,7 +28,7 @@ class MLProblem:
     will also be used (with priority given to the explicitly passed
     metadata).
 
-    **Required_metadata:**
+    **Required metadata:**
 
     * ``'length'``: number of examples (optional, will set the output of ``__len__(self)``)
 
@@ -68,7 +71,8 @@ class MLProblem:
 
     def setup(self):
         """
-        Adapts the MLProblem to the given data. For this root class, it does nothing.
+        Adapts the MLProblem to the given data's content. For this
+        root class, it does nothing.
 
         However, an MLProblem that would normalize examples by subtracting the
         data's average would compute this average in this method.
@@ -192,10 +196,10 @@ class MergedProblem(MLProblem):
             self.__source_mlproblem__ = None
         self.metadata.update(metadata)
 
-        self.__length__ = None
-        if 'length' in self.metadata:  # Gives a chance to set length through metadata
-            self.__length__ = self.metadata['length']
-            del self.metadata['length'] # So that it isn't passed to subsequent mlproblems
+        #self.__length__ = None
+        #if 'length' in self.metadata:  # Gives a chance to set length through metadata
+        #    self.__length__ = self.metadata['length']
+        #    del self.metadata['length'] # So that it isn't passed to subsequent mlproblems
 
         self.serial = serial
         if call_setup: MergedProblem.setup(self)
@@ -275,4 +279,87 @@ class PreprocessedProblem(MLProblem):
             new_metadata = {}   # new_data should already contain the new_metadata, since it is an mlproblem
 
         new_problem = PreprocessedProblem(new_data,new_metadata,call_setup=False,preprocess=self.preprocess)
+        return new_problem
+
+class MinibatchProblem(MLProblem):
+    """
+    MLProblem that puts examples into mini-batches.
+
+    Option ``minibatch_size`` determines the size of the mini-batches.
+    By default, this class assumes that the underlying dataset corresponds
+    to a single field (e.g. the input). If this is not the case (e.g.
+    contains pairs of inputs and targets), option ``has_single_field``
+    should be set to ``False``.
+
+    If the examples don't fit evenly into mini-batches of the desired
+    size, the last mini-batch will be filled with copies of the
+    remaining examples.
+
+    **Defined metadata:**
+
+    * ``'minibatch_size'``: number of examples in each mini-batch
+
+    """
+
+    def __init__(self, data=None, metadata={},call_setup=True,minibatch_size=None,
+                 has_single_field=True):
+        MLProblem.__init__(self,data,metadata)
+        self.minibatch_size = minibatch_size
+        self.has_single_field = has_single_field
+        if call_setup: MinibatchProblem.setup(self)
+        self.metadata['minibatch_size'] = self.minibatch_size
+
+    def __len__(self):
+        return int(np.ceil(float(len(self.data))/self.minibatch_size))
+
+    def __iter__(self):
+        minibatch_filling_count = 0
+        for example in self.data:
+            if minibatch_filling_count == 0:
+                if self.has_single_field:
+                    if (not hasattr(example,'shape')) or example.shape == (1,):
+                        minibatch_container = np.zeros((self.minibatch_size,))
+                    else:
+                        minibatch_container = np.zeros((self.minibatch_size,)+example.shape)
+                else:
+                    minibatch_container = ()
+                    for field in example:
+                        if (not hasattr(field,'shape')) or field.shape == (1,):
+                            minibatch_container += (np.zeros((self.minibatch_size,)),)
+                        else:
+                            minibatch_container += (np.zeros((self.minibatch_size,)+field.shape),)
+            
+            if self.has_single_field:
+                minibatch_container[minibatch_filling_count] = example
+            else:
+                for f in range(len(minibatch_container)):
+                    minibatch_container[f][minibatch_filling_count] = example[f]
+
+            minibatch_filling_count += 1
+            if minibatch_filling_count == self.minibatch_size:
+                yield minibatch_container
+                minibatch_filling_count = 0
+
+        if minibatch_filling_count > 0:
+            if self.has_single_field:
+                i = 0
+                while minibatch_filling_count < self.minibatch_size:
+                    minibatch_container[minibatch_filling_count] = minibatch_container[i]
+                    i+=1
+                    minibatch_filling_count+=1
+            else:
+                i = 0
+                while minibatch_filling_count < self.minibatch_size:
+                    for f in range(len(minibatch_container)):
+                        minibatch_container[f][minibatch_filling_count] = minibatch_container[f][i]
+                    i+=1
+                    minibatch_filling_count+=1
+            yield minibatch_container
+
+    def apply_on(self, new_data, new_metadata={}):
+        if self.__source_mlproblem__ is not None:
+            new_data = self.__source_mlproblem__.apply_on(new_data,new_metadata)
+            new_metadata = {}   # new_data should already contain the new_metadata, since it is an mlproblem
+
+        new_problem = MinibatchProblem(new_data,new_metadata,call_setup=False,minibatch_size=self.minibatch_size,has_single_field=self.has_single_field)
         return new_problem

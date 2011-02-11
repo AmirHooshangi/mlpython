@@ -1,11 +1,18 @@
 TODO:
 
 - write tutorial
+- add in documentation that deepcopy should be used to copy the iterated elements of an mlproblem
+  (think of example where the underlying mlproblem always yields the same container or nparray
+  but changes its content)
+  HUGO: NO! Using a container is a very bad idea! It doesn't work well with zip(...), which doesn't do a deep copy!
+- figure out a way to fascilitate the compilation of mathutils (i.e. without having to edit the setup.py file)
+- figure out a way to allow for having compiled mathutils for different platforms at the same time
 - figure out a way to include other people's software (add a directory in learners, 
   which give all the info/code for downloading other people's software, installing it and
   incorporating it to the library)
 - dynamic module should be sequential, and should be a directory (for unsup. and sup. sequential problems)
 - add the simple learners (nnet, ranking learners, etc.) that I already have
+- might want to consider adding a 'n_fields' option. See "has_single_field" option of MinibatchProblem to understand why...
 - once the documentation is done, should go back and add some cross references
 - add ranking to datasets.store, with support for Yahoo Ranking Challenge Dataset
 - add FreeBSD license to library
