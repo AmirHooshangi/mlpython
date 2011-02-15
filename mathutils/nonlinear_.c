@@ -164,7 +164,7 @@ static PyObject *softmax_vec_(PyObject *self, PyObject *args)
   
   double * input_data_iter = (double *) input->data;
   double * output_data_iter = (double *) output->data;
-  double max = 0;
+  double max = *input_data_iter;
   for (i=0; i<tot_dim; i++)
   {
     if (max < *input_data_iter){ max = *input_data_iter; }
