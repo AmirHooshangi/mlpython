@@ -8,11 +8,58 @@ Tutorial: How to use MLPython
 Datasets
 --------
 
+MLPython comes with support for several datasets (see the
+:ref:`datasets` library documentation for a list). To use a supported
+dataset, module ``mlpython.datasets.store`` should be used. It
+provides procedures for downloading datasets and creating machine
+learning problems from them.
+
+First, the dataset must be downloaded (and so only once). To download 
+dataset with name ``dataset_name``, simply do the following: ::
+
+   import mlpython.datasets.store as dataset_store
+   dataset_store.download(dataset_name)
+
+Then, ``mlpython.datasets.store`` provides several functions that will
+create a specific machine learning problem (classification, density
+estimation, etc.)  from a downloaded dataset. These functions all
+return a training, validation and test split. Here are a few examples
+of using such functions (see the :ref:`datasets` library documentation 
+for more such functions): ::
+
+   # Generate a classification problem
+   trainset,validset,testset = dataset_store.get_classification_problem(dataset_name)
+   
+   # Generate a density estimation problem
+   trainset,validset,testset = dataset_store.get_density_problem(dataset_name)
+
+   # Generate a multilabel classification problem
+   trainset,validset,testset = dataset_store.get_multilabel_problem(dataset_name)
+
+Not all datasets can be converted to all different problems. Module
+``mlpython.datasets.store`` also contains string lists enumerating the
+datasets supported for each machine learning problem (see variables
+with name ending in ``names``,
+e.g. ``mlpython.datasets.store.classification_names``).
+
+
+By default, datasets will be downloaded in the directory given by
+environment variable MLPYTHON_DATASET_REPO, more specifically in a
+subdirectory with the same name as the dataset's. If
+MLPYTHON_DATASET_REPO isn't defined, or if you wish to specify some
+other path for where to download the dataset, a different path can be
+specified through argument ``dataset_dir``. The same is true for
+the functions that generate the machine learning problems.
+
+Module ``mlpython.datasets.store`` provides other useful functions,
+such as functions to generate a K-fold cross-validation experiment or
+a semi-supervised learning experiment. For more information see the
+:ref:`datasets` library documentation.
+
 Processed datasets: MLProblems
 ------------------------------
 
-Before a dataset can be fed to a Learner, it must first be converted
-into an MLProblem. 
+For a dataset to be fed to a Learner, it must correspond to an MLProblem. 
 
 MLProblem objects are simply iterators with some extra properties.
 Hence, from an MLProblem, examples can be obtained by iterating over
@@ -24,6 +71,14 @@ size of the input or the set of all possible values for the
 target. The metadata (field ``metadata`` of an MLProblem) is
 represented by a dictionary mapping strings to arbitrary objects.  
 
+If you always use ``mlpython.datasets.store`` to generate MLProblems,
+you will probably never need to create MLProblems from scratch
+yourself, since all datasets returned by this module are already
+MLProblems. However, if you are facing an unusual learning paradigm or
+wish to use a dataset that is not currently supported by MLPython, you will
+need to know how MLProblems work. 
+
+Here are instructions for how to manipulate MLProblems.
 To create an MLProblem, simply give the raw data over which
 iterating should be done and the dictionary containing the
 metadata: ::
@@ -49,7 +104,7 @@ metadata: ::
    [27 28 29]
 
 
-Each Learners will require a specific structure within each example. For instance,
+Each Learner will require a specific structure within each example. For instance,
 a supervised learning algorithm will require that examples decompose into two 
 parts, an input and a target::
 
@@ -141,16 +196,27 @@ simply calling function ``len()`` on the object: ::
 Learning algorithms: Learners
 -----------------------------
 
-* train is the first method to call. Other methods are not expected to
-  work before train is called!
-* the use() function takes an mlproblem and outputs an iterator with the output
-  of the learner (the target of the mlproblem could be missing)
-* the test() function gives the output AND the error
-* forget only works when the learner has been trained at least once
-  (this is because part of forget() depends on dataset specific parameters).
-  Also, forget() doesn't necessarily reinitializes the parameters: it only
-  means that the next time train() is called, it'll start learning from scratch.
+Learning algorithms are implemented as Learner objects. Other than a
+constructor (which will take the value of the Learner's hyper-parameters), 
+Learners all have four basic methods:
 
+  
+* ``train(self, trainset)``:  Runs the learning algorithm on the MLProblem ``trainset``. 
+  			      Calling ``train`` a second time should not do anything, unless 
+			      some of the hyper-parameters have changed (e.g. the training stopping
+			      criteria) or ``forget`` has been called.
+* ``forget(self)``:           Resets the Learner to its initial state.
+* ``use(self, dataset)``:     Computes and returns the output of the Learner for
+      	      		      MLProblem ``dataset``. The method should return an iterator over these
+			      outputs (e.g. a list).
+* ``test(self, dataset)``:    Computes and returns the outputs of the Learner as well as the cost of 
+                              those outputs for MLProblem ``dataset``. The method should return a 
+			      pair of two iterators, the first being over the outputs and the 
+			      second over the costs.
+  
+Learner objects are separated in different module, for different types
+of problems (classification, density estimation, etc.). See the
+:ref:`learners` library documentation for more information.
 
 My first experiment
 -------------------
@@ -158,18 +224,8 @@ My first experiment
 * Maybe add an experiment on MNIST that gets 1.2%?
 * design some templates (either put in documentation only or have them in the code somewhere)
 
-Practical tips
---------------
-
-* talk about passing a metadata for the length
-* in a Learner, instead of remembering the underlying training, better to remember
-  the metadata and do what apply_on would do
-* do not use zip(dataset,range(...)), since it appears like this doesn't work
-  well with very big datasets (keeps pointers to the examples, and memory
-  is not freed, and memory explodes). Use itertools.izip() instead!
-
-Mathutils
----------
+Other tools
+-----------
 
 Third-party Learners
 --------------------

@@ -51,8 +51,14 @@ on what types these objects are. Consequently, all code should be well
 documented, with docstrings that are explicit about how each object should
 be used.
 
-Learners
+Datasets
 --------
+
+A separate module is dedicated to each dataset, each
+containing a ``obtain`` and a ``load`` function.  The ``obtain``
+function will download the dataset in the desired directory, and
+the ``load`` function will return the data and metadata corresponding
+to the training, validation and test sets for this dataset.
 
 MLProblems
 ----------
@@ -66,11 +72,14 @@ MLProblems
   apply the same sequence of mlproblems as on the raw_data)
 * talk about the difference between __init__() and setup() (the later computes trainset related things that should be shared with the valid and test sets)
 
+Learners
+--------
+
 Common Metadata Keywords
 ------------------------
 
-Datasets
---------
+Mathutils
+---------
 
 Documentating your code
 -----------------------
@@ -78,3 +87,14 @@ Documentating your code
 * think about how sphinx is going to interpret the docstring
 * always add a refence to a paper when possible (show how this is done
 * if the object/function defines or requires metadata, put it in docstring
+
+Practical tips
+--------------
+
+* talk about passing a metadata for the length
+* in a Learner, instead of remembering the underlying training, better to remember
+  the metadata and do what apply_on would do
+* do not use zip(dataset,range(...)), since it appears like this doesn't work
+  well with very big datasets (keeps pointers to the examples, and memory
+  is not freed, and memory explodes)
+

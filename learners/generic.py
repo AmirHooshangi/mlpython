@@ -29,7 +29,7 @@ class Learner:
 
     def forget(self):
         """
-        Resets the Learner to it's original state.
+        Resets the Learner to its original state.
         """
         raise NotImplementedError("Subclass should have implemented this method.")
 
