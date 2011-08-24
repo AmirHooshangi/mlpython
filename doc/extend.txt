@@ -18,7 +18,7 @@ While this later choice can seem odd and is admittedly due to my limited
 Python expertise, it is also motivated by the wish that other
 programmers with equal or worse Python programming experience be able
 to contribute to it. This is important, since the machine
-learning community includes not just to computer scientists but also
+learning community includes not just computer scientists but also
 mathematicians and statisticians with varying programming skills.
 Hence, given the vaste array of learning algorithms in the literature,
 it made sense to focus on an implementation which would require
@@ -51,8 +51,48 @@ on what types these objects are. Consequently, all code should be well
 documented, with docstrings that are explicit about how each object should
 be used.
 
-Learners
+Most contributions to MLPython will probably consist in a new dataset
+or a new learning algorithm. Contributions of interfaces to
+third-party software are also encouraged. Other contributions, such as
+implementations of new MLProblems, are also welcome but will require
+deeper knowledge of the MLPython library. 
+
+Datasets
 --------
+
+Adding support in MLPython for a new dataset is very simple. First,
+you must add a new module to the ``mlpython.datasets`` package, with
+the name corresponding to the dataset's name (e.g. module ``mlpython.datasets.mnist`` 
+for the MNIST dataset). This new module should provide two functions:
+
+
+* ``obtain(dir_path)``:                     downloads the dataset in directory ``dir_path``.
+*``load(dir_path, load_to_memory=False)``:  returns the data and metadata corresponding to 
+                                            the training, validation and test sets for this dataset
+                                            at path ``load_to_memory``. The ``load_to_memory` 
+                                            argument should let the user decide whether the
+                                            dataset is loaded in memory or is kept on disk.
+
+The ``obtain`` should put the data in a format which will fascilitate
+loading the dataset (in memory or on disk). The option of not loading
+the dataset in memory is important: it will come useful if a dataset
+is particularly big or if the data only needs to be transfered to a
+GPU device. If ``mlpython.datasets`` currently contains a dataset
+of similar nature to your new dataset, looking at its module should give
+a better idea of how to create the new dataset module.
+
+The second and final step to adding a new dataset is to add support
+for it in the ``mlpython.datasets.store`` module. To do this, simply
+add the string name of the dataset module to any of the
+``datasets.store.*_names`` variables (which are sets of string)
+corresponding to appropriate machine learning problems for your new
+dataset. For instance, string ``'mnist'`` is found in
+``datasets.store.classification_names``. You might want to take a look
+at the associated ``datasets.store.get_*_problem`` function that loads
+the dataset's data and metadata to create the MLProblems, so as to see
+which MLProblem will be created and what is expected from the data and
+metadata returned by the dataset's ``load`` function (e.g. what
+keywords should the metadata have).
 
 MLProblems
 ----------
@@ -66,11 +106,17 @@ MLProblems
   apply the same sequence of mlproblems as on the raw_data)
 * talk about the difference between __init__() and setup() (the later computes trainset related things that should be shared with the valid and test sets)
 
-Common Metadata Keywords
+Learners
+--------
+
+Common metadata keywords
 ------------------------
 
-Datasets
---------
+Mathutils
+---------
+
+Interfaces to third-party software
+----------------------------------
 
 Documentating your code
 -----------------------
@@ -78,3 +124,14 @@ Documentating your code
 * think about how sphinx is going to interpret the docstring
 * always add a refence to a paper when possible (show how this is done
 * if the object/function defines or requires metadata, put it in docstring
+
+Practical tips
+--------------
+
+* talk about passing a metadata for the length
+* in a Learner, instead of remembering the underlying training, better to remember
+  the metadata and do what apply_on would do
+* do not use zip(dataset,range(...)), since it appears like this doesn't work
+  well with very big datasets (keeps pointers to the examples, and memory
+  is not freed, and memory explodes)
+

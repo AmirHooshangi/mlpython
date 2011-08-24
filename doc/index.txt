@@ -27,6 +27,7 @@ Here's a quick peek at what MLPython let's you do: ::
    import numpy as np
    import mlpython.datasets.store as dataset_store
    from mlpython.learners.classification import NNet
+   from mlpython.learners.features import RBM
 
    dataset_store.download('mnist')
    trainset,validset,testset = dataset_store.get_classification_problem('mnist')
