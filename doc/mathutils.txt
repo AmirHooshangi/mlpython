@@ -1,0 +1,14 @@
+.. _mathutils:
+
+Mathutils
+====================================
+
+.. automodule:: mathutils
+   :members:
+
+.. Commented out for now...
+   .. automodule:: mathutils.linalg
+      :members:
+
+   .. automodule:: mathutils.nonlinear
+      :members:

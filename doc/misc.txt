@@ -1,0 +1,19 @@
+.. _misc:
+
+Misc
+====================================
+
+.. automodule:: misc
+   :members:
+
+IO
+--
+
+.. automodule:: misc.io
+   :members:
+
+Visualize
+---------
+
+.. automodule:: misc.visualize
+   :members:
