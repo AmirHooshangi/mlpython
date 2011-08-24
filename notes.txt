@@ -1,6 +1,11 @@
 TODO:
 
 - write tutorial
+- maybe should add info. about which MLProblem is returned by the different get_*_problem. 
+- when documentation is done:
+   * ispell
+   * find places where examples in the form of code snippets could be added
+   * add cross-references where appropriate
 - add in documentation that deepcopy should be used to copy the iterated elements of an mlproblem
   (think of example where the underlying mlproblem always yields the same container or nparray
   but changes its content)

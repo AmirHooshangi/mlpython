@@ -37,7 +37,7 @@ for more such functions): ::
    trainset,validset,testset = dataset_store.get_multilabel_problem(dataset_name)
 
 Not all datasets can be converted to all different problems. Module
-``mlpython.datasets.store`` also contains string lists enumerating the
+``mlpython.datasets.store`` also contain Python sets of strings containing the
 datasets supported for each machine learning problem (see variables
 with name ending in ``names``,
 e.g. ``mlpython.datasets.store.classification_names``).
@@ -136,7 +136,7 @@ classification problem. To do this, we create a ClassificationProblem
 object, which requires the metadata ``'targets'`` that corresponds to
 the set of values that the target can take.  Moreover, after having
 created this new MLProblem, its metadata will now contain a key
-``'class_to_id'``. This key will be associated to a dictionary that
+``'class_to_id'``. This key will be associated with a dictionary that
 maps target symbols to class IDs: ::
 
    >>> from mlpython.mlproblems.classification import ClassificationProblem
@@ -146,7 +146,7 @@ maps target symbols to class IDs: ::
    >>> print trainset.metadata['class_to_id']
    {'False': 1, 'True': 0}
 
-Learners will also expect different kinds of metadata. The user should
+Learners will expect different kinds of metadata. The user should
 look at the MLProblem and Learner class docstrings in order to figure
 out which metadata are expected by these objects.
 
@@ -164,9 +164,9 @@ This ensures that all datasets are coherent and share the relevant
 metadata, such as the ``class_to_id`` mapping for classification
 problems.  
 
-MLProblems can also be combined. For instance, to obtain
-a subset of the examples of a classification problem,
-a ClassificationProblem object can be fed to a SubsetProblem::
+MLProblems can also be composed, one within another. For instance, to
+obtain a subset of the examples of a classification problem, a
+ClassificationProblem object can be fed to a SubsetProblem::
 
    >>> from mlpython.mlproblems.generic import SubsetProblem
    >>> subsetpb = SubsetProblem(trainset,subset=set(range(0,10,2)))
@@ -185,11 +185,55 @@ The new MLProblem will inherit the metadata from the previous
 MLProblem. Additional metadata can also be given explicitly in the
 constructor, as before. If there is overlap between the keys of the
 previous MLProblem and the metadata explicitly given to the
-constructor, the later will have priority.
+constructor, the later will have priority. 
+
+Another useful MLProblem object for composing MLProblems is
+PreprocessedProblem, which provides a general approach for creating a
+new MLProblem from the content of another "source" MLProblem, by using
+a provided transformation or preprocessing function to apply to each
+example in the source: ::
+
+   >>> from mlpython.mlproblems.generic import PreprocessedProblem
+   >>> def preproc(example,metadata):
+   ...     input,target = example
+   ...     metadata['input_size'] = 2 # Make sure 'input_size' is correctly set
+   ...     return ([3*input,input-4],target)
+   ... 
+   >>> new_trainset = PreprocessedProblem(trainset,preprocess=preproc)
+   >>> for input,target in new_trainset:
+   ...     print input,target
+   ... 
+   [0, -4] 0
+   [3, -3] 0
+   [6, -2] 0
+   [9, -1] 0
+   [12, 0] 0
+   [15, 1] 1
+   [18, 2] 1
+   [21, 3] 1
+   [24, 4] 1
+   [27, 5] 1
+
+Notice how the ``preproc`` function must also set the new value for
+the ``'input_size'`` metadata, since the preprocessing is changing the
+size of the input. Here too, the same preprocessing can then be applied
+on the test set using the ``apply_on`` method: ::
+
+   >>> for input,target in new_testset:
+   ...     print input,target
+   ... 
+   [-6, -6] 0
+   [-3, -5] 0
+   [30, 6] 1
+   [33, 7] 1
+   >>> print new_testset.metadata
+   {'input_size': 2, 'targets': set(['True', 'False']), 'class_to_id': {'False': 1, 'True': 0}}
 
 Finally, an MLProblem has a length, which can be obtained by
 simply calling function ``len()`` on the object: ::
 
+   >>> len(trainset)
+   10
    >>> len(subsetpb)
    5
 
@@ -201,31 +245,200 @@ constructor (which will take the value of the Learner's hyper-parameters),
 Learners all have four basic methods:
 
   
-* ``train(self, trainset)``:  Runs the learning algorithm on the MLProblem ``trainset``. 
-  			      Calling ``train`` a second time should not do anything, unless 
-			      some of the hyper-parameters have changed (e.g. the training stopping
-			      criteria) or ``forget`` has been called.
+* ``train(self, trainset)``:  Runs the learning algorithm on the MLProblem ``trainset``. Calling ``train`` a second time should not do anything, unless some of the hyper-parameters have changed (e.g. the training stopping criteria) or ``forget`` has been called.
 * ``forget(self)``:           Resets the Learner to its initial state.
-* ``use(self, dataset)``:     Computes and returns the output of the Learner for
-      	      		      MLProblem ``dataset``. The method should return an iterator over these
-			      outputs (e.g. a list).
-* ``test(self, dataset)``:    Computes and returns the outputs of the Learner as well as the cost of 
-                              those outputs for MLProblem ``dataset``. The method should return a 
-			      pair of two iterators, the first being over the outputs and the 
-			      second over the costs.
+* ``use(self, dataset)``:     Computes and returns the output of the Learner for MLProblem ``dataset``. The method should return an iterator over these outputs (e.g. a list).
+* ``test(self, dataset)``:    Computes and returns the outputs of the Learner as well as the cost of those outputs for MLProblem ``dataset``. The method should return a pair of two iterators, the first being over the outputs and the second over the costs.
   
 Learner objects are separated in different module, for different types
 of problems (classification, density estimation, etc.). See the
 :ref:`learners` library documentation for more information.
 
-My first experiment
--------------------
+My first experiments
+--------------------
 
-* Maybe add an experiment on MNIST that gets 1.2%?
-* design some templates (either put in documentation only or have them in the code somewhere)
+With knowledge of how to use the ``mlpython.datasets.store`` module and Learner
+objects, it is then easy to run a machine learning experiment. We will
+use the training of a neural network as a running example, to illustrate
+different ways of setting up an experiment with MLPython.
+
+The simplest experiment will typically require to load a dataset, 
+train a Learner object on the training set and report the error of the
+trained Learner on the test set. Here's an example of such an
+experiment with a neural network: ::
+
+   import numpy as np
+   import mlpython.datasets.store as dataset_store
+   from mlpython.learners.classification import NNet
+
+   # Load the dataset
+   dataset_store.download('mnist')
+   trainset,validset,testset = dataset_store.get_classification_problem('mnist')
+
+   # Construct and train a Learner (here a neural network)
+   nnet = NNet(n_stages=10)
+   nnet.train(trainset)
+
+   # Compute the test error
+   outputs,costs = nnet.test(testset)
+   print 'Classification error on test set is',np.mean(costs,axis=0)
+
+In this case, the neural network is trained for 10 full iterations
+over the training set, as indicated by option ``n_stages``. The other
+options or hyper-parameters of the neural network were set
+to their default values.
+
+Instead of specifying the number of iterations, it is common practice
+to use early stopping, i.e. track the error on a validation set
+as training progresses and stop once overfitting occurs. This
+only requires a small change to the above code: ::
+
+   import numpy as np
+   import mlpython.datasets.store as dataset_store
+   from mlpython.learners.classification import NNet
+
+   # Load the dataset
+   dataset_store.download('mnist')
+   trainset,validset,testset = dataset_store.get_classification_problem('mnist')
+
+   # Construct neural network
+   nnet = best_nnet = NNet(n_stages=1)
+
+   # Setting up early stopping
+   best_val_error = np.inf
+   look_ahead = 10
+   n_incr_error = 0
+   max_it = 1000
+
+   for stage in range(1,max_it+1):
+       # Check if overfitting has been detected
+       if not n_incr_error < look_ahead:
+           break
+
+       # Train neural network for one more iteration
+       nnet.n_stages = stage
+       nnet.train(trainset)
+
+       # Look at validation set error
+       outputs, costs = model.test(validset)
+       error = np.mean(costs,axis=0)[0]
+
+       # See if validation error has increased
+       if error < best_val_error:
+           best_val_error = error
+           best_nnet = copy.deepcopy(nnet)
+       else:
+           n_incr_error += 1
+
+   nnet = best_nnet
+   # Compute the test error
+   outputs,costs = nnet.test(testset)
+   print 'Classification error on test set is',np.mean(costs,axis=0)
+
+More specifically, this early stopping procedure stops learning when
+the error on the validation set has not improved for at least 10
+iterations. Then, the neural network is put back to its best state
+and the test error is reported.
+
+Finally, it is well known that the final solution obtained by a neural
+network depends highly on the initialization of its parameters. One
+popular initialization approach consists in pretraining those
+parameters by stacking several restricted Boltzmann machines (RBM),
+i.e. training each RBM on the hidden (feature) representation computed by
+the RBM below it. This can be achieved using the PreprocessedProblem
+object, by providing it with original data as well as a function
+that computes the appropriate hidden representation: ::
+
+   import numpy as np
+   import mlpython.datasets.store as dataset_store
+   from mlpython.learners.classification import NNet
+   from mlpython.learners.features import RBM
+
+   # Load the dataset
+   dataset_store.download('mnist')
+   trainset,validset,testset = dataset_store.get_classification_problem('mnist')
+
+
+   # Perform pretraining
+   hidden_sizes = [ 100, 200]
+   pretraining_n_stages = 5
+
+   print 'Pretraining hidden layers'
+   pretrained_Ws = []
+   pretrained_cs = []
+   for i,hidden_size in enumerate(hidden_sizes):
+
+       # Defining function that maps dataset 
+       # into last trained representation
+       def new_representation(example,metadata):
+           ret = example[0]
+           for W,c in zip(pretrained_Ws,pretrained_cs):
+               ret = 1./(1+np.exp(-(c + np.dot(W,ret))))
+           return ret
+       
+       # Create RBM training set using PreprocessedProblem
+       if i == 0:
+           new_input_size = trainset.metadata['input_size']
+       else:
+           new_input_size = hidden_sizes[i-1]
+       rbm_trainset = mlpb.PreprocessedProblem(trainset,preprocess=new_representation,
+                                               metadata={'input_size':new_input_size})
+       
+       # Train RBM
+       print '... hidden layer ' + str(i+1),
+       new_rbm = RBM(n_stages = pretraining_n_stages,
+                     hidden_size = hidden_size)
+       new_rbm.train(rbm_trainset)
+       print ' DONE'
+
+       pretrained_Ws += [new_rbm.W]
+       pretrained_cs += [new_rbm.c]
+
+   # Construct neural network, with pretrained parameters
+   nnet = best_nnet = NNet(n_stages=1,
+                           pretrained_Ws = pretrained_Ws,
+			   pretrained_cs = pretrained_cs)
+
+   # Setting up early stopping
+   best_val_error = np.inf
+   look_ahead = 10
+   n_incr_error = 0
+   max_it = 1000
+
+   for stage in range(1,max_it+1):
+       # Check if overfitting has been detected
+       if not n_incr_error < look_ahead:
+           break
+
+       # Train neural network for one more iteration
+       nnet.n_stages = stage
+       nnet.train(trainset)
+
+       # Look at validation set error
+       outputs, costs = model.test(validset)
+       error = np.mean(costs,axis=0)[0]
+
+       # See if validation error has increased
+       if error < best_val_error:
+           best_val_error = error
+           best_nnet = copy.deepcopy(nnet)
+       else:
+           n_incr_error += 1
+
+   nnet = best_nnet
+   # Compute the test error
+   outputs,costs = nnet.test(testset)
+   print 'Classification error on test set is',np.mean(costs,axis=0)
+
+We see that designing machine learning experiments is fairly simple
+given the right Learner and MLProblem components. A simple Python
+script should then suffice.
 
 Other tools
 -----------
+
+* mathutils
+* misc (io and visualization)
 
 Third-party Learners
 --------------------

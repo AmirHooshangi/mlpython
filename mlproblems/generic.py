@@ -261,8 +261,7 @@ class PreprocessedProblem(MLProblem):
 
     **IMPORANT:** if ``preprocess`` changes the size of the inputs, 
     the metadata (i.e. ``'input_size'``) should be changed 
-    accordingly within ``preprocess`` or the new value for that
-    metadata should be given in the constructor.
+    accordingly within ``preprocess``.
 
     """
 
@@ -281,6 +280,10 @@ class PreprocessedProblem(MLProblem):
             new_metadata = {}   # new_data should already contain the new_metadata, since it is an mlproblem
 
         new_problem = PreprocessedProblem(new_data,new_metadata,call_setup=False,preprocess=self.preprocess)
+        
+        # Call preprocess on first example, so that it sets the new_metadata correctly
+        new_problem.__iter__().next()
+        
         return new_problem
 
 class MinibatchProblem(MLProblem):
