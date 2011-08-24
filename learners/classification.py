@@ -6,13 +6,16 @@ of inputs and targets, with the target being a class index.
 
 The currently implemented algorithms are:
 
-* ``BayesClassifier``: a Bayes classifier obtained from density estimators.
+* ``BayesClassifier``: Bayes classifier obtained from density estimators.
+* ``NNet```:           Neural Network for classification
 
 """
 
 from generic import Learner,OnlineLearner
 import numpy as np
 import mlpython.mlproblems.classification as mlpb
+import mlpython.mathutils.nonlinear as mlnonlin
+import mlpython.mathutils.linalg as mllin
 
 
 class BayesClassifier(Learner):
@@ -143,6 +146,7 @@ class NNet(OnlineLearner):
        self.n_stages = n_stages
        self.stage = 0
        self.learning_rate = learning_rate
+       self.decrease_constant = decrease_constant
        self.hidden_sizes = hidden_sizes
        self.seed = seed
        self.pretrained_parameters = pretrained_parameters

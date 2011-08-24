@@ -7,6 +7,7 @@ representation of the input.
 The currently implemented algorithms are:
 
 * ``PCA``: Principal Component Analysis learner.
+* ``RBM``: Restricted Boltzmann Machine learner for feature extraction.
 
 """
 
@@ -125,6 +126,7 @@ class RBM(OnlineLearner):
        self.n_stages = n_stages
        self.stage = 0
        self.learning_rate = learning_rate
+       self.decrease_constant = decrease_constant
        self.hidden_size = hidden_size
        self.l1_regularization = l1_regularization
        self.seed = seed
