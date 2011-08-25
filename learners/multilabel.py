@@ -6,7 +6,7 @@ to the size of the target vector, will typically be required.
 
 The currently implemented algorithms are:
 
-* ``MultilabelCRF``: a Conditional Random Field for multi-label classification
+* MultilabelCRF: a Conditional Random Field for multi-label classification
 
 """
 

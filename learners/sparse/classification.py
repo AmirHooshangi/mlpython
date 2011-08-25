@@ -6,7 +6,7 @@ of inputs and targets, with the target being a class index.
 
 The currently implemented algorithms are:
 
-* ``MultinomialNaiveBayesClassifier``: a multinomial naive Bayes classifier.
+* MultinomialNaiveBayesClassifier: a multinomial naive Bayes classifier.
 
 """
 

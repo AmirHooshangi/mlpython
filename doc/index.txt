@@ -36,7 +36,7 @@ Here's a quick peek at what MLPython let's you do: ::
    nnet.train(trainset)
 
    outputs,costs = nnet.test(testset)
-   print 'Classification error on test set is',np.mean(costs,axis=0)
+   print 'Classification error on test set is',np.mean(costs,axis=0)[0]
 
 As is probably obvious, this code snippet downloads the MNIST dataset,
 trains a feed-forward neural network for 10 iterations on it and

@@ -6,8 +6,8 @@ of inputs and targets, with the target being a class index.
 
 The currently implemented algorithms are:
 
-* ``BayesClassifier``: Bayes classifier obtained from density estimators.
-* ``NNet```:           Neural Network for classification
+* BayesClassifier: Bayes classifier obtained from density estimators.
+* NNet:            Neural Network for classification.
 
 """
 

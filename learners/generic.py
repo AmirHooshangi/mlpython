@@ -5,8 +5,8 @@ Learners.
 
 This module contains the following classes:
 
-* ``Learner``:         Root class for all learning algorithms.
-* ``OnlineLearner``:   Interface for Learners that can be traiend "online".
+* Learner:         Root class for all learning algorithms.
+* OnlineLearner:   Interface for Learners that can be traiend "online".
 
 """
 

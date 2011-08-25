@@ -12,10 +12,22 @@ Dataset store
 .. automodule:: datasets.store
    :members:
 
+20-newsgroups
+--------------------
+
+.. automodule:: datasets.newsgroups
+   :members:
+
 Adult
 -------------
 
 .. automodule:: datasets.adult
+   :members:
+
+Bibtex
+-------------
+
+.. automodule:: datasets.bibtex
    :members:
 
 Binarized MNIST
@@ -24,16 +36,58 @@ Binarized MNIST
 .. automodule:: datasets.binarized_mnist
    :members:
 
+CIFAR-10
+-----------------
+
+.. automodule:: datasets.cifar10
+   :members:
+
 Connect-4
 -----------------
 
 .. automodule:: datasets.connect4
    :members:
 
+Corel5k
+-----------------
+
+.. automodule:: datasets.corel5k
+   :members:
+
 DNA
 -----------
 
 .. automodule:: datasets.dna
+   :members:
+
+Labeled Faces in the Wild (face completion)
+-------------------------------------------
+
+.. automodule:: datasets.face_completion_lfw
+   :members:
+
+Labeled Faces in the Wild (occluded faces)
+------------------------------------------
+
+.. automodule:: datasets.occluded_faces_lfw
+   :members:
+
+MajMin
+-----------
+
+.. automodule:: datasets.majmin
+   :members:
+
+Mediamill
+-----------
+
+.. automodule:: datasets.mediamill
+   :members:
+
+Medical
+-----------
+
+.. automodule:: datasets.medical
    :members:
 
 MNIST
@@ -48,10 +102,10 @@ Mushrooms
 .. automodule:: datasets.mushrooms
    :members:
 
-20-newsgroups
---------------------
+MTurk
+-----------------
 
-.. automodule:: datasets.newsgroups
+.. automodule:: datasets.mturk
    :members:
 
 NIPS
@@ -66,9 +120,21 @@ OCR letters
 .. automodule:: datasets.ocr_letters
    :members:
 
+Sarcos
+-------------------
+
+.. automodule:: datasets.sarcos
+   :members:
+
 Web
 -------------
 
 .. automodule:: datasets.web
+   :members:
+
+Yeast
+-------------
+
+.. automodule:: datasets.yeast
    :members:
 

@@ -187,6 +187,14 @@ constructor, as before. If there is overlap between the keys of the
 previous MLProblem and the metadata explicitly given to the
 constructor, the later will have priority. 
 
+When composing MLProblems (effectively forming a series of
+MLProblems), it is important to note that ``apply_on()`` should be
+given data in the same form as the source data for the *first*
+MLProblem in the series. In the current example, this would imply
+calling ``subsetpb.apply_on(test_data,test_metadata)``, *not*
+``subsetpb.apply_on(testset)`` (``apply_on()`` can also take an
+MLProblem as input).
+
 Another useful MLProblem object for composing MLProblems is
 PreprocessedProblem, which provides a general approach for creating a
 new MLProblem from the content of another "source" MLProblem, by using
@@ -229,13 +237,29 @@ on the test set using the ``apply_on`` method: ::
    >>> print new_testset.metadata
    {'input_size': 2, 'targets': set(['True', 'False']), 'class_to_id': {'False': 1, 'True': 0}}
 
-Finally, an MLProblem has a length, which can be obtained by
-simply calling function ``len()`` on the object: ::
+Finally, an MLProblem has a length, which can be obtained by simply
+calling function ``len()`` on the object (which calls the object's
+``__len__()`` method): ::
 
    >>> len(trainset)
    10
    >>> len(subsetpb)
    5
+
+The default behavior of ``__len__()`` in an MLProblem is to call
+``len()`` on its source data. However, since the only thing that can
+be assumed about the source data is that it is possible to iterate
+over it, this call might fail (for instance if the source data is not
+loaded in memory and is a File object). In that case, MLProblem will
+usually iterate over the source data and explicitly count the number
+of examples. When this is too expensive to be practical, it is
+possible to override this behavior by explicitly providing the length
+in the metadata at construction time, using the keyword
+``'length'``. MLProblem will then remember that value, remove the
+keyword from the metadata and always output that value for its
+length. Note that when using this overriding procedure, it is the
+user's responsibility to provide the correct value for the length.
+
 
 Learning algorithms: Learners
 -----------------------------
@@ -272,7 +296,7 @@ experiment with a neural network: ::
    from mlpython.learners.classification import NNet
 
    # Load the dataset
-   dataset_store.download('mnist')
+   #dataset_store.download('mnist')  # uncomment if the dataset has already been downloaded
    trainset,validset,testset = dataset_store.get_classification_problem('mnist')
 
    # Construct and train a Learner (here a neural network)
@@ -281,7 +305,7 @@ experiment with a neural network: ::
 
    # Compute the test error
    outputs,costs = nnet.test(testset)
-   print 'Classification error on test set is',np.mean(costs,axis=0)
+   print 'Classification error on test set is',np.mean(costs,axis=0)[0]
 
 In this case, the neural network is trained for 10 full iterations
 over the training set, as indicated by option ``n_stages``. The other
@@ -294,11 +318,12 @@ as training progresses and stop once overfitting occurs. This
 only requires a small change to the above code: ::
 
    import numpy as np
+   import copy
    import mlpython.datasets.store as dataset_store
    from mlpython.learners.classification import NNet
 
    # Load the dataset
-   dataset_store.download('mnist')
+   #dataset_store.download('mnist')  # uncomment if the dataset has already been downloaded
    trainset,validset,testset = dataset_store.get_classification_problem('mnist')
 
    # Construct neural network
@@ -310,6 +335,7 @@ only requires a small change to the above code: ::
    n_incr_error = 0
    max_it = 1000
 
+   print 'Training neural network'
    for stage in range(1,max_it+1):
        # Check if overfitting has been detected
        if not n_incr_error < look_ahead:
@@ -320,7 +346,7 @@ only requires a small change to the above code: ::
        nnet.train(trainset)
 
        # Look at validation set error
-       outputs, costs = model.test(validset)
+       outputs, costs = nnet.test(validset)
        error = np.mean(costs,axis=0)[0]
 
        # See if validation error has increased
@@ -333,7 +359,7 @@ only requires a small change to the above code: ::
    nnet = best_nnet
    # Compute the test error
    outputs,costs = nnet.test(testset)
-   print 'Classification error on test set is',np.mean(costs,axis=0)
+   print 'Classification error on test set is',np.mean(costs,axis=0)[0]
 
 More specifically, this early stopping procedure stops learning when
 the error on the validation set has not improved for at least 10
@@ -350,12 +376,14 @@ object, by providing it with original data as well as a function
 that computes the appropriate hidden representation: ::
 
    import numpy as np
+   import copy
    import mlpython.datasets.store as dataset_store
    from mlpython.learners.classification import NNet
    from mlpython.learners.features import RBM
+   from mlpython.mlproblems.generic import PreprocessedProblem
 
    # Load the dataset
-   dataset_store.download('mnist')
+   #dataset_store.download('mnist')  # uncomment if the dataset has already been downloaded
    trainset,validset,testset = dataset_store.get_classification_problem('mnist')
 
 
@@ -381,8 +409,8 @@ that computes the appropriate hidden representation: ::
            new_input_size = trainset.metadata['input_size']
        else:
            new_input_size = hidden_sizes[i-1]
-       rbm_trainset = mlpb.PreprocessedProblem(trainset,preprocess=new_representation,
-                                               metadata={'input_size':new_input_size})
+       rbm_trainset = PreprocessedProblem(trainset,preprocess=new_representation,
+                                          metadata={'input_size':new_input_size})
        
        # Train RBM
        print '... hidden layer ' + str(i+1),
@@ -396,8 +424,7 @@ that computes the appropriate hidden representation: ::
 
    # Construct neural network, with pretrained parameters
    nnet = best_nnet = NNet(n_stages=1,
-                           pretrained_Ws = pretrained_Ws,
-			   pretrained_cs = pretrained_cs)
+                           pretrained_parameters = (pretrained_Ws,pretrained_cs) )
 
    # Setting up early stopping
    best_val_error = np.inf
@@ -405,6 +432,7 @@ that computes the appropriate hidden representation: ::
    n_incr_error = 0
    max_it = 1000
 
+   print 'Training neural network'
    for stage in range(1,max_it+1):
        # Check if overfitting has been detected
        if not n_incr_error < look_ahead:
@@ -415,7 +443,7 @@ that computes the appropriate hidden representation: ::
        nnet.train(trainset)
 
        # Look at validation set error
-       outputs, costs = model.test(validset)
+       outputs, costs = nnet.test(validset)
        error = np.mean(costs,axis=0)[0]
 
        # See if validation error has increased
@@ -428,7 +456,7 @@ that computes the appropriate hidden representation: ::
    nnet = best_nnet
    # Compute the test error
    outputs,costs = nnet.test(testset)
-   print 'Classification error on test set is',np.mean(costs,axis=0)
+   print 'Classification error on test set is',np.mean(costs,axis=0)[0]
 
 We see that designing machine learning experiments is fairly simple
 given the right Learner and MLProblem components. A simple Python
@@ -437,20 +465,35 @@ script should then suffice.
 Other tools
 -----------
 
-* mathutils
-* misc (io and visualization)
+MLPython also comes with a few useful tools for either implementing
+new Learners or to perform data analysis:
+
+* :ref:`mathutils`: This package contains several useful functions to perform linear and nonlinear operations. A particular focus was put on allowing to call these functions such that no memory allocation is required within.
+* :ref:`misc`: This package provides module ``misc.io`` to facilitate the loading and saving of files (see :ref:`misc_io`) and module ``misc.visualize`` that allows for the visualization of datasets and images (see :ref:`misc_visualize`).
+
+In the subdirectory mlpython/scripts/, you will also find:
+
+* ``launch_jobs``: This is a script which can be used to spawn several jobs in parallel, on different machines, through ssh. Call it with ``-help`` for more information on how to use it.
+* ``print_ascii_table``: This script takes a text file in which each row provides details for a single experiment (values of hyper-parameters, results on training/validation/test sets), and prints it out with nicely aligned colums, to facilitate viewing. Each row should be segmented into columns, separated by the tab character '\\t'. 
 
 Third-party Learners
 --------------------
 
-Extra gift: some useful scripts
--------------------------------
+Certain Learners in MLPython only correspond to an interface to some
+third-party code. This is the case of the SVMClassifier object (see :ref:`learners_third_party_libsvm`), which
+is an interface to the LIBSVM libary. All such Learner objects are
+part of their own subpackage, within the package
+``mlpython.learners.third_party`` (see :ref:`learners_third_party`).
+
+In such cases, the third-party code must be downloaded and installed
+separately. Instructions should be available in a README file, in the
+subdirectory corresponding to the object's package (for example,
+mlpython/learners/third_party/libsvm/).
 
 Before you leave
 ----------------
 
-add useful links for ml in python, in general
-
-  * profiling, e.g. http://packages.python.org/line_profiler/
-  * C programming within Numpy
-
+This tutorial gives only a shallow tour of MLPython. Hence, I suggest
+taking a quick look at the :ref:`library`, in order to get a better
+view of the different datasets, Learners and tools available within
+MLPython.

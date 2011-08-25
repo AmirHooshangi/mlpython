@@ -4,8 +4,8 @@ for classification problems.
 
 This module contains the following classes:
 
-* ``ClassificationProblem``:   Generates a classification problem.
-* ``ClassSubsetProblem``:      Extracts examples from a subset of all classes.
+* ClassificationProblem:   Generates a classification problem.
+* ClassSubsetProblem:      Extracts examples from a subset of all classes.
 
 """
 

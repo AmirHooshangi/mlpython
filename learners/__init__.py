@@ -23,6 +23,7 @@ The modules are:
 * ``learners.classification``:   Learners for classification problems.
 * ``learners.density``:          Learners for density or distrubtion estimation.
 * ``learners.dynamic``:          Learners for sequential data.
+* ``learners.features``:         Learners for feature extraction.
 
 The subpackages are:
 

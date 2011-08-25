@@ -6,8 +6,8 @@ representation of the input.
 
 The currently implemented algorithms are:
 
-* ``PCA``: Principal Component Analysis learner.
-* ``RBM``: Restricted Boltzmann Machine learner for feature extraction.
+* PCA: Principal Component Analysis learner.
+* RBM: Restricted Boltzmann Machine learner for feature extraction.
 
 """
 

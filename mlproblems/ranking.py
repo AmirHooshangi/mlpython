@@ -4,8 +4,8 @@ for ranking problems.
 
 This module contains the following classes:
 
-* ``RankingProblem``:   .              Generates a ranking problem.
-* ``RankingToClassificationProblem``:  Generates a classification problem from a ranking problem.
+* RankingProblem:   .              Generates a ranking problem.
+* RankingToClassificationProblem:  Generates a classification problem from a ranking problem.
 
 """
 

@@ -5,13 +5,13 @@ manipulations that can be useful for many tasks.
 
 This module contains the following classes:
 
-* ``MLProblem``:              Root class for machine learning problems.
-* ``SubsetProblem``:          Extracts a subset of examples from a dataset.
-* ``SubsetFieldsProblem``:    Extracts a subset of the fields in a dataset.
-* ``MergedProblem``:          Merges several datasets together.
-* ``PreprocessedProblem``:    Applies an arbitrary preprocessing on a dataset.
-* ``MinibatchProblem``:       Puts examples of datasets into mini-batches.
-* ``SemisupervisedProblem``:  Removes the labels of a subset of the examples in a dataset.
+* MLProblem:              Root class for machine learning problems.
+* SubsetProblem:          Extracts a subset of examples from a dataset.
+* SubsetFieldsProblem:    Extracts a subset of the fields in a dataset.
+* MergedProblem:          Merges several datasets together.
+* PreprocessedProblem:    Applies an arbitrary preprocessing on a dataset.
+* MinibatchProblem:       Puts examples of datasets into mini-batches.
+* SemisupervisedProblem:  Removes the labels of a subset of the examples in a dataset.
 
 """
 
@@ -24,7 +24,9 @@ class MLProblem:
     
     An MLProblem consists simply in an iterator over elements in 
     ``data``. It also has some metadata, or "data about the data".
-    
+    All that is assume about ``data`` is that it is possible to 
+    iterate over its content.
+
     The metadata can be given explicitly by the user in the
     constructor. If ``data`` is itself an MLProblem, then its metadata
     will also be used (with priority given to the explicitly passed
@@ -101,6 +103,12 @@ class MLProblem:
         new_problem = self.__class__(new_data,new_metadata,call_setup=False)
         return new_problem
         
+    def peak(self):
+        """
+        Returns the first example of the MLProblem.
+        """
+        return self.__iter__().next()
+
 class SubsetProblem(MLProblem):
     """
     Extracts a subset of the examples in a dataset.

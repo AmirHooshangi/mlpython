@@ -1,7 +1,6 @@
 TODO:
 
-- write tutorial
-- maybe should add info. about which MLProblem is returned by the different get_*_problem. 
+- say something about the 'length' trick. Try to figure out a nice procedure for doing this...
 - when documentation is done:
    * ispell
    * find places where examples in the form of code snippets could be added

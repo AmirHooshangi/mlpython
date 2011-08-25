@@ -6,14 +6,10 @@ Misc
 .. automodule:: misc
    :members:
 
-IO
---
+Follow the links below to learn more about these modules:
 
-.. automodule:: misc.io
-   :members:
+.. toctree::
+   :maxdepth: 2
 
-Visualize
----------
-
-.. automodule:: misc.visualize
-   :members:
+   misc_io
+   misc_visualize

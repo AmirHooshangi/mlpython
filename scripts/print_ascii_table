@@ -1,16 +1,15 @@
 #! /usr/bin/python
 
-"""
-Usage: print_ascii_table file
+msg = """Usage: print_ascii_table file
 
 This is a simple script for printing result tables into nicely aligned columns.
-The columns in the file are assumed to be separated by tabs ('\t').
+The columns in the file are assumed to be separated by tabs ('\\t').
 """
 
 import sys,os
 
 if len(sys.argv) != 2:
-    print 'Usage: print_ascii_table file'
+    print msg
     sys.exit()
 
 file = sys.argv[1]

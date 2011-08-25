@@ -2,7 +2,7 @@
 The ``learners.third_party.gpu.classification`` module contains 
 classification algorithms that uses a GPU.
 
-* ``ClassificationRestrictedBoltzmannMachine``:      A Classification Restricted Boltzmann Machine on the GPU.
+* ClassificationRestrictedBoltzmannMachine:      A Classification Restricted Boltzmann Machine on the GPU.
 
 """
 

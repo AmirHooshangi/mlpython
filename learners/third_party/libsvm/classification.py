@@ -2,7 +2,7 @@
 The ``learners.third_party.libsvm.classification`` module contains 
 an SVN classifier based on the LIBSVM library:
 
-* ``SVMClassifier``:  Classifier using LIBSVM's Support Vector Machine implementation.
+* SVMClassifier:  Classifier using LIBSVM's Support Vector Machine implementation.
 
 """
 

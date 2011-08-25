@@ -1,3 +1,24 @@
+"""
+The ``mathutils.linalg`` module contains several useful linear algebra
+operations, on Numpy arrays. All functions avoid memory allocation, by
+requiring the Numpy array in which to write the answer. If not
+specified otherwise, all arrays should be double arrays. This module
+requires the BLAS and LAPACK libraries.
+
+This module defines the following functions:
+
+* ``product_matrix_vector``:         Computes a matrix/vector product.
+* ``product_matrix_matrix``:         Computes a matrix/matrix product.
+* ``outer``:                         Computes the outer product of two vectors.
+* ``sum_rows``:                      Sums out the rows of a matrix.
+* ``sum_columns``:                   Sums out the columns of a matrix.
+* ``getdiag``:                       Extracts the diagonal of a matrix.
+* ``setdiag``:                       Sets the diagonal of a matrix.
+* ``solve``:                         Linear system solver.
+* ``lu``:                            Compute the LU decomposition of a matrix.
+
+"""
+
 import numpy as np
 import linalg_
 

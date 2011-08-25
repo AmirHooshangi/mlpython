@@ -6,9 +6,10 @@ Mathutils
 .. automodule:: mathutils
    :members:
 
-.. Commented out for now...
-   .. automodule:: mathutils.linalg
-      :members:
+Follow the links below to learn more about these modules:
 
-   .. automodule:: mathutils.nonlinear
-      :members:
+.. toctree::
+   :maxdepth: 2
+
+   mathutils_linalg
+   mathutils_nonlinear

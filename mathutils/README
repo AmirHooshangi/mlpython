@@ -1,5 +1,5 @@
 To install the math extensions:
 
-python setup.py install --install-platlib=$PROJECTDIR/mathutils
+python setup.py install --install-platlib=.
 
 where PROJECTDIR is the root of this python library.

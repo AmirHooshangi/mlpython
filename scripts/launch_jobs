@@ -1,7 +1,6 @@
 #! /usr/bin/python
 
-"""
-Usage: launch_jobs job_name machines job_desc'
+msg = """Usage: launch_jobs job_name machines job_desc'
 
 where:
 
@@ -46,7 +45,7 @@ process_jobs = []
 process_machines = []
 prob_chars = string.whitespace + ';()\'./\\'
 prob_chars_mapping = string.maketrans(prob_chars,'_' * len(prob_chars))
-msg = 'Usage: launch_jobs job_name machine1:maxjobs1,machine2:maxjobs2 \'job {val1,val2,val3}\''
+#msg = 'Usage: launch_jobs job_name machine1:maxjobs1,machine2:maxjobs2 \'job {val1,val2,val3}\''
 
 # Finds the list of jobs associated to the a formated job command
 def get_list_jobs(cmd):

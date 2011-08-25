@@ -1,6 +1,6 @@
 """
-Module ``misc.io`` includes useful functions 
-for loading and saving datasets, result tables or objects in general
+Module ``misc.io`` includes useful functions for loading and saving
+datasets, result tables or objects in general.
 
 This module contains the following functions:
 
@@ -15,10 +15,10 @@ This module contains the following functions:
 
 and the following classes:
 
-* ``ASCIIResultTable``:     Object that loads an ASCII table and implements many useful operations.
-* ``IteratorWithFields``:   Iterator which separates the rows of a Numpy array into fields.
-* ``MemoryDataset``:        Iterator over some data put in memory as a Numpy array.
-* ``FileDataset``:          Iterator over a file whose lines are converted in examples.    
+* ASCIIResultTable:     Object that loads an ASCII table and implements many useful operations.
+* IteratorWithFields:   Iterator which separates the rows of a Numpy array into fields.
+* MemoryDataset:        Iterator over some data put in memory as a Numpy array.
+* FileDataset:          Iterator over a file whose lines are converted in examples.    
 
 """
 

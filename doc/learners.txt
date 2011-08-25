@@ -17,3 +17,4 @@ Follow the links below to learn more about these modules and subpackages:
    learners_features
    learners_ranking
    learners_sparse
+   learners_third_party

@@ -4,7 +4,8 @@ Extending MLPython
 ======================
 
 You'd like to contribute new pieces to MLPython? Great! Here are some
-guidelines for how to do it.
+guidelines for how to do it (it is assumed that the reader as gone
+through the :ref:`tutorial` section).
 
 Implementation Philosophy
 -------------------------
@@ -20,7 +21,7 @@ programmers with equal or worse Python programming experience be able
 to contribute to it. This is important, since the machine
 learning community includes not just computer scientists but also
 mathematicians and statisticians with varying programming skills.
-Hence, given the vaste array of learning algorithms in the literature,
+Hence, given the vast array of learning algorithms in the literature,
 it made sense to focus on an implementation which would require
 as little time as possible for someone to start contributing to it.
 
@@ -28,18 +29,18 @@ Moreover, the combined simplicity and expressiveness of Python means
 that many aspects of a machine learning framework need not be
 implemented by complex class hierarchies. Often, a simple script can
 do the job and be much easier to understand. MLPython follows this
-intuition by using a class system only for the learning algorithms and
-for processed datasets (:ref:`mlproblems`).  The rest of the framework
-relies on a set of functions (to load the raw dataset) and script
-templates (to design and run experiments).
+intuition by using a (shallow) class hierarchy only for the learning
+algorithms and for processed datasets (:ref:`mlproblems`).  The rest
+of the framework relies on a set of functions in modules, for instance
+to load the raw datasets or perform some desired visualization.
 
-A lot of thought has also been put into the class hierarchies in
-order to strip down their complexity, mainly by restricting each class
-to only a few methods.  For example, a learning algorihtm or :ref:`Learners`
-object only requires four methods (excluding the constructor).  The
-most complicated component of MLPython probably corresponds to the
-MLProblems, but even then, MLProblems are really just
-iterator objects, with some additional properties (refered to as
+A lot of thought has also been put into the class hierarchies in order
+to strip down their complexity, mainly by restricting each class to
+only a few methods.  For example, a learning algorithm or
+:ref:`Learners` object only requires four methods (plus the
+constructor).  The most complicated component of MLPython probably
+corresponds to the MLProblems, but even then, MLProblems are really
+just iterator objects, with some additional properties (referred to as
 metadata).
 
 Finally, MLPython relies a lot on conventions and on duck-typing
@@ -67,19 +68,16 @@ for the MNIST dataset). This new module should provide two functions:
 
 
 * ``obtain(dir_path)``:                     downloads the dataset in directory ``dir_path``.
-*``load(dir_path, load_to_memory=False)``:  returns the data and metadata corresponding to 
-                                            the training, validation and test sets for this dataset
-                                            at path ``load_to_memory``. The ``load_to_memory` 
-                                            argument should let the user decide whether the
-                                            dataset is loaded in memory or is kept on disk.
+* ``load(dir_path, load_to_memory=False)``:  returns the data and metadata corresponding to the training, validation and test sets for this dataset at path ``load_to_memory``. The ``load_to_memory`` argument should let the user decide whether the dataset is loaded in memory or is kept on disk.
 
 The ``obtain`` should put the data in a format which will fascilitate
 loading the dataset (in memory or on disk). The option of not loading
 the dataset in memory is important: it will come useful if a dataset
-is particularly big or if the data only needs to be transfered to a
-GPU device. If ``mlpython.datasets`` currently contains a dataset
-of similar nature to your new dataset, looking at its module should give
-a better idea of how to create the new dataset module.
+is particularly big or if the data only needs to be transfered to
+another device, for instance a GPU. If ``mlpython.datasets`` currently
+contains a dataset of similar nature to your new dataset, looking at
+its module should give a better idea of how to create the new dataset
+module.
 
 The second and final step to adding a new dataset is to add support
 for it in the ``mlpython.datasets.store`` module. To do this, simply
@@ -97,14 +95,208 @@ keywords should the metadata have).
 MLProblems
 ----------
 
-* needs to say that the constructor of the parent must be called first
-* talk about how __length__ is used (i.e. it overrides len(data), unless __len__ is redefined)
-* talk about how the metadata given explicitly overrides the metadata from "data" if it is an mlproblem
-* talk about how apply_on needs the first lines which call apply_on on the source, and needs to share the relevant
-  field from self to the newly created MLProblem
-* mention that apply_on show be called on an input which is "similar" to the original, raw training data (becase it will
-  apply the same sequence of mlproblems as on the raw_data)
-* talk about the difference between __init__() and setup() (the later computes trainset related things that should be shared with the valid and test sets)
+In a nutshell, an MLProblem object is an iterator object with a length and two 
+simple but important methods:
+
+* ``setup(self)``:  This method is usually called at the end of the construction the object. It adapts the MLProblem's internal state based on the data it contains, if needed.
+* ``apply_on(self, new_data, new_metadata={})``:  returns an MLProblem that contains the new data and metadata, but that is "compatible" with the given MLProblem.
+
+As described in the :ref:`tutorial` section, an MLProblem is
+constructed from a source of data and some optional metadata
+dictionary. The only thing that can be assumed about the source data
+is that it is possible to iterate over it (i.e. it has a
+``__iter__()`` method that outputs an iterator). In other words, you
+should not access its content by indexation or any other way than
+iterating.
+
+When constructing a new MLProblem, it is recommended to start from the following skeleton: ::
+
+   import copy
+   from mlpython.mlproblems.generic import MLProblem
+   
+   class MyProblem(MLProblem):
+       """
+       ONE LINE DESCRIPTION
+       
+       MULTILINE DESCRIPTION, WITH OPTION DESCRIPTIONS
+   
+       """
+   
+       def __init__(self, data=None, metadata={},call_setup=True):  # Add other arguments if needed
+
+           # Always call the superclass's constructor (here MLProblem)
+           MLProblem.__init__(self,data,metadata)
+   
+           # Set the object's constructor option based on the
+           # constructors arguments other than data, metadata and
+           # call_setup (those are dealt with by the superclass).
+           
+	   # PUT CODE HERE
+   
+           # Call setup *at the end* of the constructor, if call_setup is True
+           if call_setup: MyProblem.setup(self)
+   
+       def setup(self):
+           # Set the internal state of the MLProblem, based on its source data.
+           # This could require the setting of object fields or the assignment
+           # of new metadata.
+	   
+           # PUT CODE HERE, OTHERWISE PASS
+	   pass
+   
+       def __iter__(self):
+           # Iterate over source data and yield each example with appropriate processing
+	   for example in self.data:
+              # IF CHANGING example, USE A DEEPCOPY
+	      new_example = copy.deepcopy(example)
+
+              # PUT CODE HERE (DO SOMETHING TO new_example)
+
+              yield new_example
+
+       def __len__(self):
+           # Outputs the number of examples in the dataset
+
+           # IMPLEMENT ONLY IF THE LENGHT OF DIFFERENT FROM
+           # THE NUMBER OF ELEMENTS ITERATED OVER BY self.data,
+           # OTHERWISE SIMPLY INHERIT FROM PARENT CLASS OR
+           return MLProblem.__len__(self)
+
+
+       def apply_on(self, new_data, new_metadata={}):
+           # Always check whether the source data is itself an MLProblem,
+           # so as to recursively call apply_on on it too
+           if self.__source_mlproblem__ is not None:
+               new_data = self.__source_mlproblem__.apply_on(new_data,new_metadata)
+               new_metadata = {}   # new_data should already contain the new_metadata, since it is an mlproblem
+   
+           # Construct new MLProblem of the same class, with call_setup =
+           # False since we want to use the same internal state
+           new_problem = MyProblem(new_data,new_metadata,call_setup=False) # Pass same other constructor arguments
+   
+           # Copy internal state information to the new MLProblem
+
+           # PUT CODE HERE
+   
+           return new_problem
+
+In most cases, you'll only have to replace the ``PUT CODE HERE``
+comments by appropriate code implementing the desired behavior. The
+rest of the code already present in the methods of the above template
+should also be present. Its main purpose is to correctly support the
+composition of MLProblems one into another. Also, method ``__len__()`` 
+should only be defined if it should output something different than
+``len(self.data)``.
+
+To better illustrate how MLProblem objects are implemented, let's
+consider an example. Imagine that you wish to write an MLProblem that
+takes some data and centers it, i.e. removes the mean of each
+input. Let's call that object CenteredProblem. However, the value of
+the means to subtract is not known a priori and depends on the
+data. In this case, the role of ``setup()`` would be to compute the
+means of the each input and save the information within the object.
+
+Now, assume you have centered your training set, and now wish to apply
+exactly the same processing to some new data (for instance the test
+set). This is when you call ``apply_on()``. Its role will be to take
+the new data, create a new CenteredProblem object containing that data and
+setting the internal state of this new object such that it subtracts
+the *same* means.
+
+More specifically, here is what CenteredProblem's implementation would look like: ::
+
+   import copy
+   from mlpython.mlproblems.generic import MLProblem
+
+   class CenteredProblem(MLProblem):
+       """
+       Centers the input of a dataset.
+       
+       Option ``input_index`` is the value of the index corresponding to
+       the input, for each example. If ``None``, then the example itself
+       is the input.
+   
+       """
+   
+       def __init__(self, data=None, metadata={},call_setup=True,input_index=None):
+           # Always call the superclass's constructor (here MLProblem)
+           MLProblem.__init__(self,data,metadata)
+   
+           # Set the object's constructor option based on the
+           # constructors arguments other than data, metadata and
+           # call_setup (those are dealt with by the superclass).
+           self.input_index = input_index
+   
+           # Call setup *at the end* of the constructor, if call_setup is True
+           if call_setup: CenteredProblem.setup(self)
+   
+       def setup(self):
+           # Set the internal state of the MLProblem, based on its source data.
+
+           # Compute average of the inputs
+           first_example = True
+           for example in self.data:
+               if first_example:
+                   # Use first example to initialize the average
+                   first_example = False
+                   if self.input_index is None:
+                       self.center = copy.deepcopy(example)
+                   else:
+                       self.center = copy.deepcopy(example[self.input_index])
+               else:
+                   if self.input_index is None:
+                       self.center += example
+                   else:
+                       self.center += example[self.input_index]
+           self.center /= len(self.data)
+   
+       def __iter__(self):
+           # Iterate over source data and yield copy of example with centered input
+           for example in self.data:
+               centered_example = copy.deepcopy(example)
+               if self.input_index is None:
+                   centered_example -= self.center
+               else:
+                   centered_example[self.input_index] -= self.center
+               yield centered_example
+   
+       def apply_on(self, new_data, new_metadata={}):
+           # Always check whether the source data is itself an MLProblem,
+           # so as to recursively call apply_on on it too
+           if self.__source_mlproblem__ is not None:
+               new_data = self.__source_mlproblem__.apply_on(new_data,new_metadata)
+               new_metadata = {}   # new_data should already contain the new_metadata, since it is an mlproblem
+   
+           # Construct new MLProblem of the same class, with call_setup =
+           # False since we want to use the same internal state
+           new_problem = CenteredProblem(new_data,new_metadata,call_setup=False,input_index=self.input_index)
+   
+           # Copy internal state information to the new MLProblem
+           new_problem.center = copy.deepcopy(self.center)
+   
+           return new_problem
+ 
+Another interesting example is the ClassSubsetProblem, for which
+`setup()` and `apply_on` must deal with the correct assignment of
+metadata. It is recommended to take a look at the source code
+(see :ref:`mlproblems_classification`).
+
+Finally, here are a few guidelines to follow when implementing a new MLProblem:
+
+* When implementing the ``__iter__()`` method, be careful not to modify the content of the source
+  data. Either yeild a modified (deep) copy of the example, or yield the example itself
+  if it isn't modified. Also, each yeiled example should be a distinct object. For instance, do
+  not return a pointer to a unique object whose content is changed while iterating.
+* It is a good idea to make your MLProblem compatible with as many types of examples as possible. 
+  A fairly general assumption is that examples are going to be either a single (for instance an input
+  without a target) or a tuple/list of (for instance an input and its target) elements. These
+  elements could be a various nature (Numpy arrays of arbitrary dimension, integers, strings, etc.).
+  All such assumptions should be clearly commented in the class's docstring (see :ref:`documenting_code`)
+* The requirement that ``apply_on()`` output the same type of MLProblem is not a strict one. There are
+  cases where it's actually not what you want to do. An example is the SemisupervisedProblem (see :ref:`mlproblems_generic`)
+  which removes labels of a subset of the example. This is probably not what you want to do on new data,
+  like the test set, hence this object's ``apply_on()`` either returns a basic MLProblem or an MLProblem
+  of the same type as the source data (see :ref:`mlproblems_generic` for the source code).
 
 Learners
 --------
@@ -118,7 +310,9 @@ Mathutils
 Interfaces to third-party software
 ----------------------------------
 
-Documentating your code
+.. _documenting_code:
+
+Documenting your code
 -----------------------
 
 * think about how sphinx is going to interpret the docstring
@@ -134,4 +328,12 @@ Practical tips
 * do not use zip(dataset,range(...)), since it appears like this doesn't work
   well with very big datasets (keeps pointers to the examples, and memory
   is not freed, and memory explodes)
+
+Useful read
+-----------
+
+add useful links for ml in python, in general
+
+  * profiling, e.g. http://packages.python.org/line_profiler/
+  * C programming within Numpy
 

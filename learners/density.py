@@ -5,9 +5,9 @@ should be iterators over inputs.
 
 The currently implemented algorithms are:
 
-* ``BagDensity``: a density estimation learner where each example is a bag of inputs.
-* ``NADE``:       the Neural Autoregressive Distribution Estimator (NADE) for multivariate binary distribution estimation
-* ``FVSBN``:      a fully visible Sigmoid Belief Network (FVSBN) for binary density estimation
+* BagDensity: a density estimation learner where each example is a bag of inputs.
+* NADE:       the Neural Autoregressive Distribution Estimator (NADE) for multivariate binary distribution estimation
+* FVSBN:      a fully visible Sigmoid Belief Network (FVSBN) for binary density estimation
 
 """
 

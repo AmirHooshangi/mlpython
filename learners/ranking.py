@@ -7,7 +7,7 @@ relevance scores for the given query.
 
 The currently implemented algorithms are:
 
-* ``RankingFromClassifier``: a ranking model based on a classifier.
+* RankingFromClassifier: a ranking model based on a classifier.
 
 """
 
