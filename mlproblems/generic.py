@@ -91,7 +91,7 @@ class MLProblem:
                 return len(self.data)
             except AttributeError:
                 # Figure out length with exhaustive counting
-                print 'Warning in MLProblem: couldn\'t get length from len(data)... will loop over MLProblem to compute length'
+                print 'Warning in mlpython.mlproblems.generic.MLProblem: couldn\'t get length from len(data)... will loop over MLProblem to compute length'
                 self.__length__ = 0
                 for example in self:
                     self.__length__ += 1

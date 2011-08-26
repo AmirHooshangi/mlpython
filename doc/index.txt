@@ -17,10 +17,10 @@ allow me to quickly experiment with new research ideas. Having found it
 to deliver well on this account, I decided to share MLPython with others.
 I hope you enjoy it!
 
-* :ref:`install` -- details on how to download and install MLPython
-* :ref:`tutorial` -- a walk-through over several examples using MLPython
-* :ref:`extend` -- guidelines for contributing to MLPython and extending it
-* :ref:`library` -- detailed documentation, extracted from the source code docstrings
+* :ref:`install`: Details on how to download and install MLPython.
+* :ref:`tutorial`: A walk-through over diffrent examples of how to use MLPython.
+* :ref:`extend`: Guidelines for contributing to MLPython and extending it.
+* :ref:`library`: Detailed documentation, extracted from the source code docstrings.
 
 Here's a quick peek at what MLPython let's you do: ::
 

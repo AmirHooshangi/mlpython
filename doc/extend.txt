@@ -3,6 +3,8 @@
 Extending MLPython
 ======================
 
+.. contents::
+
 You'd like to contribute new pieces to MLPython? Great! Here are some
 guidelines for how to do it (it is assumed that the reader as gone
 through the :ref:`tutorial` section).

@@ -34,8 +34,13 @@ an SVN classifier based on the LIBSVM library:
 
 
 from mlpython.learners.generic import Learner
-import svm as libsvm
 import numpy as np
+
+try :
+    import svm as libsvm
+except ImportError:
+    print 'Warning in mlpython.learners.third_party.libsvm.classification:''import libsvm'' failed. The LIBSVM library is not properly installed. See mlpython/misc/third_party/tsne/README for instructions.'
+
 
 class SVMClassifier(Learner):
     """ 
