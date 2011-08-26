@@ -104,18 +104,20 @@ class NADE(OnlineLearner):
    """
    Neural Autoregressive Distribution Estimator (NADE) for multivariate binary distribution estimation
 
-   Options:
-   - 'n_stages':           number of training iterations
-   - 'learning_rate':      learning rate
-   - 'decrease_constant':  decrease constant
-   - 'untied_weights':     whether to untie the weights going into and out of the hidden units
-   - 'hidden_size':        number of hidden units
-   - 'input_order':        list of integers corresponding to the order for input modeling
-   - 'seed':               seed for randomly initializing the weights
-   - 'alpha':              weight vector for each input generative cost
+   The options are:
 
-   Required metadata:
-   - 'input_size'
+   * ``n_stages``:           Number of training iterations.
+   * ``learning_rate``:      Learning rate.
+   * ``decrease_constant``:  Decrease constant.
+   * ``untied_weights``:     Whether to untie the weights going into and out of the hidden units.
+   * ``hidden_size``:        Number of hidden units.
+   * ``input_order``:        List of integers corresponding to the order for input modeling.
+   * ``seed``:               Seed for randomly initializing the weights.
+   * ``alpha``:              Weight vector for each input generative cost.
+
+   **Required metadata:**
+   
+   * ``'input_size'``
 
    | **Reference:** 
    | The Neural Autoregressive Distribution Estimator
@@ -360,15 +362,17 @@ class FVSBN(OnlineLearner):
    """
    A fully visible Sigmoid Belief Network (FVSBN) for binary density estimation
 
-   Options:
-   - 'n_stages':              number of training iterations
-   - 'learning_rate':         learning rate
-   - 'decrease_constant':     decrease constant
-   - 'input_order':           list of integers corresponding to the order for input modeling
-   - 'seed':                  seed for randomly initializing the weights
+   The options are:
 
-   Required metadata:
-   - 'input_size'
+   * ``n_stages``:           Number of training iterations.
+   * ``learning_rate``:      Learning rate.
+   * ``decrease_constant``:  Decrease constant.
+   * ``input_order``:        List of integers corresponding to the order for input modeling.
+   * ``seed``:               Seed for randomly initializing the weights.
+
+   **Required metadata:**
+   
+   * ``'input_size'``
 
    | **Reference:** 
    | Connectionist Learning of Belief Networks

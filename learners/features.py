@@ -58,7 +58,7 @@ class PCA(Learner):
 
     **Required metadata:**
 
-    * ``'input_size'``: size of the inputs
+    * ``'input_size'``: Size of the inputs.
 
     """
     def __init__( self,
@@ -123,22 +123,22 @@ class RBM(OnlineLearner):
 
    Option ``n_stages`` is the number of training iterations.
 
-   Options ``'learning_rate'`` and ``'decrease_constant'`` correspond
+   Options ``learning_rate`` and ``decrease_constant`` correspond
    to the learning rate and decrease constant used for stochastic
    gradient descent.
 
-   Option ``'hidden_size'`` should be a positive integer specifying
+   Option ``hidden_size`` should be a positive integer specifying
    the number of hidden units (features).
    
-   Option ``'l1_regularization'`` is the weight of L1 regularization on
+   Option ``l1_regularization`` is the weight of L1 regularization on
    the connection matrix.
 
-   Option ``'seed'`` determines the seed for randomly initializing the
+   Option ``seed`` determines the seed for randomly initializing the
    weights.
 
    **Required metadata:**
    
-   * ``'input_size'``: size of the inputs
+   * ``'input_size'``: Size of the inputs.
 
    """
 

@@ -60,7 +60,7 @@ class MLProblem:
 
     **Required metadata:**
 
-    * ``'length'``: number of examples (optional, will set the output of ``__len__(self)``)
+    * ``'length'``: Number of examples (optional, will set the output of ``__len__(self)``).
 
     """
 

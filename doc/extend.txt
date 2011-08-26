@@ -392,32 +392,76 @@ does ``mlpython.mathutils.linalg`` and
 http://www.scipy.org/Cookbook/C_Extensions/NumPy_arrays for mor
 details on this), one could instead implement regular C functions and
 use `ctypes <http://docs.python.org/library/ctypes.html>`_ to access
-them.
+them. Finally, make sure that calling the Makefile will compile the
+new C code.
 
 .. _documenting_code:
 
 Documenting your code
 -----------------------
 
-* think about how sphinx is going to interpret the docstring
-* always add a refence to a paper when possible (show how this is done
-* if the object/function defines or requires metadata, put it in docstring
+Whether you are adding a new module, object or function in MLPython,
+it is primordial that you provide good documentation for it. In
+particular, any such code should come with a clear and thorough
+docstring (see
+http://packages.python.org/an_example_pypi_project/sphinx.html#full-code-example
+for example of code with docstrings). 
 
-Practical tips
---------------
+One reason why this is important is that the :ref:`library` is
+actually automatically generated from these docstrings. It is
+generated using `Sphinx <http://sphinx.pocoo.org/>`_, which itself
+uses `reStructuredText <http://docutils.sourceforge.net/rst.html>`_ as
+its markup language (see
+http://docutils.sourceforge.net/docs/user/rst/quickref.html for a
+quick overview of reStructuredText).
 
-* talk about passing a metadata for the length
-* in a Learner, instead of remembering the underlying training, better to remember
-  the metadata and do what apply_on would do
-* do not use zip(dataset,range(...)), since it appears like this doesn't work
-  well with very big datasets (keeps pointers to the examples, and memory
-  is not freed, and memory explodes)
+The other reason why writing good docstrings is important is that this
+is where users will find information for how to use your code.  In
+most cases, contributions will consist in a new dataset module, or a
+new Learner/MLProblem class. The docstring should then specify what
+options/hyper-parameters must be provided, what metadata is required
+by the object and what metadata is defined (for dataset modules and
+MLProblem classes only). If appropriate, references to papers or
+websites can also be given in the docstring. 
 
-Useful read
------------
+Here is a short template of what a class docstring should look like: ::
 
-add useful links for ml in python, in general
+   class MyNewClass(MyParentClass):
+      """
+      Short description of MyNewClass
 
-  * profiling, e.g. http://packages.python.org/line_profiler/
-  * C programming within Numpy
+      Longer description of MyNewClass
+   
+      **Options:**
+
+      * ``hyper_param_1``:       Description of first hyper-parameter.
+      * ``hyper_param_2``:       Description of second hyper-parameter.
+   
+      **Required metadata:**
+
+      * ``'metadata_in'``:        Description of metadata (optional, perhaps only if unsual metadata)
+   
+      **Defined metadata:**
+
+      * ``'metadata_out'``:       Description of metadata defined/added by object (for MLProblems)
+   
+      | **Reference:** 
+      | Name of paper or website
+      | List of paper/website authors (last name only
+      | URL to paper/website
+
+      """
+
+Whether you are considering contribution a package, module, class or
+function, it is recommended to look at the docstring of other such
+structures already in MLPython first, to get a few examples of what
+docstrings should contain. These docstring always follow the
+reStructuredText markup language. 
+
+A common style convention followed by all docstrings is that, When
+designating a package, module, function, variable or a one-line Python
+expression, put its name between pairs of \`\`backward single
+quotes\`\`. For example, \`\`mlpython.learners.generic\`\` will show
+up as ``mlpython.learners.generic``. However, when referring to a
+class name, quotes don't need to be use.
 

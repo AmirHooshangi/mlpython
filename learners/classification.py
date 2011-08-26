@@ -139,26 +139,26 @@ class NNet(OnlineLearner):
 
    Option ``n_stages`` is the number of training iterations.
 
-   Options ``'learning_rate'`` and ``'decrease_constant'`` correspond
+   Options ``learning_rate`` and ``decrease_constant`` correspond
    to the learning rate and decrease constant used for stochastic
    gradient descent.
 
-   Option ``'hidden_sizes'`` should be a list of positive integers
+   Option ``hidden_sizes`` should be a list of positive integers
    specifying the number of hidden units in each hidden layer, from
    the first to the last.
    
-   Option ``'seed'`` determines the seed for randomly initializing the
+   Option ``seed`` determines the seed for randomly initializing the
    weights.
 
-   Option ``'pretrained_parameters'`` should be a pair made of the
+   Option ``pretrained_parameters`` should be a pair made of the
    list of hidden layer weights and biases, to replace random
    initialization. If None (default), random initialization will
    be used.
 
    **Required metadata:**
 
-   * ``'input_size'``: size of the inputs
-   * `'targets'``: set of possible targets
+   * ``'input_size'``: Size of the input.
+   * ``'targets'``: Set of possible targets.
 
    """
 

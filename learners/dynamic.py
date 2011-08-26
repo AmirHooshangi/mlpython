@@ -45,23 +45,26 @@ class LinearDynamicalSystem(Learner):
  
     This is a standard linear dynamical system, trained by EM.
 
-    Options:
-    - 'n_stages'
-    - 'latent_size'
-    - 'latent_covariance_matrix_regularizer'
-    - 'input_covariance_matrix_regularizer'
-    - 'latent_transition_matrix_regularizer'
-    - 'input_transition_matrix_regularizer'
-    - 'seed'
+    The options are
 
-    Required metadata:
-    - 'input_size'
+    * ``n_stages``
+    * ``latent_size``
+    * ``latent_covariance_matrix_regularizer``
+    * ``input_covariance_matrix_regularizer``
+    * ``latent_transition_matrix_regularizer``
+    * ``input_transition_matrix_regularizer``
+    * ``seed'
 
-    Reference: Pattern Recognition and Machine Learning
-               Christopher M. Bishop
-               http://research.microsoft.com/en-us/um/people/cmbishop/prml/
-               Note: I tried to use the same notation. The only exception is that
-                     I refer to the latent covariance matrix \Gamma as E here.
+    **Required metadata:**
+
+    * ``'input_size'``
+
+    | **Reference:** 
+    | Pattern Recognition and Machine Learning
+    | Christopher M. Bishop
+    | http://research.microsoft.com/en-us/um/people/cmbishop/prml/
+    | Note: I tried to use the same notation. The only exception is that
+    | I refer to the latent covariance matrix \Gamma as E here.
     """
     def __init__(   self,
                     n_stages= sys.maxint, # Maximum number of iterations on the training set

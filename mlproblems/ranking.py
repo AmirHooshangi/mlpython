@@ -53,7 +53,7 @@ class RankingProblem(mlpb.MLProblem):
 
     **Required metadata:**
     
-    * ``'n_queries'``: number of queries (optional, will set the output of ``__len__(self)``)
+    * ``'n_queries'``: Number of queries (optional, will set the output of ``__len__(self)``).
 
     """
 
@@ -98,8 +98,8 @@ class RankingToClassificationProblem(mlpb.MLProblem):
 
     **Required_metadata:**
 
-    * ``'scores'``: list of possible scores, ordered from less relevant to more relevant
-    * ``'n_pairs'``: number of document/query pairs (optional, will set the output of ``__len__(self)``)
+    * ``'scores'``: List of possible scores, ordered from less relevant to more relevant.
+    * ``'n_pairs'``: Number of document/query pairs (optional, will set the output of ``__len__(self)``).
 
     **Defined metadata:**
     

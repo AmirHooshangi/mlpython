@@ -55,7 +55,7 @@ class RankingFromClassifier(Learner):
     the predicted score and a distribution over possible relevance
     scores.
 
-    Option ``'ranking_measure'`` determines how a ranking is
+    Option ``ranking_measure`` determines how a ranking is
     obtained based on the classifier's outputs: 
 
     * ``ranking_measure='predicted_score':``
@@ -71,7 +71,7 @@ class RankingFromClassifier(Learner):
       Ranking according to this measure should work well
       for the ERR ranking error.
 
-    Option ``'merge_document_and_query'`` should be a 
+    Option ``merge_document_and_query`` should be a 
     callable function that takes two arguments (the 
     input document and the query) and outputs a 
     merged representation for the pair which will

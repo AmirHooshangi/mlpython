@@ -45,12 +45,12 @@ class ClassificationProblem(MLProblem):
     
     **Required metadata:**
     
-    * ``'targets'``: the set of possible values for the target
+    * ``'targets'``: The set of possible values for the target.
 
     **Defined metadata:**
 
-    * ``'class_to_id'``: a dictionary mapping from elements in ``'targets'`` 
-      to a class id
+    * ``'class_to_id'``: A dictionary mapping from elements in ``'targets'`` 
+      to a class id.
 
     """
 
