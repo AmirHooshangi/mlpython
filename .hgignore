@@ -4,4 +4,5 @@ syntax: regexp
 .*\.o$
 .*\.egg-info$
 .*~$
-^doc/_*
+^doc/_.*
+^doc/\..*

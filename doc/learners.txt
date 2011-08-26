@@ -6,7 +6,7 @@ Learners
 .. automodule:: learners
    :members:
 
-Follow the links below to learn more about these modules and subpackages:
+Follow the links below to learn more about these modules and subpackages: 
 
 .. toctree::
    :maxdepth: 2
