@@ -478,14 +478,14 @@ new Learners or to perform data analysis:
 In the subdirectory mlpython/scripts/, you will also find:
 
 * ``launch_jobs``: This is a script which can be used to spawn several jobs in parallel, on different machines, through ssh. Call it with ``-help`` for more information on how to use it.
-* ``print_ascii_table``: This script takes a text file in which each row provides details for a single experiment (values of hyper-parameters, results on training/validation/test sets), and prints it out with nicely aligned colums, to facilitate viewing. Each row should be segmented into columns, separated by the tab character '\\t'. 
+* ``print_ascii_table``: This script takes a text file in which each row provides details for a single experiment (values of hyper-parameters, results on training/validation/test sets), and prints it out with nicely aligned columns, to facilitate viewing. Each row should be segmented into columns, separated by the tab character '\\t'. 
 
 Third-party Learners
 --------------------
 
 Certain Learners in MLPython only correspond to an interface to some
 third-party code. This is the case of the SVMClassifier object (see :ref:`learners_third_party_libsvm`), which
-is an interface to the LIBSVM libary. All such Learner objects are
+is an interface to the LIBSVM library. All such Learner objects are
 part of their own subpackage, within the package
 ``mlpython.learners.third_party`` (see :ref:`learners_third_party`).
 

@@ -57,7 +57,7 @@ MLPython requires a few, fairly standard scientific computing libraries:
 These libraries are common enough that they might already be installed
 on your computer.
 
-MLPython also interfaces some third-party softwares, though they are
+MLPython also interfaces some third-party software, though they are
 not necessary to use MLPython in general:
 
 * `LIBSVM <http://www.csie.ntu.edu.tw/~cjlin/libsvm/>`_: SVM classifier, see mlpython/learners/third_party/libsvm/README for instructions.

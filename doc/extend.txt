@@ -72,10 +72,10 @@ for the MNIST dataset). This new module should provide two functions:
 * ``obtain(dir_path)``:                     Downloads the dataset in directory ``dir_path``.
 * ``load(dir_path, load_to_memory=False)``:  Returns the data and metadata corresponding to the training, validation and test sets for this dataset at path ``load_to_memory``. The ``load_to_memory`` argument should let the user decide whether the dataset is loaded in memory or is kept on disk.
 
-The ``obtain`` should put the data in a format which will fascilitate
+The ``obtain`` should put the data in a format which will facilitate
 loading the dataset (in memory or on disk). The option of not loading
 the dataset in memory is important: it will come useful if a dataset
-is particularly big or if the data only needs to be transfered to
+is particularly big or if the data only needs to be transferred to
 another device, for instance a GPU. If ``mlpython.datasets`` currently
 contains a dataset of similar nature to your new dataset, looking at
 its module should give a better idea of how to create the new dataset
@@ -159,7 +159,7 @@ When constructing a new MLProblem, it is recommended to start from the following
        def __len__(self):
            # Outputs the number of examples in the dataset
 
-           # IMPLEMENT ONLY IF THE LENGHT OF DIFFERENT FROM
+           # IMPLEMENT ONLY IF THE LENGTH OF DIFFERENT FROM
            # THE NUMBER OF ELEMENTS ITERATED OVER BY self.data,
            # OTHERWISE SIMPLY INHERIT FROM PARENT CLASS OR
            return MLProblem.__len__(self)
@@ -286,8 +286,8 @@ metadata. It is recommended to take a look at the source code
 Finally, here are a few guidelines to follow when implementing a new MLProblem:
 
 * When implementing the ``__iter__()`` method, be careful not to modify the content of the source
-  data. Either yeild a modified (deep) copy of the example, or yield the example itself
-  if it isn't modified. Also, each yeiled example should be a distinct object. For instance, do
+  data. Either yield a modified (deep) copy of the example, or yield the example itself
+  if it isn't modified. Also, each yielded example should be a distinct object. For instance, do
   not return a pointer to a unique object whose content is changed while iterating.
 * It is a good idea to make your MLProblem compatible with as many types of examples as possible. 
   A fairly general assumption is that examples are going to be either a single (for instance an input
@@ -391,7 +391,7 @@ are free to use any C binding tool for embedding the C code into
 Python. Instead of implementing complete C extensions as currently
 does ``mlpython.mathutils.linalg`` and
 ``mlpython.mathutils.nonlinear`` (see
-http://www.scipy.org/Cookbook/C_Extensions/NumPy_arrays for mor
+http://www.scipy.org/Cookbook/C_Extensions/NumPy_arrays for more
 details on this), one could instead implement regular C functions and
 use `ctypes <http://docs.python.org/library/ctypes.html>`_ to access
 them. Finally, make sure that calling the Makefile will compile the
