@@ -67,8 +67,8 @@ the name corresponding to the dataset's name (e.g. module ``mlpython.datasets.mn
 for the MNIST dataset). This new module should provide two functions:
 
 
-* ``obtain(dir_path)``:                     downloads the dataset in directory ``dir_path``.
-* ``load(dir_path, load_to_memory=False)``:  returns the data and metadata corresponding to the training, validation and test sets for this dataset at path ``load_to_memory``. The ``load_to_memory`` argument should let the user decide whether the dataset is loaded in memory or is kept on disk.
+* ``obtain(dir_path)``:                     Downloads the dataset in directory ``dir_path``.
+* ``load(dir_path, load_to_memory=False)``:  Returns the data and metadata corresponding to the training, validation and test sets for this dataset at path ``load_to_memory``. The ``load_to_memory`` argument should let the user decide whether the dataset is loaded in memory or is kept on disk.
 
 The ``obtain`` should put the data in a format which will fascilitate
 loading the dataset (in memory or on disk). The option of not loading
@@ -99,7 +99,7 @@ In a nutshell, an MLProblem object is an iterator object with a length and two
 simple but important methods:
 
 * ``setup(self)``:  This method is usually called at the end of the construction the object. It adapts the MLProblem's internal state based on the data it contains, if needed.
-* ``apply_on(self, new_data, new_metadata={})``:  returns an MLProblem that contains the new data and metadata, but that is "compatible" with the given MLProblem.
+* ``apply_on(self, new_data, new_metadata={})``:  Returns an MLProblem that contains the new data and metadata, but that is "compatible" with the given MLProblem.
 
 As described in the :ref:`tutorial` section, an MLProblem is
 constructed from a source of data and some optional metadata
@@ -301,14 +301,98 @@ Finally, here are a few guidelines to follow when implementing a new MLProblem:
 Learners
 --------
 
+As mentioned in the :ref:`tutorial` section, Learner objects should
+define the four following methods, in addition to the constructor:
+
+* ``train(self,trainset)``: runs the learning algorithm on ``trainset`` (it returns nothing).
+* ``forget(self)``: resets the Learner to it's original state (also return nothing).
+* ``use(self,dataset)``: computes and returns the output of the Learner for ``dataset``. 
+  The method should return an iterator over these outputs.
+* ``test(self,dataset)``: computes and returns the outputs of the Learner as well as the cost of 
+  those outputs for ``dataset``. The method should return a pair of two iterators, the first
+  being over the outputs and the second over the costs.
+
+As for the constructor, it should be used to set the different
+hyper-parameters of the Learner. Of course, do not forget to inherit from Learner.
+
+And that's it! Obviously, one is free to implement other methods, but
+as far as MLPython is concerned, a Learner only need to be trainable,
+usable and testable, and it should be possible to have it forget its
+learned state so as to retrain from scratch.
+
+That being said, in addition to implementing these methods, it is as
+important to clearly and thoroughly document the code. Particular care
+is required in documenting the object's documentation through its
+docstring. It will specify things like the meaning of the options or
+hyper-parameters of the Learner and the metadata required in the
+MLProblems that can be fed to the Learner. See :ref:`documenting_code`
+for more on this crucial aspect.
+
+Contributions of interfaces to third-party software is also encouraged.
+All such code should be incorporated as a separate subpackage the within
+``mlpython.learners.third_party`` package. The associated directory
+should also contain a README file with instructions on how to download
+and install the necessary software. Finally, please mention this
+dependency in the :ref:`install` section.
+
 Common metadata keywords
 ------------------------
+
+Though the characterization of the metadata in an MLProblem does not
+need to follow any particular rules, there are already several
+keywords that are being commonly defined and used within the
+MLProblems and Learners in MLProblem right now. Hence, before
+inventing a new metadata keyword, it is highly recommended to first
+make sure that an equivalent keyword is not already in use.  Adopting
+such keywords will then increase the compatibility of your code with
+that of other components already present in MLPython.
+
+Here is a list of keywords you should consider using:
+
+* ``'input_size'``: Size of the input.
+* ``'target_size'``: Size of the target, (for instance for multilabel or multiregression).
+* ``'length'``: Number of examples in a dataset. Not always necessary, but is useful for large
+  datasets for which the length would be too long to compute.
+* ``'targets'``: A Set of all possible targets (in string format).
+* ``'class_to_id'``: Dictionary mapping a string class label to an index (from 0 to number of classes).
+* ``'n_queries'``: Number of queries (ranking problem). Similarly to ``length``, it is optional 
+  and will set the output of ``__len__(self)`` in RankingProblem.
+* ``'scores'``: List of possible scores, ordered from less relevant to more relevant (ranking problem).
+* ``'n_pairs'``: Number of document/query pairs (ranking problem). Same as ``n_queries``, but for RankingToClassificationProblem.
+
+If you contribution code to MLPython that uses a different keyword,
+please add it to this list, as well as to the text file
+mlpython/metadata_keywords.txt.
 
 Mathutils
 ---------
 
-Interfaces to third-party software
-----------------------------------
+While Python is a very flexible language, it can be painfully slow for
+certain operations. In such cases, implementing a C function and
+embedding it into Python is a much better approach. The
+``mlpython.mathutils`` contains such functions, for several common 
+mathematical operations in machine learning. It currently has
+two modules:
+
+* ``mlpython.mathutils.linalg``: Linear algebra operations, such as matrix products, linear solver, etc.
+* ``mlpython.mathutils.nonlinear``: Nonlinear operations, including the sigmoid function and its derivative.
+
+These modules correspond to Python code that define the different
+module functions, where each function calls its associated core C
+implementation. The idea is that the Python code should do things like
+testing conditions on the arguments of the function, and the core C
+function should do the rest of the work. 
+
+To add functions to the modules or even add new modules, it is
+recommended to follow the same Python/C coding approach. However, you
+are free to use any C binding tool for embedding the C code into
+Python. Instead of implementing complete C extensions as currently
+does ``mlpython.mathutils.linalg`` and
+``mlpython.mathutils.nonlinear`` (see
+http://www.scipy.org/Cookbook/C_Extensions/NumPy_arrays for mor
+details on this), one could instead implement regular C functions and
+use `ctypes <http://docs.python.org/library/ctypes.html>`_ to access
+them.
 
 .. _documenting_code:
 

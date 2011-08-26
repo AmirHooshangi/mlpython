@@ -1,7 +1,7 @@
 .. _learners_third_party:
 
 Third-party Learners
-===============
+====================
 
 .. automodule:: learners.third_party
    :members:

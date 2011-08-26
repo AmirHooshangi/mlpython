@@ -50,7 +50,6 @@ and the following classes:
 
 import cPickle,os
 import numpy as np
-import scipy.io
 from gzip import GzipFile as gfile
 
 

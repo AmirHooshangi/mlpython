@@ -130,7 +130,7 @@ example, and it is the job of MLProblem to be compatible with the
 Learner's expected example structure.
 
 Some MLProblem objects might require that specific metadata keys be
-given and might even add some more. Here's an example to illustrate
+given and might also add some more. Here's an example to illustrate
 this concept. Imagine we wish to create a training set for a
 classification problem. To do this, we create a ClassificationProblem
 object, which requires the metadata ``'targets'`` that corresponds to
@@ -193,7 +193,11 @@ given data in the same form as the source data for the *first*
 MLProblem in the series. In the current example, this would imply
 calling ``subsetpb.apply_on(test_data,test_metadata)``, *not*
 ``subsetpb.apply_on(testset)`` (``apply_on()`` can also take an
-MLProblem as input).
+MLProblem as input). Moreover, metadata added explicitly by the user
+when constructing any of the MLProblems in the series, will be ignored
+by the ``apply_on()`` procedure, and will not be added to the
+MLProblem for the new data. Only the metadata added by the MLProblems
+*internally* will be dealt with by the ``apply_on()`` procedure.
 
 Another useful MLProblem object for composing MLProblems is
 PreprocessedProblem, which provides a general approach for creating a
