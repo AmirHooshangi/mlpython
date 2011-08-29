@@ -42,8 +42,8 @@ This module contains the following functions:
 and the following classes:
 
 * ASCIIResultTable:     Object that loads an ASCII table and implements many useful operations.
-* IteratorWithFields:   Iterator which separates the rows of a Numpy array into fields.
-* MemoryDataset:        Iterator over some data put in memory as a Numpy array.
+* IteratorWithFields:   Iterator which separates the rows of a NumPy array into fields.
+* MemoryDataset:        Iterator over some data put in memory as a NumPy array.
 * FileDataset:          Iterator over a file whose lines are converted in examples.    
 
 """
@@ -179,7 +179,7 @@ class ASCIIResultTable():
 
 class IteratorWithFields():
     """
-    An iterator over the rows of a Numpy array, which separates each row into fields (segments)
+    An iterator over the rows of a NumPy array, which separates each row into fields (segments)
 
     This class helps avoiding the creation of a list of arrays.
     The fields are defined by a list of pairs (beg,end), such that 
@@ -198,7 +198,7 @@ class IteratorWithFields():
 class MemoryDataset():
     """
     An iterator over some data, but that puts the content 
-    of the data in memory in Numpy arrays.
+    of the data in memory in NumPy arrays.
 
     Option ``'field_shapes'`` is a list of tuples, corresponding
     to the shape of each fields.
@@ -294,7 +294,7 @@ def ascii_load(filename, convert_input=float, last_column_is_target = False, con
     """
     Reads an ASCII file and returns its data and metadata.
 
-    Data can either be a simple Numpy array (matrix), or an iterator
+    Data can either be a simple NumPy array (matrix), or an iterator
     over (numpy array,target) pairs if the last column of the ASCII
     file is to be considered a target.
 

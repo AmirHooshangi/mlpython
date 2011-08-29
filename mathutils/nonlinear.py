@@ -26,8 +26,8 @@
 
 """
 The ``mathutils.nonlinear`` module contains several useful nonlinear
-functions on Numpy arrays. All functions avoid memory allocation, by
-requiring the Numpy array in which to write the answer. All arrays
+functions on NumPy arrays. All functions avoid memory allocation, by
+requiring the NumPy array in which to write the answer. All arrays
 should be double arrays.
 
 This module defines the following functions:

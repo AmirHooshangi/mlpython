@@ -26,7 +26,7 @@
 
 """
 The ``mathutils`` package provides modules for different mathematical
-functions that are not directly accessible through Numpy. A particular
+functions that are not directly accessible through NumPy. A particular
 focus is put on allowing to call these functions such that no memory
 allocation is required within. This is useful when one wants to call
 the same function several times. All modules rely on C++ code that

@@ -26,8 +26,8 @@
 
 """
 The ``mathutils.linalg`` module contains several useful linear algebra
-operations, on Numpy arrays. All functions avoid memory allocation, by
-requiring the Numpy array in which to write the answer. If not
+operations, on NumPy arrays. All functions avoid memory allocation, by
+requiring the NumPy array in which to write the answer. If not
 specified otherwise, all arrays should be double arrays. This module
 requires the BLAS and LAPACK libraries.
 

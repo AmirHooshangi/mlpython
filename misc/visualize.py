@@ -43,7 +43,7 @@ from matplotlib.pylab import figure, imshow, show, xticks, yticks, array, scatte
 
 def tsne_2D(inputs, colors=None, labels=None, initial_dims = 50, perplexity = 30.0):
     """
-    Plots in 2D a set of points (the rows of Numpy 2D array
+    Plots in 2D a set of points (the rows of NumPy 2D array
     ``inputs``), using t-SNE.
 
     A color coding can be specified with option ``colors``
@@ -76,7 +76,7 @@ def tsne_2D(inputs, colors=None, labels=None, initial_dims = 50, perplexity = 30
 
 def show_filters(weights,nweights,d1, d2, nrows, ncols, scale):
     """
-    Plots the rows of Numpy 2D array ``weights`` as ``d1`` by ``d2`` images.
+    Plots the rows of NumPy 2D array ``weights`` as ``d1`` by ``d2`` images.
 
     The images are layed out in a ``nrows`` by ``ncols`` grid.
 
@@ -110,7 +110,7 @@ def show_filters(weights,nweights,d1, d2, nrows, ncols, scale):
 
 def show_binary_images(samples, nsamples, d1, d2, nrows, ncols):
     """
-    Plots samples in a Numpy 2D array ``samples`` as ``d1`` by ``d2`` images.
+    Plots samples in a NumPy 2D array ``samples`` as ``d1`` by ``d2`` images.
     (one sample per row of ``samples``).
 
     The samples are assumed to be images with binary pixels. The
@@ -139,7 +139,7 @@ def show_binary_images(samples, nsamples, d1, d2, nrows, ncols):
 
 def show_color_images(samples, nsamples, d1, d2, nrows, ncols):
     """
-    Plots samples in a Numpy 2D array ``samples`` as ``d1`` by ``d2`` images.
+    Plots samples in a NumPy 2D array ``samples`` as ``d1`` by ``d2`` images.
     (one sample per row of ``samples``).
 
     The samples are assumed to be color images. The first ``d1*d2``

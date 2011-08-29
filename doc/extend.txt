@@ -292,7 +292,7 @@ Finally, here are a few guidelines to follow when implementing a new MLProblem:
 * It is a good idea to make your MLProblem compatible with as many types of examples as possible. 
   A fairly general assumption is that examples are going to be either a single (for instance an input
   without a target) or a tuple/list of (for instance an input and its target) elements. These
-  elements could be a various nature (Numpy arrays of arbitrary dimension, integers, strings, etc.).
+  elements could be a various nature (NumPy arrays of arbitrary dimension, integers, strings, etc.).
   All such assumptions should be clearly commented in the class's docstring (see :ref:`documenting_code`)
 * The requirement that ``apply_on()`` output the same type of MLProblem is not a strict one. There are
   cases where it's actually not what you want to do. An example is the SemisupervisedProblem (see :ref:`mlproblems_generic`)
