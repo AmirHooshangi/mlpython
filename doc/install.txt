@@ -13,7 +13,33 @@ following, in the directory where you wish to put it: ::
 
 To learn more about Mercurial, see http://mercurial.selenic.com/ (or
 for a very quick-and-dirty presentation, see
-http://mercurial.selenic.com/wiki/QuickStart).
+http://mercurial.selenic.com/wiki/QuickStart).  Mercurial is available
+through its advanced packaging tool on Ubuntu (``sudo apt-get
+mercurial``) or through MacPorts on Mac OS X (``sudo port install
+mercurial``).
+
+Required libraries
+------------------
+
+MLPython requires a few, fairly standard scientific computing libraries:
+
+* `BLAS <http://netlib.org/blas/>`_: Library for basic vector/matrix linear algebra operations.
+* `LAPACK <http://www.netlib.org/lapack/>`_: Library for other linear algebra operations (linear solver, LU decomposition, etc.).
+* `NumPy <http://numpy.scipy.org/>`_: Python package for scientific computing with N-dimensional arrays.
+* `matplotlib <http://matplotlib.sourceforge.net/>`_: Python package for 2D plotting.
+
+Installing these libraries on Ubuntu is straightforward, using its advanced packaging tool: ::
+
+   sudo apt-get install liblapack-dev python-dev python-numpy 
+   sudo apt-get python-scipy ipython python-matplotlib
+
+For Mac OS X, you can follow the instructions given here http://sublimated.wordpress.com/2009/01/20/how-to-install-matplotlib-and-scipy-using-macports/.
+
+MLPython also interfaces other third-party software that are
+not absolutely required to use MLPython:
+
+* `LIBSVM <http://www.csie.ntu.edu.tw/~cjlin/libsvm/>`_: SVM classifier, see mlpython/learners/third_party/libsvm/README for instructions.
+* `t-SNE <http://http://homepage.tudelft.nl/19j49/t-SNE.html>`_: t-SNE dimensionality reduction, see mlpython/misc/third_party/tsne/README for instructions.
 
 Installing MLPython
 -------------------
@@ -46,21 +72,3 @@ you can use it:
 
 You should now be able to use MLPython! 
 
-Required libraries
-------------------
-
-MLPython requires a few, fairly standard scientific computing libraries:
-
-* `BLAS <http://netlib.org/blas/>`_: Library for basic vector/matrix linear algebra operations.
-* `LAPACK <http://www.netlib.org/lapack/>`_: Library for other linear algebra operations (linear solver, LU decomposition, etc.).
-* `NumPy <http://numpy.scipy.org/>`_: Python package for scientific computing with N-dimensional arrays.
-* `matplotlib <http://matplotlib.sourceforge.net/>`_: Python package for 2D plotting.
-
-These libraries are common enough that they might already be installed
-on your computer.
-
-MLPython also interfaces other third-party software that are
-not absolutely required to use MLPython:
-
-* `LIBSVM <http://www.csie.ntu.edu.tw/~cjlin/libsvm/>`_: SVM classifier, see mlpython/learners/third_party/libsvm/README for instructions.
-* `t-SNE <http://http://homepage.tudelft.nl/19j49/t-SNE.html>`_: t-SNE dimensionality reduction, see mlpython/misc/third_party/tsne/README for instructions.
