@@ -1,0 +1,8 @@
+syntax: regexp
+.*\.pyc$
+.*\.so$
+.*\.o$
+.*\.egg-info$
+.*~$
+^doc/_.*
+^doc/\..*

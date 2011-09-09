@@ -1,0 +1,101 @@
+.. _install:
+
+Installation Instructions
+=========================
+
+Getting MLPython
+----------------
+
+MLPython is developed under Mercurial and is hosted by `bitbucket
+<http://bitbucket.org/>`_ as a private project. To clone or fork its
+repository, get a `bitbucket <http://bitbucket.org/>`_ account and
+just email me so I can add you as a private user
+(hugo.larochelle<at>usherbrooke.ca). You will then be able to access
+the repository and obtain instructions for how to clone or fork it
+here: https://bitbucket.org/HugoLarochelle/mlpython.
+
+To learn more about Mercurial, see http://mercurial.selenic.com/ (or
+for a very quick-and-dirty presentation, see
+http://mercurial.selenic.com/wiki/QuickStart).  Mercurial is available
+through its advanced packaging tool on Ubuntu (``sudo apt-get
+mercurial``) or through MacPorts on Mac OS X (``sudo port install
+mercurial``).
+
+Required libraries
+------------------
+
+MLPython requires a few, fairly standard scientific computing libraries:
+
+* `BLAS <http://netlib.org/blas/>`_: Library for basic vector/matrix linear algebra operations.
+* `LAPACK <http://www.netlib.org/lapack/>`_: Library for other linear algebra operations (linear solver, LU decomposition, etc.).
+* `NumPy <http://numpy.scipy.org/>`_: Python package for scientific computing with N-dimensional arrays.
+* `matplotlib <http://matplotlib.sourceforge.net/>`_: Python package for 2D plotting.
+
+Installing these libraries on Ubuntu is straightforward, using its advanced packaging tool: ::
+
+   sudo apt-get install liblapack-dev python-dev python-numpy 
+   sudo apt-get python-scipy ipython python-matplotlib
+
+For Mac OS X, you can follow the instructions given here
+http://sublimated.wordpress.com/2009/01/20/how-to-install-matplotlib-and-scipy-using-macports/.
+You might want to set macosx as the backend for mathplotlib. This is
+done by appending to the ~/.matplotlib/matplotlibrc file (which you might
+need to create) the line: ::
+
+   backend : macosx
+
+You will also need to add to your ``CPATH`` environment variable the
+path to the NumPy C header files. To figure out where they are, you
+can import NumPy in python: ::
+
+   >>> import numpy
+   >>> numpy
+   <module 'numpy' from '/Library/Frameworks/EPD64.framework/Versions/6.3/lib/python2.6/site-packages/numpy/__init__.pyc'>
+
+which will reveal the path of the directory where NumPy is installed
+(in this exemple,
+/Library/Frameworks/EPD64.framework/Versions/6.3/lib/python2.6/site-packages/numpy/).
+Append the subdirectory core/include to that path and add it to
+``CPATH`` in ~/.profile: ::
+
+   export CPATH=/Library/Frameworks/EPD64.framework/Versions/6.3/lib/python2.6/site-packages/numpy/core/include:$CPATH
+
+
+
+MLPython also interfaces other third-party software that are
+not absolutely required to use MLPython:
+
+* `LIBSVM <http://www.csie.ntu.edu.tw/~cjlin/libsvm/>`_: SVM classifier, see mlpython/learners/third_party/libsvm/README for instructions.
+* `t-SNE <http://http://homepage.tudelft.nl/19j49/t-SNE.html>`_: t-SNE dimensionality reduction, see mlpython/misc/third_party/tsne/README for instructions.
+
+Installing MLPython
+-------------------
+
+Your copy of MLPython in hand, you must now do the following steps before 
+you can use it:
+
+* You must add the path to your copy of MLPython in your
+  PYTHONPATH. Say the path is $HOME/python/mlpython and you are using
+  a bash shell, simply add the following line to your .bashrc file: ::
+
+   export PYTHONPATH=$PYTHONPATH:$HOME/python/mlpython
+
+* MLPython also uses the environment variable MLPYTHON_DATASET_REPO as
+  the path where to download machine learning datasets. Simply create
+  once a directory at your preferred location ::
+
+   mkdir $HOME/ml_datasets
+
+  and set MLPYTHON_DATASET_REPO to the path of that directory in your 
+  shell configuration file: ::
+   
+   export MLPYTHON_DATASET_REPO=$HOME/ml_datasets
+
+* MLPython contains some C code that needs to be compiled. On Unix systems,
+  simply type ``make`` in the root directory of MLPython: ::
+
+   cd $HOME/python/mlpython
+   make
+
+You should now be able to use MLPython! 
+
