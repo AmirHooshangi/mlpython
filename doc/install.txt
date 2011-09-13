@@ -74,11 +74,12 @@ Installing MLPython
 Your copy of MLPython in hand, you must now do the following steps before 
 you can use it:
 
-* You must add the path to your copy of MLPython in your
-  PYTHONPATH. Say the path is $HOME/python/mlpython and you are using
-  a bash shell, simply add the following line to your .bashrc file: ::
+* You must add the path of the subdirectory containing your copy of
+  MLPython in your PYTHONPATH. Say your MLPython is in $HOME/python/mlpython
+  and you are using a bash shell, simply add the following line to
+  your .bashrc file: ::
 
-   export PYTHONPATH=$PYTHONPATH:$HOME/python/mlpython
+   export PYTHONPATH=$PYTHONPATH:$HOME/python
 
 * MLPython also uses the environment variable MLPYTHON_DATASET_REPO as
   the path where to download machine learning datasets. Simply create
