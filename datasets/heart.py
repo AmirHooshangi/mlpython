@@ -10,7 +10,7 @@
 #       of conditions and the following disclaimer in the documentation and/or other materials
 #       provided with the distribution.
 # 
-# THIS SOFTWARE IS PROVIDED BY Hugo Larochelle ``AS IS'' AND ANY EXPRESS OR IMPLIED
+# THIS SOFTWARE IS PROVIDED BY Guillaume Roy-Fontaine and David Brouillard ``AS IS'' AND ANY EXPRESS OR IMPLIED
 # WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
 # FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Hugo Larochelle OR
 # CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
@@ -22,12 +22,12 @@
 # 
 # The views and conclusions contained in the software and documentation are those of the
 # authors and should not be interpreted as representing official policies, either expressed
-# or implied, of Hugo Larochelle.
+# or implied, of Guillaume Roy-Fontaine and David Brouillard.
 
 """
-Module ``datasets.heart`` gives access to the heart dataset.
+Module ``datasets.heart`` gives access to the Heart (SPECT) dataset.
 
-The heart dataset is obtained here: http://archive.ics.uci.edu/ml/machine-learning-databases/spect.
+The Heart dataset is obtained here: http://archive.ics.uci.edu/ml/machine-learning-databases/spect.
 
 """
 
@@ -37,7 +37,7 @@ import os
 
 def load(dir_path,load_to_memory=False):
     """
-    Loads the heart dataset.
+    Loads the Heart dataset.
 
     The data is given by a dictionary mapping from strings
     ``'train'``, ``'valid'`` and ``'test'`` to the associated pair of data and metadata.
@@ -93,18 +93,18 @@ def obtain(dir_path):
     for line in file_train_and_valid:
         tokens = line.strip('\n').strip(',').split(',')
         s = ''
-        for t in range(0,len(tokens) - 1):
+        for t in range(1,len(tokens)):
             s = s + tokens[t] + ' '
-        target = tokens[22]
+        target = tokens[0]
         s = s + str(target) + '\n'
         train_and_valid_data += [s]
 
     for line in file_test:
         tokens = line.strip('\n').strip(',').split(',')
         s = ''
-        for t in range(0,len(tokens) - 1):
+        for t in range(1,len(tokens)):
             s = s + tokens[t] + ' '
-        target = tokens[22]
+        target = tokens[0]
         s = s + str(target) + '\n'
         test_file.write(s)
     test_file.close()
