@@ -41,7 +41,7 @@ except ImportError:
 
 class TreeClassifier(Learner):
     """ 
-    Tree Classifier using MILK library
+    Decision Tree Classifier using MILK library
     
     TODO: REFAIRE POUR MILK
  
@@ -67,34 +67,11 @@ class TreeClassifier(Learner):
     * ``'class_to_id'``
 
     """
-    #def __init__(self,
-                 #kernel='linear',
-                 #degree=3,
-                 #gamma=1,
-                 #coef0=0,
-                 #C=1,
-                 #tolerance=0.001,
-                 #cache_size=100,
-                 #shrinking=True,
-                 #output_probabilities=False,
-                 #label_weights = None
-                 #):
-        
-        #self.kernel = kernel
-        #self.degree = degree
-        #self.gamma = float(gamma)
-        #self.coef0 = float(coef0)
-        #self.C = float(C)
-        #self.tolerance = float(tolerance)
-        #self.cache_size = cache_size
-        #self.shrinking = shrinking
-        #self.output_probabilities = output_probabilities
-        #self.label_weights = label_weights
-        
-    def __init__(self, criterion='information_gain', min_split=4, return_label=True, subsample=None, R=None):
+    def __init__(self, criterion='information_gain', min_split=4, include_entropy=False):
         self.criterion = 'criterion'
         self.min_split = min_split
-        self.return_label = return_label
+        # HUGO: ajouter les autres options associee aux criterions
+
         #self.subsample = subsample
         #self.R = R
 
@@ -107,58 +84,31 @@ class TreeClassifier(Learner):
         #labels = np.zeros(100)
         #features[50:] += .5
         #labels[50:] = 1
+
+        # HUGO: raise error if number of classes > 2
         
-        features = []
-        labels = []
-        for input,target in trainset:
-            features += [input]
-            labels += [target]
-            
-        #print '\nFeatures : \n'
-        #for target2 in features:
-            #print target2
-            
-        #print '\nLabels : \n'
-        #for target3 in labels:
-            #print target3
-        
-        learner = libmilk.supervised.tree_learner()
+        features = np.zeros((len(trainset),trainset.metadata['input_size']))
+        labels = np.zeros((len(trainset)))
+        for i,xy in enumerate(trainset):
+            x,y = xy
+            features[i] = x
+            labels[i] = y
+
+        if self.criterion == 'information_gain':
+            def criterion_fcn(labels0,labels1):
+                return libmilk.supervised.tree.information_gain(labels0, labels1,include_entropy = self.include_entropy)
+        elif self.criterion == 'z1_loss':
+            # TODO
+        else:
+            # raise ValueError('Invalid kernel: '+self.kernel+'. Should be either \'linear\', \'polynomial\', \'rbf\' or \'sigmoid\'')
+
+        learner = libmilk.supervised.tree_learner(criterion=criterion_fcn,min_split=self.min_split) # HUGO: passer des options!
         model = learner.train(features, labels)
         
         self.tree = model
         
         print '\nTRAIN DONE!\n'
 
-    #def use(self,dataset):
-        #"""
-        #Outputs the class_id chosen by the algorithm. If 
-        #``output_probabilities`` is True, also outputs the vector
-        #of probabilities.
-        #"""
-        
-        #features = []
-        #labels = []
-        #for input,target in dataset:
-            #features += [input]
-            #labels += [target]
-            
-        #myOutput = np.zeros((len(datasets),1))
-        #print '\nTest Features : \n'
-        #for target2 in features:
-            ##print self.tree.apply(target2)
-            ##target3 += [self.tree.apply(target2)]
-            #if [self.tree.apply(target2)] == [True]:
-                #myOutput += [0]
-            #else:
-                #myOutput += [1]
-        
-        #print myOutput
-            
-        #outputs = myOutput
-            
-        #return outputs
-        
-        
     def use(self,dataset):
         features = []
         outputs = np.zeros((len(dataset),1))
@@ -167,21 +117,17 @@ class TreeClassifier(Learner):
             features += [x]
 
         for test,out in zip(features,outputs):
-            temp = [self.tree.apply(test)]
-            if temp == [True]:
-                out[0] = 0
-            else:
-                out[0] = 1
+            out[0] = self.tree.apply(test)
+            #temp = [self.tree.apply(test)]
+            #if temp == [True]:
+            #    out[0] = 0
+            #else:
+            #    out[0] = 1
         
         return outputs
 
-
-
     def forget(self):
-        #self.svm = None 
         self.tree = None
-        self.n_classes = None
-
 
     def test(self,dataset):
         """
@@ -191,24 +137,13 @@ class TreeClassifier(Learner):
         outputs = self.use(dataset)
         
         costs = np.ones((len(outputs),1))
-        # Compute normalized NLLs
+        # Compute classification error
         for xy,pred,cost in zip(dataset,outputs,costs):
-            
-            print pred
-            
             x,y = xy
             if y == pred[0]:
                 cost[0] = 0
 
         return outputs,costs
-        
-    def test1(self):
-        """
-        Outputs the result of ``use(dataset)`` and 
-        the classification error cost for each example in the dataset
-        """
-        print 'DONE - test1'
-    
         
 
 
