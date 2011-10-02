@@ -65,7 +65,7 @@ class TreeClassifier(Learner):
     min_split : integer, optional
         minimum size to split on (default: 4).
         
-    Other options are the same as those in the LIBSVM implementation
+    Other options
     (see http://packages.python.org/milk/index.html for more details).
 
     **Required metadata:**
