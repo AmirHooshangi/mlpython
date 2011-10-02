@@ -42,24 +42,31 @@ except ImportError:
 class TreeClassifier(Learner):
     """ 
     Decision Tree Classifier using MILK library
-    
-    TODO: REFAIRE POUR MILK
  
-    Examples should be input and target pairs. The input can use
-    either a sparse or coarse representation, as returned by the
-    ``mlpython.misc.io.libsvm_load`` function.  Option ``kernel`` (which
-    can be either ``'linear'``, ``'polynomial'``, ``'rbf'`` or
-    ``'sigmoid'``) determines the type of kernel.
+    A decision tree classifier (currently, implements the greedy ID3
+    algorithm without any pruning).
 
-    Weights to examples of different classes can be given using 
-    option ``label_weights``, which must be a dictionary mapping from 
-    the label (string) to the weight (float).
+    Attributes
+    ----------
+    criterion : function, optional
+        criterion to use for tree construction,
+        this should be a function that receives a set of labels
+        (default: information_gain).
 
-    The SVM will also output probabilities if option ``'output_probabilities'``
-    is True.
+        Information Gain
+        See http://en.wikipedia.org/wiki/Information_gain_in_decision_trees
 
+        The function calculated here does not include the original entropy unless
+        you explicitly ask for it (by passing include_entropy=True)
+
+        z1_loss
+        zero-one loss split for tree learning
+
+    min_split : integer, optional
+        minimum size to split on (default: 4).
+        
     Other options are the same as those in the LIBSVM implementation
-    (see http://www.csie.ntu.edu.tw/~cjlin/libsvm for more details).
+    (see http://packages.python.org/milk/index.html for more details).
 
     **Required metadata:**
 
@@ -67,9 +74,13 @@ class TreeClassifier(Learner):
     * ``'class_to_id'``
 
     """
-    def __init__(self, criterion='information_gain', min_split=4, include_entropy=False):
+    def __init__(self, criterion='information_gain', min_split=4, include_entropy=False, weights0=None, weights1=None, return_label=True):
         self.criterion = 'criterion'
         self.min_split = min_split
+        self.include_entropy = include_entropy
+        self.weights0 = weights0
+        self.weights1 = weights1
+        self.return_label = return_label
         # HUGO: ajouter les autres options associee aux criterions
 
         #self.subsample = subsample
@@ -79,13 +90,13 @@ class TreeClassifier(Learner):
         """
         Trains the data with the Milk Tree Learner.
         """  
-        print '\nTRAIN BEGIN!\n'     
-        #features = np.random.rand(100,10)
-        #labels = np.zeros(100)
-        #features[50:] += .5
-        #labels[50:] = 1
+        print '\nTRAIN BEGIN!\n'
 
+        self.n_classes = len(trainset.metadata['targets'])
         # HUGO: raise error if number of classes > 2
+        if self.n_classes > 2:
+            raise ValueError('Invalid. Should have 2 classes.')
+        
         
         features = np.zeros((len(trainset),trainset.metadata['input_size']))
         labels = np.zeros((len(trainset)))
@@ -95,14 +106,16 @@ class TreeClassifier(Learner):
             labels[i] = y
 
         if self.criterion == 'information_gain':
-            def criterion_fcn(labels0,labels1):
-                return libmilk.supervised.tree.information_gain(labels0, labels1,include_entropy = self.include_entropy)
+            def criterion_fcn(labels0=self.labels0, labels1=self.labels1):
+                return libmilk.supervised.tree.information_gain(labels0, labels1, include_entropy=self.include_entropy)
         elif self.criterion == 'z1_loss':
-            # TODO
+            return libmilk.supervised.tree.z1_loss(labels0, labels1, weights0=self.weights0, weights1=self.weights1)
         else:
-            # raise ValueError('Invalid kernel: '+self.kernel+'. Should be either \'linear\', \'polynomial\', \'rbf\' or \'sigmoid\'')
+                raise ValueError('Invalid parameter: '+self.criterion+'. Should be either \'information_gain\' or \'z1_loss\'')
 
-        learner = libmilk.supervised.tree_learner(criterion=criterion_fcn,min_split=self.min_split) # HUGO: passer des options!
+        learner = libmilk.supervised.tree_learner(criterion=criterion_fcn,min_split=self.min_split,return_label=self.return_label) # HUGO: passer des options!
+        #self.subsample = subsample
+        #self.R = R
         model = learner.train(features, labels)
         
         self.tree = model
@@ -118,11 +131,6 @@ class TreeClassifier(Learner):
 
         for test,out in zip(features,outputs):
             out[0] = self.tree.apply(test)
-            #temp = [self.tree.apply(test)]
-            #if temp == [True]:
-            #    out[0] = 0
-            #else:
-            #    out[0] = 1
         
         return outputs
 
