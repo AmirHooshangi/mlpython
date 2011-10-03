@@ -1,0 +1,110 @@
+#! /usr/bin/python
+
+# Copyright 2011 David Brouillard & Guillaume Roy-Fontaine. All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without modification, are
+# permitted provided that the following conditions are met:
+# 
+#    1. Redistributions of source code must retain the above copyright notice, this list of
+#       conditions and the following disclaimer.
+# 
+#    2. Redistributions in binary form must reproduce the above copyright notice, this list
+#       of conditions and the following disclaimer in the documentation and/or other materials
+#       provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY David Brouillard & Guillaume Roy-Fontaine ``AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL David Brouillard & Guillaume Roy-Fontaine OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+# ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# 
+# The views and conclusions contained in the software and documentation are those of the
+# authors and should not be interpreted as representing official policies, either expressed
+# or implied, of David Brouillard & Guillaume Roy-Fontaine.
+
+
+# ex: python create_experiment_script data_script.py option1=10 option2=20 > script.py
+
+# TODO: Verifier l'intégralite des commentaires
+# TODO: Commentaire en anglais
+# TODO: Parametre optionnel et +
+
+import os
+import sys
+from string import Template
+
+if (len(sys.argv) > 1):	
+	
+	# -----------------------------------------------------------------
+	fileName = sys.argv[1]
+	
+	arg_list = sys.argv
+	arg_list.pop(0);	# Remove first argument (script name)
+	arg_list.pop(0);	# Remove second argument (file name)	
+	# -----------------------------------------------------------------
+
+
+	# -----------------------------------------------------------------
+	# Mettre param du fichier raw dans une list
+	fd = open(fileName)
+	
+	list1 = []
+	for line in fd:
+		list1.append(line.replace("\n", ""))
+	
+	fd.close()	
+	# -----------------------------------------------------------------
+	
+	
+	# -----------------------------------------------------------------
+	# Partitionner les keywords
+	myKeyword = []
+	for x in list1:
+		myKeyword.append(x.partition('='))
+	# -----------------------------------------------------------------
+	
+
+	# -----------------------------------------------------------------
+	# Creer le dictionnaire
+	d = {}
+	for x in myKeyword:
+		#print x[0] + ' : ' + x[2]
+		d[x[0]] = x[2]
+		
+		# TODO: Verifier si l'option des parametres du script correspond a ceux dans le fichier raw,
+		# si oui, mettre la valeur associe
+		
+	# -----------------------------------------------------------------
+	
+	
+	# -----------------------------------------------------------------
+	# Loader le fichier template
+	#templateFile = open('template')
+	#theTemplate = Template('$TASK, $DATASET, $MODULE babla')
+	#theTemplate = Template(templateFile)
+	#templateFile.close()
+	# -----------------------------------------------------------------
+	
+	
+	# -----------------------------------------------------------------
+	# Substituer les keywords du dictionnaire dans le template
+	result = 'import numpy as np\n'
+	result +=  'import mlpython.datasets.store as dataset_store\n'
+	result += Template('from $MODULE import ${LEARNER}\n').substitute(d)
+	result += Template('dataset_store.download(\'${DATASET}\')\n').substitute(d)
+	result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n').substitute(d)
+	result += Template('myObject = ${LEARNER}()\n').substitute(d)
+	result += 'model = myObject.train(trainset)\n'
+	result += 'outputs,costs = myObject.test(testset)\n'
+	result += 'print \'Classification error on test set is\',np.mean(costs,axis=0)[0]'
+
+	print result
+	# -----------------------------------------------------------------
+else:
+    print "Please provide some argument!"
+
+	
