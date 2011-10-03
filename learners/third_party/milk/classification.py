@@ -74,10 +74,12 @@ class TreeClassifier(Learner):
     * ``'class_to_id'``
 
     """
-    def __init__(self, criterion='information_gain', min_split=4, include_entropy=False, weights0=None, weights1=None, return_label=True):
-        self.criterion = 'criterion'
+    def __init__(self, criterion='information_gain', min_split=4, include_entropy=False, labels0=None, labels1=None, weights0=None, weights1=None, return_label=True):
+        self.criterion = criterion
         self.min_split = min_split
         self.include_entropy = include_entropy
+        self.labels0 = labels0
+        self.labels1 = labels1
         self.weights0 = weights0
         self.weights1 = weights1
         self.return_label = return_label
