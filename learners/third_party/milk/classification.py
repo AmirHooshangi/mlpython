@@ -91,9 +91,8 @@ class TreeClassifier(Learner):
     def train(self,trainset):
         """
         Trains the data with the Milk Tree Learner.
-        """  
-        print '\nTRAIN BEGIN!\n'
-
+        """
+        
         self.n_classes = len(trainset.metadata['targets'])
         # HUGO: raise error if number of classes > 2
         if self.n_classes > 2:
@@ -121,8 +120,6 @@ class TreeClassifier(Learner):
         model = learner.train(features, labels)
         
         self.tree = model
-        
-        print '\nTRAIN DONE!\n'
 
     def use(self,dataset):
         features = []

@@ -29,7 +29,7 @@
 
 # ex: python create_experiment_script data_script.py option1=10 option2=20 > script.py
 
-# TODO: Verifier l'intégralite des commentaires
+# TODO: Verifier l'integralite des commentaires
 # TODO: Commentaire en anglais
 # TODO: Parametre optionnel et +
 
@@ -61,7 +61,7 @@ if (len(sys.argv) > 1):
 	
 	
 	# -----------------------------------------------------------------
-	# Partitionner les keywords
+	# Parsing Keywords
 	myKeyword = []
 	for x in list1:
 		myKeyword.append(x.partition('='))
@@ -91,12 +91,13 @@ if (len(sys.argv) > 1):
 	
 	
 	# -----------------------------------------------------------------
-	# Substituer les keywords du dictionnaire dans le template
+	# Substitute dictionnary's keywords in the template
 	result = 'import numpy as np\n'
 	result +=  'import mlpython.datasets.store as dataset_store\n'
 	result += Template('from $MODULE import ${LEARNER}\n').substitute(d)
 	result += Template('dataset_store.download(\'${DATASET}\')\n').substitute(d)
 	result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n').substitute(d)
+	# TODO Handle constructor's parameters
 	result += Template('myObject = ${LEARNER}()\n').substitute(d)
 	result += 'model = myObject.train(trainset)\n'
 	result += 'outputs,costs = myObject.test(testset)\n'
