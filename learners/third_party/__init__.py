@@ -31,5 +31,6 @@ algorithms coming from third-party libraries.
 Currently, it contains the following subpackages:
 
 * ``learning.third_party.libsvm``:    Learners interfacing with the LIBSVM library.
+* ``learning.third_party.milk``:      Learners interfacing with the Milk library.
 
 """

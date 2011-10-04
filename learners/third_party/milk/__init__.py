@@ -26,46 +26,23 @@
 
 """
 The package ``learners.third_party.milk`` contains modules for learning
-algorithms using the MILK library. These modules all require that the
-MILK library be installed.
+algorithms using the Milk library. These modules all require that the
+Milk library be installed.
 
-To use MILK through mlpython, do the following:
+To use milk through mlpython, do the following:
 
+1. download milk from here: http://pypi.python.org/pypi/milk/#downloads
+2. install milk (instructions from Milk's INSTALL.rst)
+   The following should work: ::
 
-/******************************************************/
-/******************************************************/
-TODO: MODIFY FOR MILK!!!!!!!!
-/******************************************************/
-/******************************************************/
+      python setup.py install
 
-1. download LIBSVM from here: http://www.csie.ntu.edu.tw/~cjlin/libsvm/
-2. install LIBSVM (see LIBSVM instructions)
-3. install the included python interface (see LIBSVM intrusctions)
-4. put path to the python interface in PYTHONPATH
+3. **IMPORTANT** When importing milk for the first time, make sure not to be in its directory.
 
-That should do it. Try 'python test.py' to see if your installation is working.
+And that should do it! Try 'import milk' to see if your installation is working.
 
-Here is an example of what steps 1 to 3 can look like, where LIBSVMDIR
-is the path where you wish to install LIBSVM and
-PYTHON_INCLUDEDIR is the path of your python include directory
-(use at your own risk!): ::
+Currently, ``learner.third_party.milk`` contains the following modules:
 
-   tcsh
-   set LIBSVMDIR=~/python
-   set PYTHON_INCLUDEDIR=/usr/include/python2.6
-   cd $LIBSVMDIR/
-   wget "http://www.csie.ntu.edu.tw/~cjlin/cgi-bin/libsvm.cgi?+http://www.csie.ntu.edu.tw/~cjlin/libsvm+tar.gz"
-   tar -zxf libsvm-3.1.tar.gz
-   cd libsvm-3.1
-   make
-   cd python
-   make
-   exit
-
-Finally, you'll need to add $MLIBSVMDIR/python to your PYTHONPATH.
-
-Currently, ``learner.third_party.libsvm`` contains the following modules:
-
-* ``learning.third_party.libsvm.classification``:    SVM classifier based on the LIBSVM library.
+* ``learning.third_party.milk.classification``:    Classifiers from the Milk library.
 
 """

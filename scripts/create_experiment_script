@@ -27,85 +27,92 @@
 # or implied, of David Brouillard & Guillaume Roy-Fontaine.
 
 
-# ex: python create_experiment_script data_script.py option1=10 option2=20 > script.py
+# ex: python create_rawdata_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file min_split criterion > script.py
+# Pour ensuite faire: python mon_script.py min_split=3 criterion=\'information_gain\'
 
 # TODO: Verifier l'integralite des commentaires
 # TODO: Commentaire en anglais
 # TODO: Parametre optionnel et +
+# TODO: DAVID UTILISE EMACS!!!!!
+# TODO: dans une doc, expliquer que les quotes donc etre passee avec backslash
+# TODO: DAVID UTILISE EMACS!!!!!
 
 import os
 import sys
 from string import Template
 
-if (len(sys.argv) > 1):	
-	
-	# -----------------------------------------------------------------
-	fileName = sys.argv[1]
-	
-	arg_list = sys.argv
-	arg_list.pop(0);	# Remove first argument (script name)
-	arg_list.pop(0);	# Remove second argument (file name)	
-	# -----------------------------------------------------------------
+print sys.argv
+
+if (len(sys.argv) > 6):    
+    
+    # -----------------------------------------------------------------
+    fileName = sys.argv[1]
+    
+    arg_list = sys.argv
+    arg_list.pop(0);    # Remove first argument (script name)
+    arg_list.pop(0);    # Remove second argument (file name)    
+    # -----------------------------------------------------------------
 
 
-	# -----------------------------------------------------------------
-	# Mettre param du fichier raw dans une list
-	fd = open(fileName)
-	
-	list1 = []
-	for line in fd:
-		list1.append(line.replace("\n", ""))
-	
-	fd.close()	
-	# -----------------------------------------------------------------
-	
-	
-	# -----------------------------------------------------------------
-	# Parsing Keywords
-	myKeyword = []
-	for x in list1:
-		myKeyword.append(x.partition('='))
-	# -----------------------------------------------------------------
-	
+    # -----------------------------------------------------------------
+    # Mettre param du fichier raw dans une list
+    fd = open(fileName)
+    
+    list1 = []
+    for line in fd:
+        list1.append(line.replace("\n", ""))
+    
+    fd.close()    
+    # -----------------------------------------------------------------
+    
+    
+    # -----------------------------------------------------------------
+    # Parsing Keywords
+    myKeyword = []
+    for x in list1:
+        myKeyword.append(x.partition('='))
+    # -----------------------------------------------------------------
+    
 
-	# -----------------------------------------------------------------
-	# Creer le dictionnaire
-	d = {}
-	for x in myKeyword:
-		#print x[0] + ' : ' + x[2]
-		d[x[0]] = x[2]
-		
-		# TODO: Verifier si l'option des parametres du script correspond a ceux dans le fichier raw,
-		# si oui, mettre la valeur associe
-		
-	# -----------------------------------------------------------------
-	
-	
-	# -----------------------------------------------------------------
-	# Loader le fichier template
-	#templateFile = open('template')
-	#theTemplate = Template('$TASK, $DATASET, $MODULE babla')
-	#theTemplate = Template(templateFile)
-	#templateFile.close()
-	# -----------------------------------------------------------------
-	
-	
-	# -----------------------------------------------------------------
-	# Substitute dictionnary's keywords in the template
-	result = 'import numpy as np\n'
-	result +=  'import mlpython.datasets.store as dataset_store\n'
-	result += Template('from $MODULE import ${LEARNER}\n').substitute(d)
-	result += Template('dataset_store.download(\'${DATASET}\')\n').substitute(d)
-	result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n').substitute(d)
-	# TODO Handle constructor's parameters
-	result += Template('myObject = ${LEARNER}()\n').substitute(d)
-	result += 'model = myObject.train(trainset)\n'
-	result += 'outputs,costs = myObject.test(testset)\n'
-	result += 'print \'Classification error on test set is\',np.mean(costs,axis=0)[0]'
+    # -----------------------------------------------------------------
+    # Creer le dictionnaire
+    d = {}
+    for x in myKeyword:
+        #print x[0] + ' : ' + x[2]
+        d[x[0]] = x[2]
+        
+        # TODO: Verifier si l'option des parametres du script correspond a ceux dans le fichier raw,
+        # si oui, mettre la valeur associe
+        
+    # -----------------------------------------------------------------
+    
+    
+    # -----------------------------------------------------------------
+    # Loader le fichier template
+    #templateFile = open('template')
+    #theTemplate = Template('$TASK, $DATASET, $MODULE babla')
+    #theTemplate = Template(templateFile)
+    #templateFile.close()
+    # -----------------------------------------------------------------
+    
+    
+    # -----------------------------------------------------------------
+    # Substitute dictionnary's keywords in the template
+    result = 'import numpy as np\n'
+    result +=  'import mlpython.datasets.store as dataset_store\n'
+    result += Template('from $MODULE import ${LEARNER}\n').substitute(d)
+    result += Template('dataset_store.download(\'${DATASET}\')\n').substitute(d)
+    result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n').substitute(d)
+    # TODO Handle constructor's parameters
+    result += Template('myObject = ${LEARNER}()\n').substitute(d)
+    result += 'model = myObject.train(trainset)\n'
+    result += 'outputs_tr,costs_tr = myObject.test(trainset)\n'
+    result += 'outputs_v,costs_v = myObject.test(validset)\n'
+    result += 'outputs_t,costs_t = myObject.test(testset)\n'
+    result += 'print \'Classification error on test set is\',np.mean(costs,axis=0)[0]'
 
-	print result
-	# -----------------------------------------------------------------
+    print result
+    # -----------------------------------------------------------------
 else:
     print "Please provide some argument!"
 
-	

@@ -26,7 +26,7 @@
 
 """
 The ``learners.third_party.milk.classification`` module contains 
-an Tree Classifier based on the MILK library:
+an Tree Classifier based on the Milk library:
 """
 
 
@@ -36,54 +36,44 @@ import numpy as np
 try :
     import milk as libmilk
 except ImportError:
-    print 'Warning in mlpython.learners.third_party.milk.classification:''import milk'' failed. The MILK library is not properly installed. See mlpython/misc/third_party/milk/README for instructions.'
+    print 'Warning in mlpython.learners.third_party.milk.classification:''import milk'' failed. The Milk library is not properly installed. See mlpython/misc/third_party/milk/README for instructions.'
 
 
 class TreeClassifier(Learner):
     """ 
-    Decision Tree Classifier using MILK library
+    Decision Tree Classifier using Milk library
  
     A decision tree classifier (currently, implements the greedy ID3
     algorithm without any pruning).
 
-    Attributes
-    ----------
-    criterion : function, optional
-        criterion to use for tree construction,
-        this should be a function that receives a set of labels
-        (default: information_gain).
+    Option ``criterion`` should be a string. Set it to
+    ``'information_gain'``, to use the information gain splitting
+    criterion (see
+    http://en.wikipedia.org/wiki/Information_gain_in_decision_trees),
+    or to ``'z1_loss'`` to use the 0-1 classification accuracy as the
+    splitting criterion (default: ``'information_gain'``).
 
-        Information Gain
-        See http://en.wikipedia.org/wiki/Information_gain_in_decision_trees
+    Option ``min_split`` is a threshold, such that a node will not be
+    split further if it has less than ``min_split`` examples in it
+    (default: 4).
 
-        The function calculated here does not include the original entropy unless
-        you explicitly ask for it (by passing include_entropy=True)
-
-        z1_loss
-        zero-one loss split for tree learning
-
-    min_split : integer, optional
-        minimum size to split on (default: 4).
-        
-    Other options
-    (see http://packages.python.org/milk/index.html for more details).
+    If option ``include_entropy`` is True, the information gain criterion will
+    include the original entropy (default: False).
 
     **Required metadata:**
 
     * ``'targets'``
     * ``'class_to_id'``
 
+    **TODO:**
+
+    * Support Milk's options ``R`` and ``subsample`` to support random sampling of splitting decisions.
+
     """
-    def __init__(self, criterion='information_gain', min_split=4, include_entropy=False, labels0=None, labels1=None, weights0=None, weights1=None, return_label=True):
+    def __init__(self, criterion='information_gain', min_split=4, include_entropy=False):
         self.criterion = criterion
         self.min_split = min_split
         self.include_entropy = include_entropy
-        self.labels0 = labels0
-        self.labels1 = labels1
-        self.weights0 = weights0
-        self.weights1 = weights1
-        self.return_label = return_label
-        # HUGO: ajouter les autres options associee aux criterions
 
         #self.subsample = subsample
         #self.R = R
@@ -94,10 +84,8 @@ class TreeClassifier(Learner):
         """
         
         self.n_classes = len(trainset.metadata['targets'])
-        # HUGO: raise error if number of classes > 2
         if self.n_classes > 2:
             raise ValueError('Invalid. Should have 2 classes.')
-        
         
         features = np.zeros((len(trainset),trainset.metadata['input_size']))
         labels = np.zeros((len(trainset)))
@@ -107,14 +95,15 @@ class TreeClassifier(Learner):
             labels[i] = y
 
         if self.criterion == 'information_gain':
-            def criterion_fcn(labels0=self.labels0, labels1=self.labels1):
+            def criterion_fcn(labels0, labels1):
                 return libmilk.supervised.tree.information_gain(labels0, labels1, include_entropy=self.include_entropy)
         elif self.criterion == 'z1_loss':
-            return libmilk.supervised.tree.z1_loss(labels0, labels1, weights0=self.weights0, weights1=self.weights1)
+            def criterion_fcn(labels0, labels1):
+                return libmilk.supervised.tree.z1_loss(labels0, labels1)
         else:
                 raise ValueError('Invalid parameter: '+self.criterion+'. Should be either \'information_gain\' or \'z1_loss\'')
 
-        learner = libmilk.supervised.tree_learner(criterion=criterion_fcn,min_split=self.min_split,return_label=self.return_label) # HUGO: passer des options!
+        learner = libmilk.supervised.tree_learner(criterion=criterion_fcn,min_split=self.min_split,return_label=True)
         #self.subsample = subsample
         #self.R = R
         model = learner.train(features, labels)
