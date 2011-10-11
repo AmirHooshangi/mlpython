@@ -73,7 +73,7 @@ if (len(sys.argv) >= 6):
     result += 'from string import Template\n'
     result += 'import mlpython.datasets.store as dataset_store\n'
     result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(d)
-    result += Template('dataset_store.download(\'${DATASET}\')\n').safe_substitute(d)
+    #result += Template('dataset_store.download(\'${DATASET}\')\n').safe_substitute(d)
     result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(d)
     result += 'str_ParamOption = ""\n'
     result += 'str_ParamOptionName = ""\n'
@@ -115,18 +115,18 @@ if (len(sys.argv) >= 6):
     result += Template('result_file = \'${RESULTS_FILE}\'\n\n').safe_substitute(d)
     result += 'if not os.path.exists(result_file):\n'
     result += '    f = open(result_file, \'w\')\n'
-    result += Template('    f.write("Results of the learner: $LEARNER")\n').safe_substitute(d)
-    result += '    f.write(\'\\n\\n\')\n'
+    result += '    f.write(header_line)\n'
+    #result += Template('    f.write("Results of the learner: $LEARNER")\n').safe_substitute(d)
+    #result += '    f.write(\'\\n\')\n'
     result += '    f.close()\n'
     result += '# Look if there is optional values to display\n'
     result += 'if str_ParamOptionValue == "":\n'
     result += '    model_info = [str(train_error),str(valid_error),str(test_error)]\n'
     result += 'else:\n'
     result += '    model_info = [str_ParamOptionValue,str(train_error),str(valid_error),str(test_error)]\n'
-    result += 'line = \'\\t\'.join(model_info)+\'\\n\\n\'\n'
+    result += 'line = \'\\t\'.join(model_info)+\'\\n\'\n'
     result += 'file = open(result_file, "a")\n'
     result += 'fcntl.flock(file.fileno(), fcntl.LOCK_EX)\n'
-    result += 'file.write(header_line)\n'
     result += 'file.write(line)\n'
     result += 'file.close() # unlocks the file\n'
     
