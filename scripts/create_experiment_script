@@ -35,8 +35,6 @@
 # (y)TODO: Commentaire en anglais
 # (y)TODO: Parametre optionnel et +
 # TODO: Gerer les tests retournant plus qu'un cost (pour le result_file?)
-# TODO: Doit-on mettre la valeur de l'option dans le header du result_file?
-# TODO: Doit-on override le result_file? Pour l'instant on doit l'effacer pour re-tester
 # TODO: Dans une doc, expliquer que les quotes donc etre passee avec backslash
 
 import os
@@ -55,7 +53,7 @@ if (len(sys.argv) >= 6):
         if x.find('=') == -1:
             myOption.append(x) # Option(s)
         else:
-            myKeyword.append(x.partition('=')) # Mains parameters with '=' in it
+            myKeyword.append(x.partition('=')) # Main's parameters with '=' in it
     # -----------------------------------------------------------------
     
 	# -----------------------------------------------------------------
@@ -86,7 +84,7 @@ if (len(sys.argv) >= 6):
     result += '    myKeyword = []\n'
     result += '    for x in arg_list:\n'
     result += '        if x.find(\'=\') != -1:\n'
-    result += '            myKeyword.append(x.partition(\'=\')) # Mains parameters with \'=\' in it\n'
+    result += '            myKeyword.append(x.partition(\'=\')) # Main\'s parameters with \'=\' in it\n'
     result += '    for index, item in enumerate(myKeyword):\n'
     result += '        str_ParamOption += item[0]\n'
     result += '        str_ParamOptionName += item[0]\n'
@@ -111,7 +109,6 @@ if (len(sys.argv) >= 6):
     result += 'valid_error = str(np.mean(costs_v,axis=0)[0])\n'
     result += 'test_error = str(np.mean(costs_t,axis=0)[0])\n'
     result += '# Preparing result file\n'
-    result += '# Todo: Handle multiple result test\n'
     result += 'header_line = ""\n'
     result += 'header_line += str_ParamOptionName\n'
     result += 'header_line += \'train1\\tvalid1\\ttest1\\n\'\n\n'
@@ -121,6 +118,7 @@ if (len(sys.argv) >= 6):
     result += Template('    f.write("Results of the learner: $LEARNER")\n').safe_substitute(d)
     result += '    f.write(\'\\n\\n\')\n'
     result += '    f.close()\n'
+    result += '# Look if there is optional values to display\n'
     result += 'if str_ParamOptionValue == "":\n'
     result += '    model_info = [str(train_error),str(valid_error),str(test_error)]\n'
     result += 'else:\n'
