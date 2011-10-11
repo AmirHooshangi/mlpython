@@ -28,112 +28,103 @@
 
 
 # ex: python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file min_split criterion > script.py
-# Pour ensuite faire: python mon_script.py min_split=3 criterion=\'information_gain\'
+# To execute the generated script: python mon_script.py min_split=3 criterion=\'information_gain\'
 
-# TODO: Verifier l'integralite des commentaires
-# TODO: Commentaire en anglais
-# TODO: Parametre optionnel et +
-# TODO: DAVID UTILISE EMACS!!!!!
-# TODO: dans une doc, expliquer que les quotes donc etre passee avec backslash
-# TODO: DAVID UTILISE EMACS!!!!!
+
+# (y)TODO: Verifier l'integralite des commentaires
+# (y)TODO: Commentaire en anglais
+# (y)TODO: Parametre optionnel et +
+# TODO: Gerer les tests retournant plus qu'un cost (pour le result_file?)
+# TODO: Doit-on mettre la valeur de l'option dans le header du result_file?
+# TODO: Doit-on override le result_file? Pour l'instant on doit l'effacer pour re-tester
+# TODO: Dans une doc, expliquer que les quotes donc etre passee avec backslash
 
 import os
 import sys
 from string import Template
 
-if (len(sys.argv) >= 4):    
+if (len(sys.argv) >= 6):    
     arg_list = sys.argv
     arg_list.pop(0);	# Remove first argument
-    # -----------------------------------------------------------------
-    #fileName = sys.argv[1]
-     
-    #arg_list = sys.argv
-    #arg_list.pop(0);    # Remove first argument (script name)
-    #arg_list.pop(0);    # Remove second argument (file name)    
-    # -----------------------------------------------------------------
 
-
-    # -----------------------------------------------------------------
-    # Mettre param du fichier raw dans une list
-    #fd = open(fileName)
-    
-    #list1 = []
-    #for line in fd:
-    #    list1.append(line.replace("\n", ""))
-    
-    #fd.close()    
-    # -----------------------------------------------------------------
-    
-    
     # -----------------------------------------------------------------
     # Parsing Keywords
     myKeyword = []
+    myOption = []
     for x in arg_list:
         if x.find('=') == -1:
-            myKeyword.append(x) # option(s)
+            myOption.append(x) # Option(s)
         else:
             myKeyword.append(x.partition('=')) # Mains parameters with '=' in it
     # -----------------------------------------------------------------
     
-
-    # -----------------------------------------------------------------
-    # Creer le dictionnaire
-    d = {}
-    compteur = 1
-    for x in myKeyword:
-        if compteur <= 5:
-            compteur += 1
-            #print x[0] + ' : ' + x[2]
-            d[x[0]] = x[2]
-        else:
-            d[x] = ''
-        
-        # TODO: Verifier si l'option des parametres du script correspond a ceux dans le fichier raw,
-        # si oui, mettre la valeur associe
-        
-    # -----------------------------------------------------------------
-    
+	# -----------------------------------------------------------------
+	# Create a dictionary that will be used to substitute the template
+	d = {}
+	for x in myKeyword:
+		d[x[0]] = x[2]
+        #print x[0] + ' : ' + x[2]
+	# -----------------------------------------------------------------
     
     # -----------------------------------------------------------------
-    # Loader le fichier template
-    #templateFile = open('template')
-    #theTemplate = Template('$TASK, $DATASET, $MODULE babla')
-    #theTemplate = Template(templateFile)
-    #templateFile.close()
-    # -----------------------------------------------------------------
-    
-    
-    # -----------------------------------------------------------------
-    # Substitute dictionnary's keywords in the template
+    # Substitute dictionary's keywords in the template
     result = 'import numpy as np\n'
+    result += 'import os\n'
     result += 'import sys\n'
     result += 'from string import Template\n'
     result += 'import mlpython.datasets.store as dataset_store\n'
-    result += Template('from $MODULE import ${LEARNER}\n').substitute(d)
-    result += Template('dataset_store.download(\'${DATASET}\')\n').substitute(d)
-    result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n').substitute(d)
-    # TODO Handle constructor's parameters
+    result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(d)
+    result += Template('dataset_store.download(\'${DATASET}\')\n').safe_substitute(d)
+    result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(d)
     result += 'if (len(sys.argv) > 1):\n'
     result += '    arg_list = sys.argv\n'
-    result += '    arg_list.pop(0);	# Remove first argument\n'
+    result += '    arg_list.pop(0);	# Remove first argument\n\n'
     result += '    myKeyword = []\n'
     result += '    for x in arg_list:\n'
     result += '        if x.find(\'=\') != -1:\n'
     result += '            myKeyword.append(x.partition(\'=\')) # Mains parameters with \'=\' in it\n'
-    result += '    d = {}\n'
-    result += '    for x in myKeyword:\n'
-    result += '        d[x[0]] = x[2]\n'
-    result += Template('    myObject = ${LEARNER}(x[0]=x[2], )\n').substitute(d)
+    result += '    #d_2 = {}\n'
+    result += '    #for x in myKeyword:\n'
+    result += '        #d_2[x[0]] = x[2]\n\n'
+    result += '    str_ParamOption = ""\n'
+    result += '    str_ParamOptionName = ""\n'
+    result += '    for index, item in enumerate(myKeyword):\n'
+    result += '        str_ParamOption += item[0] \n'
+    result += '        str_ParamOptionName += item[0] \n'
+    result += '        str_ParamOptionName += \'\\t\'\n'
+    result += '        str_ParamOption += \'=\' \n'
+    result += '        str_ParamOption += item[2]\n'
+    result += '        if ((index+1) < len(myKeyword)): # If not the last\n'
+    result += '            str_ParamOption += \', \'\n\n'
+    result += Template('    str_myObject = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n\n').safe_substitute(d)
+    result += '    code = compile(str_myObject, \'<string>\', \'exec\')\n'
+    result += '    exec code\n'
     result += 'else:\n'
-    result += Template('    myObject = ${LEARNER}()\n').substitute(d)
+    result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(d)
     result += 'model = myObject.train(trainset)\n'
     result += 'outputs_tr,costs_tr = myObject.test(trainset)\n'
     result += 'outputs_v,costs_v = myObject.test(validset)\n'
-    result += 'outputs_t,costs_t = myObject.test(testset)\n'
-    result += 'print \'Classification error on test set is\',np.mean(costs_t,axis=0)[0]'
-
-    print result
+    result += 'outputs_t,costs_t = myObject.test(testset)\n\n'
+    result += 'classification_error = \'Classification error on test set is \'\n'
+    result += 'classification_error += str(np.mean(costs_t,axis=0)[0])\n'
+    result += 'print classification_error\n\n'
+    result += '# Preparing result file\n'
+    result += '# Todo: Handle multiple result test\n'
+    result += 'header_line = ""\n'
+    result += 'header_line += str_ParamOptionName\n'
+    result += 'header_line += \'train1\\tvalid1\\ttest1\\n\'\n\n'
+    result += Template('result_file = \'${RESULTS_FILE}\'\n\n').safe_substitute(d)
+    result += 'if not os.path.exists(result_file):\n'
+    result += '    f = open(result_file, \'w\')\n'
+    result += '    f.write(header_line)\n'
+    result += '    f.write(\'\\n\')\n'
+    result += '    f.write(classification_error)\n'
+    result += '    f.close()\n'
+    
+    print result # Print result in a file (' > ' must be used)
     # -----------------------------------------------------------------
 else:
-    print "Please provide some argument!"
+    print "You must provide at least 5 parameter"
+    print "ex: python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file min_split criterion > script.py"
+
 
