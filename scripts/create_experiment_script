@@ -28,13 +28,15 @@
 
 
 # ex: python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file min_split criterion > script.py
-# To execute the generated script: python mon_script.py min_split=3 criterion=\'information_gain\'
+# To execute the generated script: python script.py min_split=3 criterion=\'information_gain\'
 
 
 # (y)TODO: Verifier l'integralite des commentaires
 # (y)TODO: Commentaire en anglais
 # (y)TODO: Parametre optionnel et +
-# TODO: Gerer les tests retournant plus qu'un cost (pour le result_file?)
+# (y)TODO: Verification des options parent par rapport au script enfant
+# TODO: L'ordre des params n'est pas gerer dans le script enfant pour le print dans le result_file
+# TODO: Gerer les tests retournant plus qu'un cost (pour le  result_file?)
 # TODO: Dans une doc, expliquer que les quotes donc etre passee avec backslash
 
 import os
@@ -65,37 +67,68 @@ if (len(sys.argv) >= 6):
 	# -----------------------------------------------------------------
     
     # -----------------------------------------------------------------
+    # Create a string that will be used in the child script to generate the header
+    str_ParamOptionName = "\'\'"
+    if len(myOption) > 1:
+        str_ParamOptionName = "\'"
+        for item in myOption:
+            str_ParamOptionName += item
+            str_ParamOptionName += "\\t"
+    
+        str_ParamOptionName += "\'"
+    # -----------------------------------------------------------------
+    
+    # -----------------------------------------------------------------
     # Substitute dictionary's keywords in the template
     result = 'import numpy as np\n'
     result += 'import os\n'
     result += 'import sys\n'
     result += 'import fcntl\n'
     result += 'from string import Template\n'
+    result += 'from collections import OrderedDict\n'
     result += 'import mlpython.datasets.store as dataset_store\n'
     result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(d)
     #result += Template('dataset_store.download(\'${DATASET}\')\n').safe_substitute(d)
     result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(d)
     result += 'str_ParamOption = ""\n'
-    result += 'str_ParamOptionName = ""\n'
+    #result += 'str_ParamOptionName = ""\n'
     result += 'str_ParamOptionValue = ""\n'
     result += 'if (len(sys.argv) > 1):\n'
+    
+    result += '    str_ParamOptionNameFromParent = ' + str_ParamOptionName + '\n\n'
+    
+    result += '    OptionNameFromParent = []\n'
+    result += '    for item in str_ParamOptionNameFromParent.split("\\t"):\n'
+    result += '        OptionNameFromParent.append(item)\n\n'
+    result += '    OptionNameFromParent.remove("") # Remove empty string in the list\n\n'
+    result += '    d_OptionNameFromParent = OrderedDict()\n'
+    result += '    for x in OptionNameFromParent:\n'
+    result += '        d_OptionNameFromParent[x] = "unassigned"\n\n'    
     result += '    arg_list = sys.argv\n'
     result += '    arg_list.pop(0);	# Remove first argument\n\n'
     result += '    myKeyword = []\n'
     result += '    for x in arg_list:\n'
     result += '        if x.find(\'=\') != -1:\n'
-    result += '            myKeyword.append(x.partition(\'=\')) # Main\'s parameters with \'=\' in it\n'
+    result += '            myKeyword.append(x.partition(\'=\')) # Main\'s parameters with \'=\' in it\n\n'
+    
+    result += '    # Associer les valeurs dans le dictionnaire\n'
+    result += '    for index, item in enumerate(myKeyword):\n'
+    result += '        if item[0] in d_OptionNameFromParent:\n'
+    result += '            d_OptionNameFromParent[item[0]] = item[2]\n'
+    result += '        else:\n'
+    result += '            print "Parameter must match the other script."\n'
+    result += '            print item[0] + " was not declared in the parent script."\n'
+    result += '            quit()\n\n'
+
     result += '    for index, item in enumerate(myKeyword):\n'
     result += '        str_ParamOption += item[0]\n'
-    result += '        str_ParamOptionName += item[0]\n'
-    result += '        str_ParamOptionName += \'\\t\'\n'
     result += '        str_ParamOption += \'=\' \n'
     result += '        str_ParamOption += item[2]\n'
     result += '        if ((index+1) < len(myKeyword)): # If not the last\n'
     result += '            str_ParamOptionValue += item[2]+\'\\t\'\n'
-    result += '            str_ParamOption += \', \'\n\n'
+    result += '            str_ParamOption += \', \'\n'
     result += '        else:\n'
-    result += '            str_ParamOptionValue += item[2]\n'
+    result += '            str_ParamOptionValue += item[2]\n\n'
     result += Template('    str_myObject = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n\n').safe_substitute(d)
     result += '    code = compile(str_myObject, \'<string>\', \'exec\')\n'
     result += '    exec code\n'
@@ -110,7 +143,10 @@ if (len(sys.argv) >= 6):
     result += 'test_error = str(np.mean(costs_t,axis=0)[0])\n'
     result += '# Preparing result file\n'
     result += 'header_line = ""\n'
-    result += 'header_line += str_ParamOptionName\n'
+    
+    if len(myOption) > 1: # Si des options supplementaire avait ete defini
+        result += 'header_line += ' + str_ParamOptionName + '\n'
+        
     result += 'header_line += \'train1\\tvalid1\\ttest1\\n\'\n\n'
     result += Template('result_file = \'${RESULTS_FILE}\'\n\n').safe_substitute(d)
     result += 'if not os.path.exists(result_file):\n'
@@ -118,17 +154,17 @@ if (len(sys.argv) >= 6):
     result += '    f.write(header_line)\n'
     #result += Template('    f.write("Results of the learner: $LEARNER")\n').safe_substitute(d)
     #result += '    f.write(\'\\n\')\n'
-    result += '    f.close()\n'
+    result += '    f.close()\n\n'
     result += '# Look if there is optional values to display\n'
     result += 'if str_ParamOptionValue == "":\n'
     result += '    model_info = [str(train_error),str(valid_error),str(test_error)]\n'
     result += 'else:\n'
-    result += '    model_info = [str_ParamOptionValue,str(train_error),str(valid_error),str(test_error)]\n'
+    result += '    model_info = [str_ParamOptionValue,str(train_error),str(valid_error),str(test_error)]\n\n'
     result += 'line = \'\\t\'.join(model_info)+\'\\n\'\n'
-    result += 'file = open(result_file, "a")\n'
-    result += 'fcntl.flock(file.fileno(), fcntl.LOCK_EX)\n'
-    result += 'file.write(line)\n'
-    result += 'file.close() # unlocks the file\n'
+    result += 'f = open(result_file, "a")\n'
+    result += 'fcntl.flock(f.fileno(), fcntl.LOCK_EX)\n'
+    result += 'f.write(line)\n'
+    result += 'f.close() # unlocks the file\n'
     
     print result # Print result in a file (' > ' must be used)
     # -----------------------------------------------------------------
