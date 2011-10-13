@@ -47,7 +47,6 @@ if (len(sys.argv) >= 6):
     arg_list = sys.argv
     arg_list.pop(0);	# Remove first argument
 
-    # -----------------------------------------------------------------
     # Parsing Keywords
     myKeyword = []
     myOption = []
@@ -56,17 +55,29 @@ if (len(sys.argv) >= 6):
             myOption.append(x) # Option(s)
         else:
             myKeyword.append(x.partition('=')) # Main's parameters with '=' in it
-    # -----------------------------------------------------------------
     
-	# -----------------------------------------------------------------
+        compteur_param = 0
 	# Create a dictionary that will be used to substitute the template
 	d = {}
 	for x in myKeyword:
 		d[x[0]] = x[2]
+                # Check if all the main parameters are there
+                #if x[0] == "TASK" || x[0] == "MODULE" || x[0] == "LEARNER" || x[0] == "RESULTS_FILE" || x[0] == "DATASET":
+                if x[0] == "TASK":
+                    compteur_param += 1
+                elif x[0] == "MODULE":
+                    compteur_param += 1
+                elif x[0] == "LEARNER":
+                    compteur_param += 1
+                elif x[0] == "RESULTS_FILE":
+                    compteur_param += 1
+                elif x[0] == "DATASET":
+                    compteur_param += 1
         #print x[0] + ' : ' + x[2]
-	# -----------------------------------------------------------------
+    print compteur_param
+    if compteur_param != 5:
+        raise ValueError('There should be at least 5 parameters required. \'TASK\', \'DATASET\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\'')
     
-    # -----------------------------------------------------------------
     # Create a string that will be used in the child script to generate the header
     str_ParamOptionName = "\'\'"
     if len(myOption) > 1:
@@ -76,16 +87,14 @@ if (len(sys.argv) >= 6):
             str_ParamOptionName += "\\t"
     
         str_ParamOptionName += "\'"
-    # -----------------------------------------------------------------
     
-    # -----------------------------------------------------------------
     # Substitute dictionary's keywords in the template
     result = 'import numpy as np\n'
     result += 'import os\n'
     result += 'import sys\n'
     result += 'import fcntl\n'
     result += 'from string import Template\n'
-    result += 'from collections import OrderedDict\n'
+    #result += 'from collections import OrderedDict\n'
     result += 'import mlpython.datasets.store as dataset_store\n'
     result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(d)
     #result += Template('dataset_store.download(\'${DATASET}\')\n').safe_substitute(d)
@@ -101,35 +110,37 @@ if (len(sys.argv) >= 6):
     result += '    for item in str_ParamOptionNameFromParent.split("\\t"):\n'
     result += '        OptionNameFromParent.append(item)\n\n'
     result += '    OptionNameFromParent.remove("") # Remove empty string in the list\n\n'
-    result += '    d_OptionNameFromParent = OrderedDict()\n'
-    result += '    for x in OptionNameFromParent:\n'
-    result += '        d_OptionNameFromParent[x] = "unassigned"\n\n'    
+    #result += '    d_OptionNameFromParent = OrderedDict()\n'
+    #result += '    for x in OptionNameFromParent:\n'
+    #result += '        d_OptionNameFromParent[x] = "unassigned"\n\n'    
     result += '    arg_list = sys.argv\n'
     result += '    arg_list.pop(0);	# Remove first argument\n\n'
     result += '    myKeyword = []\n'
     result += '    for x in arg_list:\n'
-    result += '        if x.find(\'=\') != -1:\n'
-    result += '            myKeyword.append(x.partition(\'=\')) # Main\'s parameters with \'=\' in it\n\n'
+    #result += '        if x.find(\'=\') != -1:\n'
+    result += '        myKeyword.append(x) # Main\'s parameters with \'=\' in it\n\n'
     
-    result += '    # Associer les valeurs dans le dictionnaire\n'
-    result += '    for index, item in enumerate(myKeyword):\n'
-    result += '        if item[0] in d_OptionNameFromParent:\n'
-    result += '            d_OptionNameFromParent[item[0]] = item[2]\n'
-    result += '        else:\n'
-    result += '            print "Parameter must match the other script."\n'
-    result += '            print item[0] + " was not declared in the parent script."\n'
-    result += '            quit()\n\n'
+    #result += '    # Associate values in the dictionary\n'
+    #result += '    for index, item in enumerate(myKeyword):\n'
+    #result += '        if item[0] in d_OptionNameFromParent:\n'
+    #result += '        OptionNameFromParent[index] = item[index]\n'
+    #result += '        else:\n'
+    #result += '            raise ValueError(\'Parameter must match the other script. \' + item[0] + \' was not declared in the parent script. \')\n'
+    #result += '            print "Parameter must match the other script."\n'
+    #result += '            print item[0] + " was not declared in the parent script."\n'
+    #result += '            quit()\n\n'
 
     result += '    for index, item in enumerate(myKeyword):\n'
-    result += '        str_ParamOption += item[0]\n'
+    result += '        str_ParamOption += OptionNameFromParent[index]\n'
     result += '        str_ParamOption += \'=\' \n'
-    result += '        str_ParamOption += item[2]\n'
+    result += '        str_ParamOption += item\n'
     result += '        if ((index+1) < len(myKeyword)): # If not the last\n'
-    result += '            str_ParamOptionValue += item[2]+\'\\t\'\n'
+    result += '            str_ParamOptionValue += item+\'\\t\'\n'
     result += '            str_ParamOption += \', \'\n'
     result += '        else:\n'
-    result += '            str_ParamOptionValue += item[2]\n\n'
+    result += '            str_ParamOptionValue += item\n\n'
     result += Template('    str_myObject = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n\n').safe_substitute(d)
+    result += '    print str_ParamOption\n'
     result += '    code = compile(str_myObject, \'<string>\', \'exec\')\n'
     result += '    exec code\n'
     result += 'else:\n'
@@ -144,7 +155,7 @@ if (len(sys.argv) >= 6):
     result += '# Preparing result file\n'
     result += 'header_line = ""\n'
     
-    if len(myOption) > 1: # Si des options supplementaire avait ete defini
+    if len(myOption) > 1: # If more options was set
         result += 'header_line += ' + str_ParamOptionName + '\n'
         
     result += 'header_line += \'train1\\tvalid1\\ttest1\\n\'\n\n'
@@ -167,7 +178,6 @@ if (len(sys.argv) >= 6):
     result += 'f.close() # unlocks the file\n'
     
     print result # Print result in a file (' > ' must be used)
-    # -----------------------------------------------------------------
 else:
     print "You must provide at least 5 parameter"
     print "ex: python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file min_split criterion > script.py"
