@@ -35,7 +35,7 @@
 # (y)TODO: Commentaire en anglais
 # (y)TODO: Parametre optionnel et +
 # (y)TODO: Verification des options parent par rapport au script enfant
-# TODO: L'ordre des params n'est pas gerer dans le script enfant pour le print dans le result_file
+# (y)TODO: L'ordre des params n'est pas gerer dans le script enfant pour le print dans le result_file
 # TODO: Gerer les tests retournant plus qu'un cost (pour le  result_file?)
 # TODO: Dans une doc, expliquer que les quotes donc etre passee avec backslash
 
@@ -94,13 +94,10 @@ if (len(sys.argv) >= 6):
     result += 'import sys\n'
     result += 'import fcntl\n'
     result += 'from string import Template\n'
-    #result += 'from collections import OrderedDict\n'
     result += 'import mlpython.datasets.store as dataset_store\n'
     result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(d)
-    #result += Template('dataset_store.download(\'${DATASET}\')\n').safe_substitute(d)
     result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(d)
     result += 'str_ParamOption = ""\n'
-    #result += 'str_ParamOptionName = ""\n'
     result += 'str_ParamOptionValue = ""\n'
     result += 'if (len(sys.argv) > 1):\n'
     
@@ -109,16 +106,16 @@ if (len(sys.argv) >= 6):
     result += '    OptionNameFromParent = []\n'
     result += '    for item in str_ParamOptionNameFromParent.split("\\t"):\n'
     result += '        OptionNameFromParent.append(item)\n\n'
-    result += '    OptionNameFromParent.remove("") # Remove empty string in the list\n\n'
-    #result += '    d_OptionNameFromParent = OrderedDict()\n'
-    #result += '    for x in OptionNameFromParent:\n'
-    #result += '        d_OptionNameFromParent[x] = "unassigned"\n\n'    
+    result += '    OptionNameFromParent.remove("") # Remove empty string in the list\n\n' 
     result += '    arg_list = sys.argv\n'
     result += '    arg_list.pop(0);	# Remove first argument\n\n'
     result += '    myKeyword = []\n'
     result += '    for x in arg_list:\n'
-    #result += '        if x.find(\'=\') != -1:\n'
-    result += '        myKeyword.append(x) # Main\'s parameters with \'=\' in it\n\n'
+    result += '        myKeyword.append(x) # Option(s)\n'
+    
+    result += '    # Check if every option(s) from parent\'s script are here.\n'
+    result += '    if ' + str(len(myOption)) + ' != len(myKeyword):\n'
+    result += '        raise ValueError(\'Parameter(s) must be in that order: \' + str_ParamOptionNameFromParent)\n'
     
     #result += '    # Associate values in the dictionary\n'
     #result += '    for index, item in enumerate(myKeyword):\n'
@@ -147,30 +144,51 @@ if (len(sys.argv) >= 6):
     result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(d)
     result += 'model = myObject.train(trainset)\n'
     result += 'outputs_tr,costs_tr = myObject.test(trainset)\n'
+    result += 'nombre_col = costs_tr.shape[1]\n'
     result += 'outputs_v,costs_v = myObject.test(validset)\n'
     result += 'outputs_t,costs_t = myObject.test(testset)\n\n'
-    result += 'train_error = str(np.mean(costs_tr,axis=0)[0])\n'
-    result += 'valid_error = str(np.mean(costs_v,axis=0)[0])\n'
-    result += 'test_error = str(np.mean(costs_t,axis=0)[0])\n'
+
+    result += 'str_header = ""\n'
+    result += 'str_modelinfo = ""\n'
+    result += 'if costs_tr.shape[1] > 1:\n'
+    result += '    train = ""\n'
+    result += '    valid = ""\n'
+    result += '    test = ""\n'
+    result += '    # Get average of each costs\n'
+    result += '    for index in range(costs_tr.shape[1]):\n'
+    result += '        train = str(np.mean(costs_tr,axis=0)[index])\n'
+    result += '        valid = str(np.mean(costs_v,axis=0)[index])\n'
+    result += '        test = str(np.mean(costs_t,axis=0)[index])\n'
+    #result += '        if index != costs_tr.shape[1]-1:\n'
+    #result += '            train += \',\'\n'
+    #result += '            valid += \',\'\n'
+    #result += '            test += \',\'\n'
+    result += '        str_header += \'train\' + str(index+1) + \'\\tvalid\' + str(index+1) + \'\\ttest\' + str(index+1) + \'\\t\'\n'
+    result += '        str_modelinfo += train + \'\\t\' + valid + \'\\t\' + test + \'\\t\'\n'
+    result += '    str_header += \'\\n\'\n'
+    result += 'else:\n'
+    result += '    str_header = \'train1\\tvalid1\\ttest1\\n\'\n\n'
+    result += '    train_error = str(np.mean(costs_tr,axis=0)[0])\n'
+    result += '    valid_error = str(np.mean(costs_v,axis=0)[0])\n'
+    result += '    test_error = str(np.mean(costs_t,axis=0)[0])\n'
+    result += '    str_modelinfo = train_error + \',\' + valid_error + \',\' + test_error\n'
+                                                               
     result += '# Preparing result file\n'
     result += 'header_line = ""\n'
-    
     if len(myOption) > 1: # If more options was set
         result += 'header_line += ' + str_ParamOptionName + '\n'
         
-    result += 'header_line += \'train1\\tvalid1\\ttest1\\n\'\n\n'
+    result += 'header_line += str_header\n'
     result += Template('result_file = \'${RESULTS_FILE}\'\n\n').safe_substitute(d)
     result += 'if not os.path.exists(result_file):\n'
     result += '    f = open(result_file, \'w\')\n'
     result += '    f.write(header_line)\n'
-    #result += Template('    f.write("Results of the learner: $LEARNER")\n').safe_substitute(d)
-    #result += '    f.write(\'\\n\')\n'
     result += '    f.close()\n\n'
     result += '# Look if there is optional values to display\n'
     result += 'if str_ParamOptionValue == "":\n'
-    result += '    model_info = [str(train_error),str(valid_error),str(test_error)]\n'
+    result += '    model_info = [str_modelinfo]\n'
     result += 'else:\n'
-    result += '    model_info = [str_ParamOptionValue,str(train_error),str(valid_error),str(test_error)]\n\n'
+    result += '    model_info = [str_ParamOptionValue,str_modelinfo]\n\n'
     result += 'line = \'\\t\'.join(model_info)+\'\\n\'\n'
     result += 'f = open(result_file, "a")\n'
     result += 'fcntl.flock(f.fileno(), fcntl.LOCK_EX)\n'
