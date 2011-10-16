@@ -28,7 +28,7 @@
 
 
 # ex: python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file min_split criterion > script.py
-# To execute the generated script: python script.py min_split=3 criterion=\'information_gain\'
+# To execute the generated script: python script.py 3 \'information_gain\'
 
 
 # (y)TODO: Verifier l'integralite des commentaires
@@ -36,7 +36,10 @@
 # (y)TODO: Parametre optionnel et +
 # (y)TODO: Verification des options parent par rapport au script enfant
 # (y)TODO: L'ordre des params n'est pas gerer dans le script enfant pour le print dans le result_file
-# TODO: Gerer les tests retournant plus qu'un cost (pour le  result_file?)
+# (y)TODO: Gerer les tests retournant plus qu'un cost (pour le  result_file?)
+# (y)TODO: Gerer EARLY_STOPPING param et ses param a lui
+# TODO: Gerer EARLY_STOPPING dans le script enfant
+# TODO: GUISS : Est-ce que la moyenne de chaque cost est correct?
 # TODO: Dans une doc, expliquer que les quotes donc etre passee avec backslash
 
 import os
@@ -57,12 +60,13 @@ if (len(sys.argv) >= 6):
             myKeyword.append(x.partition('=')) # Main's parameters with '=' in it
     
         compteur_param = 0
+        
 	# Create a dictionary that will be used to substitute the template
 	d = {}
 	for x in myKeyword:
 		d[x[0]] = x[2]
                 # Check if all the main parameters are there
-                #if x[0] == "TASK" || x[0] == "MODULE" || x[0] == "LEARNER" || x[0] == "RESULTS_FILE" || x[0] == "DATASET":
+                # Pour Guiss : Si l'usager met les parametres dans un autre ordre? Sa va fonctionner?
                 if x[0] == "TASK":
                     compteur_param += 1
                 elif x[0] == "MODULE":
@@ -74,9 +78,54 @@ if (len(sys.argv) >= 6):
                 elif x[0] == "DATASET":
                     compteur_param += 1
         #print x[0] + ' : ' + x[2]
-    print compteur_param
+    
     if compteur_param != 5:
         raise ValueError('There should be at least 5 parameters required. \'TASK\', \'DATASET\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\'')
+            
+    # Verify if the param 'EARLY_STOPPING is provided
+    ctr_EarlyStoppingParam = 0
+    if 'EARLY_STOPPING' in d:
+        # Verify if each of the 'EARLY_STOPPING' param are provided : 'BEG', 'INCR', 'END', 'LOOK_AHEAD'
+        raiseEarlyStoppingError = 0
+        for item in range(5):
+            if item == 0:
+                if 'BEG' in d:
+                    #print "BEG!"
+                    ctr_EarlyStoppingParam += 1
+                else:
+                    print "BEG PAS LA!"
+                    raiseEarlyStoppingError = 1
+                    break
+            elif item == 1:
+                if 'INCR' in d:
+                    #print "INCR!"
+                    ctr_EarlyStoppingParam += 1
+                else:
+                    print "INCR PAS LA!"
+                    raiseEarlyStoppingError = 1
+                    break
+            elif item == 2:
+                if 'END' in d:
+                    #print "END!"
+                    ctr_EarlyStoppingParam += 1
+                else:
+                    print "END PAS LA!"
+                    raiseEarlyStoppingError = 1
+                    break
+            elif item == 3:
+                if 'LOOK_AHEAD' in d:
+                    #print "LOOK_AHEAD!"
+                    ctr_EarlyStoppingParam += 1
+                else:
+                    print "LOOK_AHEAD PAS LA!"
+                    raiseEarlyStoppingError = 1
+                    break
+                    
+        if raiseEarlyStoppingError == 1:
+            raise ValueError('There are 4 parameters required with the \'EARLY_STOPPING\' option. \'BEG\', \'INCR\', \'END\', \'LOOK_AHEAD\'')
+            
+    #if ctr_EarlyStoppingParam == 4:
+        #print 'EARLY_STOPPING CORRECT!'
     
     # Create a string that will be used in the child script to generate the header
     str_ParamOptionName = "\'\'"
@@ -100,9 +149,7 @@ if (len(sys.argv) >= 6):
     result += 'str_ParamOption = ""\n'
     result += 'str_ParamOptionValue = ""\n'
     result += 'if (len(sys.argv) > 1):\n'
-    
     result += '    str_ParamOptionNameFromParent = ' + str_ParamOptionName + '\n\n'
-    
     result += '    OptionNameFromParent = []\n'
     result += '    for item in str_ParamOptionNameFromParent.split("\\t"):\n'
     result += '        OptionNameFromParent.append(item)\n\n'
@@ -111,22 +158,10 @@ if (len(sys.argv) >= 6):
     result += '    arg_list.pop(0);	# Remove first argument\n\n'
     result += '    myKeyword = []\n'
     result += '    for x in arg_list:\n'
-    result += '        myKeyword.append(x) # Option(s)\n'
-    
+    result += '        myKeyword.append(x) # Option(s)\n\n'
     result += '    # Check if every option(s) from parent\'s script are here.\n'
     result += '    if ' + str(len(myOption)) + ' != len(myKeyword):\n'
     result += '        raise ValueError(\'Parameter(s) must be in that order: \' + str_ParamOptionNameFromParent)\n'
-    
-    #result += '    # Associate values in the dictionary\n'
-    #result += '    for index, item in enumerate(myKeyword):\n'
-    #result += '        if item[0] in d_OptionNameFromParent:\n'
-    #result += '        OptionNameFromParent[index] = item[index]\n'
-    #result += '        else:\n'
-    #result += '            raise ValueError(\'Parameter must match the other script. \' + item[0] + \' was not declared in the parent script. \')\n'
-    #result += '            print "Parameter must match the other script."\n'
-    #result += '            print item[0] + " was not declared in the parent script."\n'
-    #result += '            quit()\n\n'
-
     result += '    for index, item in enumerate(myKeyword):\n'
     result += '        str_ParamOption += OptionNameFromParent[index]\n'
     result += '        str_ParamOption += \'=\' \n'
@@ -147,22 +182,17 @@ if (len(sys.argv) >= 6):
     result += 'nombre_col = costs_tr.shape[1]\n'
     result += 'outputs_v,costs_v = myObject.test(validset)\n'
     result += 'outputs_t,costs_t = myObject.test(testset)\n\n'
-
     result += 'str_header = ""\n'
     result += 'str_modelinfo = ""\n'
     result += 'if costs_tr.shape[1] > 1:\n'
     result += '    train = ""\n'
     result += '    valid = ""\n'
-    result += '    test = ""\n'
+    result += '    test = ""\n\n'
     result += '    # Get average of each costs\n'
     result += '    for index in range(costs_tr.shape[1]):\n'
     result += '        train = str(np.mean(costs_tr,axis=0)[index])\n'
     result += '        valid = str(np.mean(costs_v,axis=0)[index])\n'
     result += '        test = str(np.mean(costs_t,axis=0)[index])\n'
-    #result += '        if index != costs_tr.shape[1]-1:\n'
-    #result += '            train += \',\'\n'
-    #result += '            valid += \',\'\n'
-    #result += '            test += \',\'\n'
     result += '        str_header += \'train\' + str(index+1) + \'\\tvalid\' + str(index+1) + \'\\ttest\' + str(index+1) + \'\\t\'\n'
     result += '        str_modelinfo += train + \'\\t\' + valid + \'\\t\' + test + \'\\t\'\n'
     result += '    str_header += \'\\n\'\n'
@@ -171,13 +201,11 @@ if (len(sys.argv) >= 6):
     result += '    train_error = str(np.mean(costs_tr,axis=0)[0])\n'
     result += '    valid_error = str(np.mean(costs_v,axis=0)[0])\n'
     result += '    test_error = str(np.mean(costs_t,axis=0)[0])\n'
-    result += '    str_modelinfo = train_error + \',\' + valid_error + \',\' + test_error\n'
-                                                               
+    result += '    str_modelinfo = train_error + \'\\t\' + valid_error + \'\\t\' + test_error\n\n'
     result += '# Preparing result file\n'
     result += 'header_line = ""\n'
     if len(myOption) > 1: # If more options was set
         result += 'header_line += ' + str_ParamOptionName + '\n'
-        
     result += 'header_line += str_header\n'
     result += Template('result_file = \'${RESULTS_FILE}\'\n\n').safe_substitute(d)
     result += 'if not os.path.exists(result_file):\n'
