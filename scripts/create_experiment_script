@@ -42,6 +42,7 @@
 # TODO: GUISS : Est-ce que la moyenne de chaque cost est correct?
 # TODO: Dans une doc, expliquer que les quotes donc etre passee avec backslash
 
+
 import os
 import sys
 from string import Template
