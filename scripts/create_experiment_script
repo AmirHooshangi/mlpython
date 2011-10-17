@@ -31,6 +31,10 @@
 # To execute the generated script: python script.py 3 \'information_gain\'
 
 
+# Early_Stopping ex : python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file EARLY_STOPPING=n_stage BEG=1 INCR=2 END=500 LOOK_AHEAD=10 min_split criterion > script.py
+
+
+
 # (y)TODO: Verifier l'integralite des commentaires
 # (y)TODO: Commentaire en anglais
 # (y)TODO: Parametre optionnel et +
@@ -38,7 +42,7 @@
 # (y)TODO: L'ordre des params n'est pas gerer dans le script enfant pour le print dans le result_file
 # (y)TODO: Gerer les tests retournant plus qu'un cost (pour le  result_file?)
 # (y)TODO: Gerer EARLY_STOPPING param et ses param a lui
-# TODO: Gerer EARLY_STOPPING dans le script enfant
+# (y)TODO: Gerer EARLY_STOPPING dans le script enfant
 # TODO: Dans une doc, expliquer que les quotes donc etre passee avec backslash
 
 
@@ -59,35 +63,60 @@ if (len(sys.argv) >= 6):
         else:
             myKeyword.append(x.partition('=')) # Main's parameters with '=' in it
     
-        compteur_param = 0
-        
-	# Create a dictionary that will be used to substitute the template
-	d = {}
+	d = {} # Create a dictionary that will be used to substitute the template
 	for x in myKeyword:
 		d[x[0]] = x[2]
-                # Check if all the main parameters are there
-                # TODO Verifier avec Hugo pour l'importance de l'ordre
-                if x[0] == "TASK":
-                    compteur_param += 1
-                elif x[0] == "MODULE":
-                    compteur_param += 1
-                elif x[0] == "LEARNER":
-                    compteur_param += 1
-                elif x[0] == "RESULTS_FILE":
-                    compteur_param += 1
-                elif x[0] == "DATASET":
-                    compteur_param += 1
-        #print x[0] + ' : ' + x[2]
-    
-    if compteur_param != 5:
+
+    # Verify if all the required param are provived
+    ctr_RequiredParam = 0
+    raiseRequiredError = 0
+    for item in range(4):
+        if item == 0:
+            if 'TASK' in d:
+                #print 'task la'
+                ctr_RequiredParam += 1
+            else:
+                raiseRequiredError = 1
+                break
+        elif item == 1:
+            if 'MODULE' in d:
+                #print 'module la'
+                ctr_RequiredParam += 1
+            else:
+                raiseRequiredError = 1
+                break
+        elif item == 2:
+            if 'LEARNER' in d:
+                #print 'learner la'
+                ctr_RequiredParam += 1
+            else:
+                raiseRequiredError = 1
+                break
+        elif item == 3:
+            if 'RESULTS_FILE' in d:
+                #print 'result_file la'
+                ctr_RequiredParam += 1
+            else:
+                raiseRequiredError = 1
+                break
+        elif item == 4:
+            if 'DATASET' in d:
+                #print 'dataset la'
+                ctr_RequiredParam += 1
+            else:
+                raiseRequiredError = 1
+                break         
+                
+    if raiseRequiredError == 1:
         raise ValueError('There should be at least 5 parameters required. \'TASK\', \'DATASET\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\'')
+      
             
     # Verify if the param 'EARLY_STOPPING is provided
     ctr_EarlyStoppingParam = 0
     if 'EARLY_STOPPING' in d:
         # Verify if each of the 'EARLY_STOPPING' param are provided : 'BEG', 'INCR', 'END', 'LOOK_AHEAD'
         raiseEarlyStoppingError = 0
-        for item in range(5):
+        for item in range(4):
             if item == 0:
                 if 'BEG' in d:
                     #print "BEG!"
@@ -123,10 +152,7 @@ if (len(sys.argv) >= 6):
                     
         if raiseEarlyStoppingError == 1:
             raise ValueError('There are 4 parameters required with the \'EARLY_STOPPING\' option. \'BEG\', \'INCR\', \'END\', \'LOOK_AHEAD\'')
-            
-    #if ctr_EarlyStoppingParam == 4:
-        #print 'EARLY_STOPPING CORRECT!'
-    
+                
     # Create a string that will be used in the child script to generate the header
     str_ParamOptionName = "\'\'"
     if len(myOption) > 1:
@@ -178,42 +204,39 @@ if (len(sys.argv) >= 6):
     result += '    exec code\n'
     result += 'else:\n'
     result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(d)
-    #result += 'model = myObject.train(trainset)\n'
-    
-    result += '# Check if early stopping is set\n'
-    result += 'if ' + str(ctr_EarlyStoppingParam) + ' > 0:\n'
-    result += '    best_val_error = np.inf\n'
-    result += '    best_it = 0\n'
-    
-    result += Template('    look_ahead = ${LOOK_AHEAD}\n').safe_substitute(d)
-    result += '    n_incr_error = 0\n'
 
-    result += Template('    for stage in range(${BEG},${END}+1,${INCR}):\n').safe_substitute(d)
-    result += '        if not n_incr_error < look_ahead:\n'
-    result += '            break\n'
-    result += Template('        myObject.${EARLY_STOPPING} = stage\n').safe_substitute(d)
-    result += '        myObject.train(trainset)\n'
-
-    result += '        n_incr_error += 1\n'
-    result += '        print \'Evaluating on validation set\'\n'
-    result += '        outputs, costs = myObject.test(validset)\n'
-    result += '        error = np.mean(costs[:,0])   # costs[:,EARLY_STOPPING_COST_ID]\n'
-    result += '        print \'Error =\' + str(error)\n'
-    result += '        if error < best_val_error:\n'
-    result += '            best_val_error = error\n'
-    result += '            best_it = stage\n'
-    result += '            n_incr_error = 0\n'
-    result += '            best_model = copy.deepcopy(myObject)\n'
-
-    result += '    outputs_tr,costs_tr = best_model.test(trainset)\n'
-    result += '    nombre_col = costs_tr.shape[1]\n'
-    result += '    outputs_v,costs_v = best_model.test(validset)\n'
-    result += '    outputs_t,costs_t = best_model.test(testset)\n\n'
-    result += 'else:\n'
-    result += '    outputs_tr,costs_tr = myObject.test(trainset)\n'
-    result += '    nombre_col = costs_tr.shape[1]\n'
-    result += '    outputs_v,costs_v = myObject.test(validset)\n'
-    result += '    outputs_t,costs_t = myObject.test(testset)\n\n'
+    if ctr_EarlyStoppingParam == 4: # Early_Stopping
+        result += '# Early_Stopping Code\n'
+        #result += 'if ' + str(ctr_EarlyStoppingParam) + ' > 0:\n'
+        result += 'best_val_error = np.inf\n'
+        result += 'best_it = 0\n'
+        result += Template('look_ahead = ${LOOK_AHEAD}\n').safe_substitute(d)
+        result += 'n_incr_error = 0\n'
+        result += Template('for stage in range(${BEG},${END}+1,${INCR}):\n').safe_substitute(d)
+        result += '    if not n_incr_error < look_ahead:\n'
+        result += '        break\n'
+        result += Template('    myObject.${EARLY_STOPPING} = stage\n').safe_substitute(d)
+        result += '    myObject.train(trainset)\n'
+        result += '    n_incr_error += 1\n'
+        result += '    print \'Evaluating on validation set\'\n'
+        result += '    outputs, costs = myObject.test(validset)\n'
+        result += '    error = np.mean(costs[:,0])   # costs[:,EARLY_STOPPING_COST_ID]\n'
+        result += '    print \'Error: \' + str(error)\n'
+        result += '    if error < best_val_error:\n'
+        result += '        best_val_error = error\n'
+        result += '        best_it = stage\n'
+        result += '        n_incr_error = 0\n'
+        result += '        best_model = copy.deepcopy(myObject)\n\n'
+        result += 'outputs_tr,costs_tr = best_model.test(trainset)\n'
+        result += 'nombre_col = costs_tr.shape[1]\n'
+        result += 'outputs_v,costs_v = best_model.test(validset)\n'
+        result += 'outputs_t,costs_t = best_model.test(testset)\n\n'
+    else:
+        result += 'model = myObject.train(trainset)\n'
+        result += 'outputs_tr,costs_tr = myObject.test(trainset)\n'
+        result += 'nombre_col = costs_tr.shape[1]\n'
+        result += 'outputs_v,costs_v = myObject.test(validset)\n'
+        result += 'outputs_t,costs_t = myObject.test(testset)\n\n'
     
     result += 'str_header = ""\n'
     result += 'str_modelinfo = ""\n'
