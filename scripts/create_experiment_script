@@ -39,7 +39,6 @@
 # (y)TODO: Gerer les tests retournant plus qu'un cost (pour le  result_file?)
 # (y)TODO: Gerer EARLY_STOPPING param et ses param a lui
 # TODO: Gerer EARLY_STOPPING dans le script enfant
-# TODO: GUISS : Est-ce que la moyenne de chaque cost est correct?
 # TODO: Dans une doc, expliquer que les quotes donc etre passee avec backslash
 
 
@@ -67,7 +66,7 @@ if (len(sys.argv) >= 6):
 	for x in myKeyword:
 		d[x[0]] = x[2]
                 # Check if all the main parameters are there
-                # Pour Guiss : Si l'usager met les parametres dans un autre ordre? Sa va fonctionner?
+                # TODO Verifier avec Hugo pour l'importance de l'ordre
                 if x[0] == "TASK":
                     compteur_param += 1
                 elif x[0] == "MODULE":
@@ -143,6 +142,7 @@ if (len(sys.argv) >= 6):
     result += 'import os\n'
     result += 'import sys\n'
     result += 'import fcntl\n'
+    result += 'import copy\n'
     result += 'from string import Template\n'
     result += 'import mlpython.datasets.store as dataset_store\n'
     result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(d)
@@ -178,19 +178,51 @@ if (len(sys.argv) >= 6):
     result += '    exec code\n'
     result += 'else:\n'
     result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(d)
-    result += 'model = myObject.train(trainset)\n'
-    result += 'outputs_tr,costs_tr = myObject.test(trainset)\n'
-    result += 'nombre_col = costs_tr.shape[1]\n'
-    result += 'outputs_v,costs_v = myObject.test(validset)\n'
-    result += 'outputs_t,costs_t = myObject.test(testset)\n\n'
+    #result += 'model = myObject.train(trainset)\n'
+    
+    result += '# Check if early stopping is set\n'
+    result += 'if ' + str(ctr_EarlyStoppingParam) + ' > 0:\n'
+    result += '    best_val_error = np.inf\n'
+    result += '    best_it = 0\n'
+    
+    result += Template('    look_ahead = ${LOOK_AHEAD}\n').safe_substitute(d)
+    result += '    n_incr_error = 0\n'
+
+    result += Template('    for stage in range(${BEG},${END}+1,${INCR}):\n').safe_substitute(d)
+    result += '        if not n_incr_error < look_ahead:\n'
+    result += '            break\n'
+    result += Template('        myObject.${EARLY_STOPPING} = stage\n').safe_substitute(d)
+    result += '        myObject.train(trainset)\n'
+
+    result += '        n_incr_error += 1\n'
+    result += '        print \'Evaluating on validation set\'\n'
+    result += '        outputs, costs = myObject.test(validset)\n'
+    result += '        error = np.mean(costs[:,0])   # costs[:,EARLY_STOPPING_COST_ID]\n'
+    result += '        print \'Error =\' + str(error)\n'
+    result += '        if error < best_val_error:\n'
+    result += '            best_val_error = error\n'
+    result += '            best_it = stage\n'
+    result += '            n_incr_error = 0\n'
+    result += '            best_model = copy.deepcopy(myObject)\n'
+
+    result += '    outputs_tr,costs_tr = best_model.test(trainset)\n'
+    result += '    nombre_col = costs_tr.shape[1]\n'
+    result += '    outputs_v,costs_v = best_model.test(validset)\n'
+    result += '    outputs_t,costs_t = best_model.test(testset)\n\n'
+    result += 'else:\n'
+    result += '    outputs_tr,costs_tr = myObject.test(trainset)\n'
+    result += '    nombre_col = costs_tr.shape[1]\n'
+    result += '    outputs_v,costs_v = myObject.test(validset)\n'
+    result += '    outputs_t,costs_t = myObject.test(testset)\n\n'
+    
     result += 'str_header = ""\n'
     result += 'str_modelinfo = ""\n'
-    result += 'if costs_tr.shape[1] > 1:\n'
+    result += 'if nombre_col > 1:\n'
     result += '    train = ""\n'
     result += '    valid = ""\n'
     result += '    test = ""\n\n'
     result += '    # Get average of each costs\n'
-    result += '    for index in range(costs_tr.shape[1]):\n'
+    result += '    for index in range(nombre_col):\n'
     result += '        train = str(np.mean(costs_tr,axis=0)[index])\n'
     result += '        valid = str(np.mean(costs_v,axis=0)[index])\n'
     result += '        test = str(np.mean(costs_t,axis=0)[index])\n'
