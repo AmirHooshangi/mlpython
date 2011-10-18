@@ -88,7 +88,7 @@ class TreeClassifier(Learner):
             raise ValueError('Invalid. Should have 2 classes.')
         
         features = np.zeros((len(trainset),trainset.metadata['input_size']))
-        labels = np.zeros((len(trainset)))
+        labels = np.zeros((len(trainset)),dtype='int')
         for i,xy in enumerate(trainset):
             x,y = xy
             features[i] = x

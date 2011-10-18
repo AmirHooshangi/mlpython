@@ -70,42 +70,31 @@ if (len(sys.argv) >= 6):
     # Verify if all the required param are provived
     ctr_RequiredParam = 0
     raiseRequiredError = 0
-    for item in range(4):
-        if item == 0:
-            if 'TASK' in d:
-                #print 'task la'
-                ctr_RequiredParam += 1
-            else:
-                raiseRequiredError = 1
-                break
-        elif item == 1:
-            if 'MODULE' in d:
-                #print 'module la'
-                ctr_RequiredParam += 1
-            else:
-                raiseRequiredError = 1
-                break
-        elif item == 2:
-            if 'LEARNER' in d:
-                #print 'learner la'
-                ctr_RequiredParam += 1
-            else:
-                raiseRequiredError = 1
-                break
-        elif item == 3:
-            if 'RESULTS_FILE' in d:
-                #print 'result_file la'
-                ctr_RequiredParam += 1
-            else:
-                raiseRequiredError = 1
-                break
-        elif item == 4:
-            if 'DATASET' in d:
-                #print 'dataset la'
-                ctr_RequiredParam += 1
-            else:
-                raiseRequiredError = 1
-                break         
+    if 'TASK' in d:
+        #print 'task la'
+        ctr_RequiredParam += 1
+    else:
+        raiseRequiredError = 1
+    if 'MODULE' in d:
+        #print 'module la'
+        ctr_RequiredParam += 1
+    else:
+        raiseRequiredError = 1
+    if 'LEARNER' in d:
+        #print 'learner la'
+        ctr_RequiredParam += 1
+    else:
+        raiseRequiredError = 1
+    if 'RESULTS_FILE' in d:
+        #print 'result_file la'
+        ctr_RequiredParam += 1
+    else:
+        raiseRequiredError = 1
+    if 'DATASET' in d:
+        #print 'dataset la'
+        ctr_RequiredParam += 1
+    else:
+        raiseRequiredError = 1
                 
     if raiseRequiredError == 1:
         raise ValueError('There should be at least 5 parameters required. \'TASK\', \'DATASET\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\'')
@@ -116,39 +105,31 @@ if (len(sys.argv) >= 6):
     if 'EARLY_STOPPING' in d:
         # Verify if each of the 'EARLY_STOPPING' param are provided : 'BEG', 'INCR', 'END', 'LOOK_AHEAD'
         raiseEarlyStoppingError = 0
-        for item in range(4):
-            if item == 0:
-                if 'BEG' in d:
-                    #print "BEG!"
-                    ctr_EarlyStoppingParam += 1
-                else:
-                    print "BEG PAS LA!"
-                    raiseEarlyStoppingError = 1
-                    break
-            elif item == 1:
-                if 'INCR' in d:
-                    #print "INCR!"
-                    ctr_EarlyStoppingParam += 1
-                else:
-                    print "INCR PAS LA!"
-                    raiseEarlyStoppingError = 1
-                    break
-            elif item == 2:
-                if 'END' in d:
-                    #print "END!"
-                    ctr_EarlyStoppingParam += 1
-                else:
-                    print "END PAS LA!"
-                    raiseEarlyStoppingError = 1
-                    break
-            elif item == 3:
-                if 'LOOK_AHEAD' in d:
-                    #print "LOOK_AHEAD!"
-                    ctr_EarlyStoppingParam += 1
-                else:
-                    print "LOOK_AHEAD PAS LA!"
-                    raiseEarlyStoppingError = 1
-                    break
+        if 'BEG' in d:
+            #print "BEG!"
+            ctr_EarlyStoppingParam += 1
+        else:
+            raiseEarlyStoppingError = 1
+        if 'INCR' in d:
+            #print "INCR!"
+            ctr_EarlyStoppingParam += 1
+        else:
+            raiseEarlyStoppingError = 1
+        if 'END' in d:
+            #print "END!"
+            ctr_EarlyStoppingParam += 1
+        else:
+            raiseEarlyStoppingError = 1
+        if 'LOOK_AHEAD' in d:
+            #print "LOOK_AHEAD!"
+            ctr_EarlyStoppingParam += 1
+        else:
+            raiseEarlyStoppingError = 1
+
+        if 'EARLY_STOPPING_COST_ID' in d:
+            early_stopping_cost_id = d['EARLY_STOPPING_COST_ID']
+        else:
+            early_stopping_cost_id = 0
                     
         if raiseEarlyStoppingError == 1:
             raise ValueError('There are 4 parameters required with the \'EARLY_STOPPING\' option. \'BEG\', \'INCR\', \'END\', \'LOOK_AHEAD\'')
@@ -220,7 +201,7 @@ if (len(sys.argv) >= 6):
         result += '    n_incr_error += 1\n'
         result += '    print \'Evaluating on validation set\'\n'
         result += '    outputs, costs = myObject.test(validset)\n'
-        result += '    error = np.mean(costs[:,0])   # costs[:,EARLY_STOPPING_COST_ID]\n'
+        result += '    error = np.mean(costs,axis=0)[' + str(early_stopping_cost_id) + ']\n'
         result += '    print \'Error: \' + str(error)\n'
         result += '    if error < best_val_error:\n'
         result += '        best_val_error = error\n'
@@ -228,7 +209,7 @@ if (len(sys.argv) >= 6):
         result += '        n_incr_error = 0\n'
         result += '        best_model = copy.deepcopy(myObject)\n\n'
         result += 'outputs_tr,costs_tr = best_model.test(trainset)\n'
-        result += 'nombre_col = costs_tr.shape[1]\n'
+        result += 'nombre_col = len(costs_tr.__iter__().next())\n'
         result += 'outputs_v,costs_v = best_model.test(validset)\n'
         result += 'outputs_t,costs_t = best_model.test(testset)\n\n'
     else:
