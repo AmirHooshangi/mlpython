@@ -243,6 +243,12 @@ output = np.zeros((20))
 nonlinear.softmax(input,output)
 print 'NumPy vs mathutils.nonlinear diff. output:',np.sum(np.abs(output-np.exp(input)/np.sum(np.exp(input))))
 
+print 'Testing nonlinear softplus'
+input = np.random.randn(20)
+output = np.zeros((20))
+nonlinear.softplus(input,output)
+print 'NumPy vs mathutils.nonlinear diff. output:',np.sum(np.abs(output-np.log(1+np.exp(input))))
+
 print 'Testing nonlinear reclin'
 input = np.random.randn(30,20)
 output = np.zeros((30,20))

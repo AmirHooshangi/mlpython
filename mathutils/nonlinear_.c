@@ -370,13 +370,17 @@ static PyObject *softplus_(PyObject *self, PyObject *args)
   for (i=0; i<tot_dim; i++)
   {
     input_data = *input_data_iter++;
-    if(input_data > 35)
-      *output_data_iter++ = input_data;
+    if(input_data > 0)
+      *output_data_iter++ = input_data + log(1+exp(-input_data));
     else
-      if(input_data < -40)
-	*output_data_iter++ = 0;
-      else
-	*output_data_iter++ = log(1+exp(input_data));
+      *output_data_iter++ = log(1+exp(input_data));
+//    if(input_data > 35)
+//      *output_data_iter++ = input_data;
+//    else
+//      if(input_data < -40)
+//	*output_data_iter++ = 0;
+//      else
+//	*output_data_iter++ = log(1+exp(input_data));
   }
   Py_RETURN_NONE;
 }
