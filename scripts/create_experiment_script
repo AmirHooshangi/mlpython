@@ -51,48 +51,43 @@ import sys
 from string import Template
 
 if (len(sys.argv) >= 6):    
-    arg_list = sys.argv
-    arg_list.pop(0);	# Remove first argument
+    arguments = sys.argv
+    arguments.pop(0);	# Remove first argument
 
     # Parsing Keywords
-    myKeyword = []
-    myOption = []
-    for x in arg_list:
-        if x.find('=') == -1:
-            myOption.append(x) # Option(s)
+    splitedArguments = []
+    options = []
+    for item in arguments:
+        if item.find('=') == -1:
+            options.append(item) # Option(s)
         else:
-            myKeyword.append(x.partition('=')) # Main's parameters with '=' in it
+            splitedArguments.append(item.partition('=')) # Main's parameters with '=' in it
     
-	d = {} # Create a dictionary that will be used to substitute the template
-	for x in myKeyword:
-		d[x[0]] = x[2]
+	dict_Arguments = {} # Create a dictionary that will be used to substitute the template
+	for item in splitedArguments:
+		dict_Arguments[item[0]] = item[2]
 
     # Verify if all the required param are provived
-    ctr_RequiredParam = 0
+    requiredParam = 0
     raiseRequiredError = 0
-    if 'TASK' in d:
-        #print 'task la'
-        ctr_RequiredParam += 1
+    if 'TASK' in dict_Arguments:
+        requiredParam += 1
     else:
         raiseRequiredError = 1
-    if 'MODULE' in d:
-        #print 'module la'
-        ctr_RequiredParam += 1
+    if 'MODULE' in dict_Arguments:
+        requiredParam += 1
     else:
         raiseRequiredError = 1
-    if 'LEARNER' in d:
-        #print 'learner la'
-        ctr_RequiredParam += 1
+    if 'LEARNER' in dict_Arguments:
+        requiredParam += 1
     else:
         raiseRequiredError = 1
-    if 'RESULTS_FILE' in d:
-        #print 'result_file la'
-        ctr_RequiredParam += 1
+    if 'RESULTS_FILE' in dict_Arguments:
+        requiredParam += 1
     else:
         raiseRequiredError = 1
-    if 'DATASET' in d:
-        #print 'dataset la'
-        ctr_RequiredParam += 1
+    if 'DATASET' in dict_Arguments:
+        requiredParam += 1
     else:
         raiseRequiredError = 1
                 
@@ -101,49 +96,46 @@ if (len(sys.argv) >= 6):
       
             
     # Verify if the param 'EARLY_STOPPING is provided
-    ctr_EarlyStoppingParam = 0
-    if 'EARLY_STOPPING' in d:
+    earlyStoppingParam = 0
+    if 'EARLY_STOPPING' in dict_Arguments:
         # Verify if each of the 'EARLY_STOPPING' param are provided : 'BEG', 'INCR', 'END', 'LOOK_AHEAD'
         raiseEarlyStoppingError = 0
-        if 'BEG' in d:
-            #print "BEG!"
-            ctr_EarlyStoppingParam += 1
+        if 'BEG' in dict_Arguments:
+            earlyStoppingParam += 1
         else:
             raiseEarlyStoppingError = 1
-        if 'INCR' in d:
-            #print "INCR!"
-            ctr_EarlyStoppingParam += 1
+        if 'INCR' in dict_Arguments:
+            earlyStoppingParam += 1
         else:
             raiseEarlyStoppingError = 1
-        if 'END' in d:
-            #print "END!"
-            ctr_EarlyStoppingParam += 1
+        if 'END' in dict_Arguments:
+            earlyStoppingParam += 1
         else:
             raiseEarlyStoppingError = 1
-        if 'LOOK_AHEAD' in d:
-            #print "LOOK_AHEAD!"
-            ctr_EarlyStoppingParam += 1
+        if 'LOOK_AHEAD' in dict_Arguments:
+            earlyStoppingParam += 1
         else:
             raiseEarlyStoppingError = 1
-
-        if 'EARLY_STOPPING_COST_ID' in d:
-            early_stopping_cost_id = d['EARLY_STOPPING_COST_ID']
+        if 'EARLY_STOPPING_COST_ID' in dict_Arguments:
+            early_stopping_cost_id = dict_Arguments['EARLY_STOPPING_COST_ID']
         else:
             early_stopping_cost_id = 0
                     
         if raiseEarlyStoppingError == 1:
             raise ValueError('There are 4 parameters required with the \'EARLY_STOPPING\' option. \'BEG\', \'INCR\', \'END\', \'LOOK_AHEAD\'')
+         
                 
     # Create a string that will be used in the child script to generate the header
-    str_ParamOptionName = "\'\'"
-    if len(myOption) > 1:
-        str_ParamOptionName = "\'"
-        for item in myOption:
-            str_ParamOptionName += item
-            str_ParamOptionName += "\\t"
+    str_RequiredParam = "\'\'"
+    if len(options) > 1:
+        str_RequiredParam = "\'"
+        for item in options:
+            str_RequiredParam += item
+            str_RequiredParam += "\\t"
     
-        str_ParamOptionName += "\'"
-    
+        str_RequiredParam += "\'"
+        
+            
     # Substitute dictionary's keywords in the template
     result = 'import numpy as np\n'
     result += 'import os\n'
@@ -152,51 +144,54 @@ if (len(sys.argv) >= 6):
     result += 'import copy\n'
     result += 'from string import Template\n'
     result += 'import mlpython.datasets.store as dataset_store\n'
-    result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(d)
-    result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(d)
+    result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(dict_Arguments)
+    result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(dict_Arguments)
     result += 'str_ParamOption = ""\n'
     result += 'str_ParamOptionValue = ""\n'
     result += 'if (len(sys.argv) > 1):\n'
-    result += '    str_ParamOptionNameFromParent = ' + str_ParamOptionName + '\n\n'
-    result += '    OptionNameFromParent = []\n'
-    result += '    for item in str_ParamOptionNameFromParent.split("\\t"):\n'
-    result += '        OptionNameFromParent.append(item)\n\n'
-    result += '    OptionNameFromParent.remove("") # Remove empty string in the list\n\n' 
-    result += '    arg_list = sys.argv\n'
-    result += '    arg_list.pop(0);	# Remove first argument\n\n'
-    result += '    myKeyword = []\n'
-    result += '    for x in arg_list:\n'
-    result += '        myKeyword.append(x) # Option(s)\n\n'
+    result += '    requiredOptionFromParentScript = ' + str_RequiredParam + '\n\n'
+    result += '    requiredOption = []\n'
+    result += '    for item in requiredOptionFromParentScript.split("\\t"):\n'
+    result += '        requiredOption.append(item)\n\n'
+    result += '    requiredOption.remove("") # Remove empty string in the list\n\n' 
+    result += '    arguments = sys.argv\n'
+    result += '    arguments.pop(0);	# Remove first argument\n\n'
+    result += '    splitedArguments = []\n'
+    result += '    for item in arguments:\n'
+    result += '        splitedArguments.append(item) # Option(s)\n\n'
     result += '    # Check if every option(s) from parent\'s script are here.\n'
-    result += '    if ' + str(len(myOption)) + ' != len(myKeyword):\n'
-    result += '        raise ValueError(\'Parameter(s) must be in that order: \' + str_ParamOptionNameFromParent)\n'
-    result += '    for index, item in enumerate(myKeyword):\n'
-    result += '        str_ParamOption += OptionNameFromParent[index]\n'
+    result += '    if ' + str(len(options)) + ' != len(splitedArguments):\n'
+    result += '        exempleOption = ""\n'
+    result += '        for item in requiredOption:\n'
+    result += '            exempleOption += item \n'
+    result += '            exempleOption += "=\'value\' "\n'
+    result += '        raise ValueError(\'Parameter(s) must be in this order: \' + requiredOptionFromParentScript.replace("\\t", " ") + "\\nex: python script.py " + exempleOption + "\\n")\n'
+    result += '    for index, item in enumerate(splitedArguments):\n'
+    result += '        str_ParamOption += requiredOption[index]\n'
     result += '        str_ParamOption += \'=\' \n'
     result += '        str_ParamOption += item\n'
-    result += '        if ((index+1) < len(myKeyword)): # If not the last\n'
+    result += '        if ((index+1) < len(splitedArguments)): # If not the last\n'
     result += '            str_ParamOptionValue += item+\'\\t\'\n'
     result += '            str_ParamOption += \', \'\n'
     result += '        else:\n'
     result += '            str_ParamOptionValue += item\n\n'
-    result += Template('    str_myObject = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n\n').safe_substitute(d)
+    result += Template('    objectString = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n\n').safe_substitute(dict_Arguments)
     result += '    print str_ParamOption\n'
-    result += '    code = compile(str_myObject, \'<string>\', \'exec\')\n'
+    result += '    code = compile(objectString, \'<string>\', \'exec\')\n'
     result += '    exec code\n'
     result += 'else:\n'
-    result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(d)
+    result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
 
-    if ctr_EarlyStoppingParam == 4: # Early_Stopping
+    if earlyStoppingParam == 4: # Early_Stopping
         result += '# Early_Stopping Code\n'
-        #result += 'if ' + str(ctr_EarlyStoppingParam) + ' > 0:\n'
         result += 'best_val_error = np.inf\n'
         result += 'best_it = 0\n'
-        result += Template('look_ahead = ${LOOK_AHEAD}\n').safe_substitute(d)
+        result += Template('look_ahead = ${LOOK_AHEAD}\n').safe_substitute(dict_Arguments)
         result += 'n_incr_error = 0\n'
-        result += Template('for stage in range(${BEG},${END}+1,${INCR}):\n').safe_substitute(d)
+        result += Template('for stage in range(${BEG},${END}+1,${INCR}):\n').safe_substitute(dict_Arguments)
         result += '    if not n_incr_error < look_ahead:\n'
         result += '        break\n'
-        result += Template('    myObject.${EARLY_STOPPING} = stage\n').safe_substitute(d)
+        result += Template('    myObject.${EARLY_STOPPING} = stage\n').safe_substitute(dict_Arguments)
         result += '    myObject.train(trainset)\n'
         result += '    n_incr_error += 1\n'
         result += '    print \'Evaluating on validation set\'\n'
@@ -209,29 +204,29 @@ if (len(sys.argv) >= 6):
         result += '        n_incr_error = 0\n'
         result += '        best_model = copy.deepcopy(myObject)\n\n'
         result += 'outputs_tr,costs_tr = best_model.test(trainset)\n'
-        result += 'nombre_col = len(costs_tr.__iter__().next())\n'
+        result += 'columnCount = len(costs_tr.__iter__().next())\n'
         result += 'outputs_v,costs_v = best_model.test(validset)\n'
         result += 'outputs_t,costs_t = best_model.test(testset)\n\n'
     else:
         result += 'model = myObject.train(trainset)\n'
         result += 'outputs_tr,costs_tr = myObject.test(trainset)\n'
-        result += 'nombre_col = costs_tr.shape[1]\n'
+        result += 'columnCount = costs_tr.shape[1]\n'
         result += 'outputs_v,costs_v = myObject.test(validset)\n'
         result += 'outputs_t,costs_t = myObject.test(testset)\n\n'
     
     result += 'str_header = ""\n'
     result += 'str_modelinfo = ""\n'
-    result += 'if nombre_col > 1:\n'
+    result += 'if columnCount > 1:\n'
     result += '    train = ""\n'
     result += '    valid = ""\n'
     result += '    test = ""\n\n'
     result += '    # Get average of each costs\n'
-    result += '    for index in range(nombre_col):\n'
+    result += '    for index in range(columnCount):\n'
     result += '        train = str(np.mean(costs_tr,axis=0)[index])\n'
     result += '        valid = str(np.mean(costs_v,axis=0)[index])\n'
     result += '        test = str(np.mean(costs_t,axis=0)[index])\n'
-    result += '        str_header += \'train\' + str(index+1) + \'\\tvalid\' + str(index+1) + \'\\ttest\' + str(index+1) + \'\\t\'\n'
-    result += '        str_modelinfo += train + \'\\t\' + valid + \'\\t\' + test + \'\\t\'\n'
+    result += '        str_header += \'train\' + str(index+1) + \'\\tvalid\' + str(index+1) + \'\\ttest\' + str(index+1)\n'
+    result += '        str_modelinfo += train + \'\\t\' + valid + \'\\t\' + test\n'
     result += '    str_header += \'\\n\'\n'
     result += 'else:\n'
     result += '    str_header = \'train1\\tvalid1\\ttest1\\n\'\n\n'
@@ -241,10 +236,10 @@ if (len(sys.argv) >= 6):
     result += '    str_modelinfo = train_error + \'\\t\' + valid_error + \'\\t\' + test_error\n\n'
     result += '# Preparing result file\n'
     result += 'header_line = ""\n'
-    if len(myOption) > 1: # If more options was set
-        result += 'header_line += ' + str_ParamOptionName + '\n'
+    if len(options) > 1: # If more options was set
+        result += 'header_line += ' + str_RequiredParam + '\n'
     result += 'header_line += str_header\n'
-    result += Template('result_file = \'${RESULTS_FILE}\'\n\n').safe_substitute(d)
+    result += Template('result_file = \'${RESULTS_FILE}\'\n\n').safe_substitute(dict_Arguments)
     result += 'if not os.path.exists(result_file):\n'
     result += '    f = open(result_file, \'w\')\n'
     result += '    f.write(header_line)\n'
@@ -262,6 +257,7 @@ if (len(sys.argv) >= 6):
     
     print result # Print result in a file (' > ' must be used)
 else:
+    # TODO: Do a better exemple for the different options of the script...
     print "You must provide at least 5 parameter"
     print "ex: python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file min_split criterion > script.py"
 
