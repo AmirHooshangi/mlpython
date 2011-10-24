@@ -173,8 +173,7 @@ if (len(sys.argv) >= 6):
     result += '    if ' + str(len(options)) + ' != len(splitedArguments):\n'
     result += '        exempleOption = ""\n'
     result += '        for item in requiredOption:\n'
-    result += '            exempleOption += item \n'
-    result += '            exempleOption += "=\'value\' "\n'
+    result += '            exempleOption += item + " "\n'
     result += '        raise ValueError(\'Parameter(s) must be in this order: \' + requiredOptionFromParentScript.replace("\\t", " ") + "\\nex: python script.py " + exempleOption + "\\n")\n'
     result += '    for index, item in enumerate(splitedArguments):\n'
     result += '        str_ParamOption += requiredOption[index]\n'
@@ -186,7 +185,7 @@ if (len(sys.argv) >= 6):
     result += '        else:\n'
     result += '            str_ParamOptionValue += item\n\n'
     if earlyStoppingParam == 4: # Early_Stopping
-        result += Template('    objectString = \'myObject = ${LEARNER}(n_stages=0,\' + str_ParamOption + \')\'\n\n').safe_substitute(dict_Arguments)
+        result += Template('    objectString = \'myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG},\' + str_ParamOption + \')\'\n\n').safe_substitute(dict_Arguments)
     else:
         result += Template('    objectString = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n\n').safe_substitute(dict_Arguments)
     result += '    print str_ParamOption\n'
@@ -194,7 +193,7 @@ if (len(sys.argv) >= 6):
     result += '    exec code\n'
     result += 'else:\n'
     if earlyStoppingParam == 4: # Early_Stopping
-        result += Template('    myObject = ${LEARNER}(n_stages=0)\n\n').safe_substitute(dict_Arguments)
+        result += Template('    myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG})\n\n').safe_substitute(dict_Arguments)
     else:
         result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
 
@@ -299,7 +298,7 @@ if (len(sys.argv) >= 6):
     print result # Print result in a file (' > ' must be used)
 else:
     # TODO: Example 3 about k-fold.
-    print "You must provide at least 5 parameter"
+    print "You must provide at least 5 parameters"
     print "INSTRUCTIONS: There are 3 examples below to show you how to run the create_experiment_script."
     print "The example number 1 is the normal way. Every time you want to use the script, you need 5 parameters TASK, DATASET, MODULE, LEARNERS and RESULTS_FILE that can't be forgotten to run it and a file name to write it. The file name in all the example is \"script.py\". Optionnal parameters can be added for the learner. In this example, \"min_split\" and \"criterion\" are TreeClassifier's options. "
     print ""
