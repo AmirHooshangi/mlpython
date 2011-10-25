@@ -186,7 +186,7 @@ class SVMClassifier(Learner):
         """
         outputs = self.use(dataset)
         costs = np.ones((len(outputs),1))
-        # Compute normalized NLLs
+        # Compute classification error
         for xy,pred,cost in zip(dataset,outputs,costs):
             x,y = xy
             if y == pred[0]:
