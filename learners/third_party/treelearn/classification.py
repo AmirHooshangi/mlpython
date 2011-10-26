@@ -98,7 +98,7 @@ class RandomForest(Learner):
         """
         
         self.n_classes = len(trainset.metadata['targets'])
-        classes = trainset.metadata['class_to_id'].values()
+        classes = np.array(trainset.metadata['class_to_id'].values(),dtype='int')
 
         features = np.zeros((len(trainset),trainset.metadata['input_size']))
         labels = np.zeros((len(trainset)),dtype='int')
@@ -130,7 +130,7 @@ class RandomForest(Learner):
             x,y = xy
             features += [x]
 
-        outputs[:,0] = self.forest(features)
+        outputs[:,0] = self.forest.predict(features)
         return outputs
 
     def forget(self):
