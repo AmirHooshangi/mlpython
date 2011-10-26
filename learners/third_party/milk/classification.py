@@ -83,7 +83,7 @@ class TreeClassifier(Learner):
 
     def train(self,trainset):
         """
-        Trains the data with the Milk Tree Learner.
+        Trains the Milk Tree Learner.
         """
         
         self.n_classes = len(trainset.metadata['targets'])
@@ -114,6 +114,9 @@ class TreeClassifier(Learner):
         self.tree = model
 
     def use(self,dataset):
+        """
+        Outputs the class predictions for ``dataset``.
+        """
         features = []
         outputs = np.zeros((len(dataset),1))
         for xy in dataset:
@@ -131,7 +134,7 @@ class TreeClassifier(Learner):
     def test(self,dataset):
         """
         Outputs the result of ``use(dataset)`` and 
-        the classification error cost for each example in the dataset
+        the classification error cost for each example in the dataset.
         """
         outputs = self.use(dataset)
         
