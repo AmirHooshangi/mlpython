@@ -26,7 +26,10 @@
 
 """
 The ``learners.third_party.milk.classification`` module contains 
-an Tree Classifier based on the Milk library:
+classifiers based on the Milk library:
+
+* TreeClassifier:  Decision tree classifier.
+
 """
 
 
