@@ -1,4 +1,4 @@
-To use MLPython's interface with the TreeLearn library, you'll need to instal the
+To use MLPython's interface with the TreeLearn library, you'll need to install the
 TreeLearn and scikits-learn libraries.
 
 To install scikits-learn, one option is to use easy_install: ::

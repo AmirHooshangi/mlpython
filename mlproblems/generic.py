@@ -135,6 +135,16 @@ class MLProblem:
         """
         return self.__iter__().next()
 
+    def raw_source(self):
+        """
+        Returns the data and metadata of the first MLProblem in the
+        series that led to this MLProblem.
+        """
+        if self.__source_mlproblem__ is None:
+            return self.data,self.metadata
+        else:
+            return self.__source_mlproblem__.raw_source()
+
 class SubsetProblem(MLProblem):
     """
     Extracts a subset of the examples in a dataset.

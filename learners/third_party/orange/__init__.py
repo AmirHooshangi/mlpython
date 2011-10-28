@@ -25,14 +25,22 @@
 # or implied, of Hugo Larochelle.
 
 """
-The package ``learners.third_party`` contains subpackages for different learning
-algorithms coming from third-party libraries.
+The package ``learners.third_party.orange`` contains modules for learning
+algorithms implemented by in the Orange library. These modules all require that the
+Orange libraries be installed.
 
-Currently, it contains the following subpackages:
+To install Orange, download the packed sources from
+http://orange.biolab.si/nightly_builds.html, unzip the sources
+and in the unzipped directory run: ::
 
-* ``learning.third_party.libsvm``:         Learners interfacing with the LIBSVM library.
-* ``learning.third_party.milk``:           Learners interfacing with the Milk library.
-* ``learning.third_party.treelearn``:      Learners interfacing with the TreeLearn library.
-* ``learning.third_party.orange``:         Learners interfacing with the Orange library.
+   python setup.py build
+   sudo python setup.py install
+
+or see http://orange.biolab.si/nightly_builds.html for other ways to
+install Orange.
+
+Currently, ``learner.third_party.orange`` contains the following modules:
+
+* ``learning.third_party.orange.classification``:    Classifiers from the Orange library.
 
 """
