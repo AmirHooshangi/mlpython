@@ -31,18 +31,9 @@
 # To execute the generated script: python script.py 3 \'information_gain\'
 
 
-# Early_Stopping ex : python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file EARLY_STOPPING=n_stage BEG=1 INCR=2 END=500 LOOK_AHEAD=10 min_split criterion > script.py
+# Early_Stopping ex : python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS_FILE=result_file EARLY_STOPPING=n_stage BEG=1 INCR=2 END=500 LOOK_AHEAD=10 > script.py
 
 
-
-# (y)TODO: Verifier l'integralite des commentaires
-# (y)TODO: Commentaire en anglais
-# (y)TODO: Parametre optionnel et +
-# (y)TODO: Verification des options parent par rapport au script enfant
-# (y)TODO: L'ordre des params n'est pas gerer dans le script enfant pour le print dans le result_file
-# (y)TODO: Gerer les tests retournant plus qu'un cost (pour le  result_file?)
-# (y)TODO: Gerer EARLY_STOPPING param et ses param a lui
-# (y)TODO: Gerer EARLY_STOPPING dans le script enfant
 # TODO: Dans une doc, expliquer que les quotes donc etre passee avec backslash
 
 
@@ -158,32 +149,39 @@ if (len(sys.argv) >= 6):
     result += 'str_ParamOption = ""\n'
     result += 'str_ParamOptionValue = ""\n'
     result += 'str_header = ""\n'
+    #result += 'if (len(sys.argv) > 1):\n'
+    result += 'requiredOptionFromParentScript = ' + str_RequiredParam + '\n\n'
+    result += 'requiredOption = []\n'
+    result += 'for item in requiredOptionFromParentScript.split("\\t"):\n'
+    result += '    requiredOption.append(item)\n\n'
+    result += 'requiredOption.remove("") # Remove empty string in the list\n\n' 
+    result += 'arguments = sys.argv\n'
+    result += 'arguments.pop(0);	# Remove first argument\n\n'
+    result += 'splitedArguments = []\n'
+    result += 'for item in arguments:\n'
+    result += '    splitedArguments.append(item) # Option(s)\n\n'
+    result += '# Check if every option(s) from parent\'s script are here.\n'
+    result += 'if ' + str(len(options)) + ' != len(splitedArguments):\n'
+    result += '    exempleOption = ""\n'
+    result += '    for item in requiredOption:\n'
+    result += '        exempleOption += item + " "\n'
+    
+    
+    if len(options) >= 1:
+        result += '    raise ValueError(\'Parameter(s) must be in this order: \' + requiredOptionFromParentScript.replace("\\t", " ") + "\\nex: python script.py " + exempleOption + "\\n")\n'
+    else:
+        result += '    raise ValueError(\"No parameter is required.\" + "\\nex: python script.py " + exempleOption + "\\n")\n'
+    
+    result += 'for index, item in enumerate(splitedArguments):\n'
+    result += '    str_ParamOption += requiredOption[index]\n'
+    result += '    str_ParamOption += \'=\' \n'
+    result += '    str_ParamOption += item\n'
+    result += '    if ((index+1) < len(splitedArguments)): # If not the last\n'
+    result += '        str_ParamOptionValue += item+\'\\t\'\n'
+    result += '        str_ParamOption += \', \'\n'
+    result += '    else:\n'
+    result += '        str_ParamOptionValue += item\n\n'
     result += 'if (len(sys.argv) > 1):\n'
-    result += '    requiredOptionFromParentScript = ' + str_RequiredParam + '\n\n'
-    result += '    requiredOption = []\n'
-    result += '    for item in requiredOptionFromParentScript.split("\\t"):\n'
-    result += '        requiredOption.append(item)\n\n'
-    result += '    requiredOption.remove("") # Remove empty string in the list\n\n' 
-    result += '    arguments = sys.argv\n'
-    result += '    arguments.pop(0);	# Remove first argument\n\n'
-    result += '    splitedArguments = []\n'
-    result += '    for item in arguments:\n'
-    result += '        splitedArguments.append(item) # Option(s)\n\n'
-    result += '    # Check if every option(s) from parent\'s script are here.\n'
-    result += '    if ' + str(len(options)) + ' != len(splitedArguments):\n'
-    result += '        exempleOption = ""\n'
-    result += '        for item in requiredOption:\n'
-    result += '            exempleOption += item + " "\n'
-    result += '        raise ValueError(\'Parameter(s) must be in this order: \' + requiredOptionFromParentScript.replace("\\t", " ") + "\\nex: python script.py " + exempleOption + "\\n")\n'
-    result += '    for index, item in enumerate(splitedArguments):\n'
-    result += '        str_ParamOption += requiredOption[index]\n'
-    result += '        str_ParamOption += \'=\' \n'
-    result += '        str_ParamOption += item\n'
-    result += '        if ((index+1) < len(splitedArguments)): # If not the last\n'
-    result += '            str_ParamOptionValue += item+\'\\t\'\n'
-    result += '            str_ParamOption += \', \'\n'
-    result += '        else:\n'
-    result += '            str_ParamOptionValue += item\n\n'
     if earlyStoppingParam == 4: # Early_Stopping
         result += Template('    objectString = \'myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG},\' + str_ParamOption + \')\'\n\n').safe_substitute(dict_Arguments)
     else:

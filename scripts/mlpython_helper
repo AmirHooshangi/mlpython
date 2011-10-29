@@ -1,0 +1,123 @@
+#! /usr/bin/python
+
+# Copyright 2011 David Brouillard & Guillaume Roy-Fontaine. All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without modification, are
+# permitted provided that the following conditions are met:
+# 
+#    1. Redistributions of source code must retain the above copyright notice, this list of
+#       conditions and the following disclaimer.
+# 
+#    2. Redistributions in binary form must reproduce the above copyright notice, this list
+#       of conditions and the following disclaimer in the documentation and/or other materials
+#       provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY David Brouillard & Guillaume Roy-Fontaine ``AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL David Brouillard & Guillaume Roy-Fontaine OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+# ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# 
+# The views and conclusions contained in the software and documentation are those of the
+# authors and should not be interpreted as representing official policies, either expressed
+# or implied, of David Brouillard & Guillaume Roy-Fontaine.
+
+
+import os
+import sys
+
+modes = ["-datasets", "-learners"]
+
+
+def VerifyMode():
+    print 'VerifyMode\n'
+    
+    arguments = sys.argv
+    arguments.pop(0);	# Remove first argument
+    
+    if len(arguments) >= 1:
+        print arguments[0]
+        #print modes[0]
+        if arguments[0] == modes[0]:
+            print 'GO DATASETS'
+            VerifyDatasetsMode(arguments)
+        elif arguments[0] == modes[1]:
+            print 'GO LEARNERS'
+            VerifyLearnersMode(arguments)
+    
+    
+def VerifyDatasetsMode(args):
+    print 'VerifyDatasetsMode\n'
+    
+    if len(args) == 1:
+        ShowDatasets()
+    elif len(args) == 2:
+        print 'MONTRER LA DOCSTRING DU DATASETS: ' + args[1]
+        ShowDatasetDocstring()
+
+ 
+def VerifyLearnersMode(args):
+    print 'VerifyLearnersMode\n'
+    
+    if len(args) == 1:
+        ShowLearners()
+    elif len(args) == 2:
+        print 'MONTRER LA/LES DOCSTRING DE TOUT LES LEARNERS POSSEDANT LE NOM DU LEARNERS EN QUESTION! : ' + args[1] 
+        ShowLearnerDocstring()
+        
+    
+def ShowDatasets():
+    print 'MONTRER TOUS LES DATASETS!'
+    print 'boucler sur les datasets...'
+    print 'ex: '
+    print 'TASK: classification'
+    print '   - heart'
+    print '   - mnist'
+    print '   - store'
+    print '   - etc.'
+    print ''
+    print 'TASK: regression'
+    print '   - reg1'
+    print '   - reg2'
+    print '   - etc.'
+
+
+def ShowLearners():
+    print 'MONTRER TOUT LES LEARNERS!'
+    print 'ex: '
+    print 'MODULE : . . .'
+    print '   - object1'
+    print '   - object2'
+    print '   - etc.'
+    print ''
+    print 'MODULE : . . .'
+    print '   - object1'
+    print '   - object2'
+    print '   - etc.'   
+    
+
+def ShowDatasetDocstring():
+    print 'dedans ShowDatasetDocstring'
+
+
+def ShowLearnerDocstring():
+    print 'dedans ShowLearnerDocstring'
+
+
+
+# MAIN CODE
+print 'mlpython helper welcome!\n'
+
+VerifyMode()
+
+print '\nFIN!'
+
+
+
+
+
+
