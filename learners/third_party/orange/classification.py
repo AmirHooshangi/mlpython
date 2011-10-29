@@ -29,6 +29,7 @@ The ``learners.third_party.orange.classification`` module contains
 classifiers from the Orange library:
 
 * RandomForest:  Random forest classifier.
+* BoostedTrees:  Ensemble of boosted trees (Adaboost.M1).
 
 It also contains one helper function:
 
@@ -49,6 +50,11 @@ try :
     import orngEnsemble
 except ImportError:
     print 'Warning in mlpython.learners.third_party.orange.classification:''import orngEnsemble'' failed. The Orange library is not properly installed. See mlpython/misc/third_party/orange/README for instructions.'
+
+try :
+    import orngTree
+except ImportError:
+    print 'Warning in mlpython.learners.third_party.orange.classification:''import orngTree'' failed. The Orange library is not properly installed. See mlpython/misc/third_party/orange/README for instructions.'
 
 def make_orange_dataset(dataset,domain = None):
     """
@@ -76,7 +82,7 @@ def make_orange_dataset(dataset,domain = None):
 
 class RandomForest(Learner):
     """ 
-    Random Forest classifeir based on the Orange library
+    Random Forest classifeir based on the Orange library.
  
     Option ``n_trees`` is the number of trees to train in the ensemble
     (default = 50).
@@ -131,6 +137,92 @@ class RandomForest(Learner):
 
     def forget(self):
         self.forest = None
+
+    def test(self,dataset):
+        """
+        Outputs the result of ``use(dataset)`` and 
+        the classification error cost for each example in the dataset.
+        """
+        outputs = self.use(dataset)
+        
+        costs = np.ones((len(outputs),1))
+        # Compute classification error
+        for xy,pred,cost in zip(dataset,outputs,costs):
+            x,y = xy
+            if y == pred[0]:
+                cost[0] = 0
+
+        return outputs,costs
+        
+class BoostedTrees(Learner):
+    """ 
+    Ensemble of decision trees based on AdaBoost.M1.
+ 
+    Option ``n_trees`` is the number of trees to train in the ensemble
+    (default = 50).
+    
+    Option ``max_majority`` is the maximal proportion of the majority
+    class. When this is exceeded, a node is not split further (default = 1.0).
+
+    Option ``max_depth`` is the maximum depth of the trees (default = 2).
+
+    Option ``min_leaf_size`` is a minimum threshold on the number of
+    training examples in a node, below which a node is not split
+    (default = 0).
+
+    Option ``skip_prob`` is the probability of skipping an input when
+    considering splits for a node (default = 0).
+
+    **Required metadata:**
+
+    * ``'targets'``
+    * ``'class_to_id'``
+
+    """
+    def __init__(self, n_trees = 50, 
+                 max_majority = 1.0,
+                 max_depth = 2,
+                 min_leaf_size = 0,
+                 skip_prob = 0):
+        self.n_trees = n_trees
+        self.max_majority = max_majority
+        self.max_depth = max_depth
+        self.min_leaf_size = min_leaf_size
+        self.skip_prob = skip_prob
+
+    def train(self,trainset):
+        """
+        Trains an ensemble of tree with Adaboost.M1.
+        """
+        
+        self.n_classes = len(trainset.metadata['targets'])
+
+        trainset_orange = make_orange_dataset(trainset)
+        self.trainset_domain = trainset_orange.domain
+
+        tree = orngTree.TreeLearner(max_majority=self.max_majority,
+                                    max_depth=self.max_depth,
+                                    min_instances=self.min_leaf_size,
+                                    skip_prob=self.skip_prob)
+        
+        adaboost = orngEnsemble.BoostedLearner(learner=tree,
+                                               t=self.n_trees, 
+                                               name="AdaBoost.M1")
+        self.boosted_trees = adaboost(instances=trainset_orange)
+        
+    def use(self,dataset):
+        """
+        Outputs the class predictions for ``dataset``.
+        """
+
+        dataset_orange = make_orange_dataset(dataset,self.trainset_domain)
+        outputs = np.zeros((len(dataset),1))
+        for i in range(len(dataset)):
+            outputs[i,0] = int(self.boosted_trees(dataset_orange[i]))
+        return outputs
+
+    def forget(self):
+        self.boosted_trees = None
 
     def test(self,dataset):
         """

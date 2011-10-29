@@ -13,3 +13,5 @@ Follow the links below to learn more about these subpackages:
 
    learners_third_party_libsvm
    learners_third_party_milk
+   learners_third_party_treelearn
+   learners_third_party_orange

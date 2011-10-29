@@ -6,8 +6,8 @@ LIBSVM Learners
 .. automodule:: learners.third_party.libsvm
    :members:
 
-LIBSVM Classifier
------------------
+LIBSVM Classifiers
+------------------
 
 .. automodule:: learners.third_party.libsvm.classification
    :members:

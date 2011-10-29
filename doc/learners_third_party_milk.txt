@@ -6,8 +6,8 @@ Milk Learners
 .. automodule:: learners.third_party.milk
    :members:
 
-Milk Classifier
----------------
+Milk Classifiers
+----------------
 
 .. automodule:: learners.third_party.milk.classification
    :members:
