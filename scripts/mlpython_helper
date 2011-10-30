@@ -28,6 +28,7 @@
 
 
 import os
+import imp
 import sys
 
 modes = ["-datasets", "-learners"] # parameters of the scripts
@@ -42,28 +43,33 @@ def VerifyMode():
         #print arguments[0]
         #print modes[0]
         if arguments[0] == modes[0]:
-            print 'mode : datasets'
+            #print 'mode: ' + modes[0]
             VerifyDatasetsMode(arguments)
         elif arguments[0] == modes[1]:
-            print 'mode : learners'
+            #print 'mode: ' + modes[1]
             VerifyLearnersMode(arguments)
         else:
-            print 'You must type:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
-            
+            print 'Unhandled parameter, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+    else:
+        print 'You must specify at least one parameter, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+		
     
 def VerifyDatasetsMode(args):    
     if len(args) == 1:
         ShowDatasets()
     elif len(args) == 2:
         ShowDatasetDocstring(args[1])
+    elif len(args) >= 3:
+        print 'Unhandled number of parameters, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
 
  
 def VerifyLearnersMode(args):
     if len(args) == 1:
         ShowLearners()
     elif len(args) == 2:
-        print 'MONTRER LA/LES DOCSTRING DE TOUT LES LEARNERS POSSEDANT LE NOM DU LEARNERS EN QUESTION! : ' + args[1] 
-        ShowLearnerDocstring()
+        ShowClassDocstring(args[1])
+    elif len(args) >= 3:
+        print 'Unhandled number of parameters, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
         
     
 def ShowDatasets():
@@ -93,7 +99,6 @@ def ShowDatasets():
     print '\nTASK = multiregression'
     for item in multiregressionsNames:
         print '        -' + item
-
 
 
 def GetRidEmptyLine(contents):
@@ -136,15 +141,38 @@ def ShowDatasetDocstring(dataset):
         print GetModuleDocstring(datasetFilePath)
     else:
         print 'Dataset \'' + dataset + '\' do not exist.'
+        
+        
+def ShowClassDocstring(varClass):    
+    filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
+    isFound = 0
+    for (path, dirs, files) in os.walk(filePath):
+        for item in files: # We do not want .pyc, __init__ and README files
+            if item.find(".pyc") == -1:
+                if item.find("__") == -1:
+                    if item.find("README") == -1:
+                        fd = open(path + "/" + item)
+                        contents = fd.readlines()
+                        fd.close()
+                        new_contents = GetRidEmptyLine(contents)
+                        classes = GetClassFromContent("class ", new_contents)
+                        if len(classes) > 0:
+                            for item2 in classes:
+                                if item2.find(varClass) >= 0:
+                                    isFound = 1
+                                    print '\nMODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
 
+                                    filePath2 = path + "/" + item
+                                    classDocstring = GetClassDocstring(filePath2, varClass)
+                                    print 'Docstring: ' + varClass
+                                    print classDocstring
 
-def ShowLearnerDocstring():
-    print 'dedans ShowLearnerDocstring'
-
+    if isFound == 0:
+        print 'Learner \'' + varClass + '\' do not exist'
 
 
 def GetClassFromContent(varToSearch, contents):
-    #Get all density datasets in the file content
+    #Get class from content file
     l = []
     for index, item in enumerate(contents):
         if item.find(varToSearch) > -1:
@@ -155,8 +183,9 @@ def GetClassFromContent(varToSearch, contents):
 
     return l  
 
+
 def GetDatasetVariableFromContent(varToSearch, contents):
-    #Get all density datasets in the file content
+    #Get all density datasets from a content file
     l = []
     for index, item in enumerate(contents):
         if item.find(varToSearch) > -1:
@@ -173,6 +202,22 @@ def GetDatasetVariableFromContent(varToSearch, contents):
     return l
 
     
+def GetClassDocstring(filePath, classs):
+    stripedFilePath = filePath[0:filePath.rfind("/")]
+    module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
+
+    sys.path.insert(0, stripedFilePath)
+    
+    m = __import__(module, globals(), locals(), [])
+    del sys.path[0]
+    
+    objectString = "docstring = m." + classs + ".__doc__"
+    code = compile(objectString, '<string>', 'exec')
+    exec code
+    
+    return docstring
+    
+    
 def GetModuleDocstring(filepath):
     "Get module-level docstring of Python module at filepath, e.g. 'path/to/file.py'."
     co = compile(open(filepath).read(), filepath, 'exec')
@@ -181,9 +226,20 @@ def GetModuleDocstring(filepath):
     else:
         docstring = None
     return docstring
+    
 
+# Not used
+def GetModule(filePath):
+    stripedFilePath = filePath[0:filePath.rfind("/")]
+    module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
 
-
+    sys.path.insert(0, stripedFilePath)
+        
+    m = __import__(module, globals(), locals(), [])
+    del sys.path[0]
+        
+    return m
+    
 
 # MAIN CODE
 
