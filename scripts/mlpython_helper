@@ -30,39 +30,35 @@
 import os
 import sys
 
-modes = ["-datasets", "-learners"]
+modes = ["-datasets", "-learners"] # parameters of the scripts
+storeFilePath = sys.path[0][0:sys.path[0].rfind("/")] + "/datasets/store.py" # store.py location
 
 
-def VerifyMode():
-    print 'VerifyMode\n'
-    
+def VerifyMode():    
     arguments = sys.argv
     arguments.pop(0);	# Remove first argument
     
     if len(arguments) >= 1:
-        print arguments[0]
+        #print arguments[0]
         #print modes[0]
         if arguments[0] == modes[0]:
-            print 'GO DATASETS'
+            print 'mode : datasets'
             VerifyDatasetsMode(arguments)
         elif arguments[0] == modes[1]:
-            print 'GO LEARNERS'
+            print 'mode : learners'
             VerifyLearnersMode(arguments)
+        else:
+            print 'You must type:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+            
     
-    
-def VerifyDatasetsMode(args):
-    print 'VerifyDatasetsMode\n'
-    
+def VerifyDatasetsMode(args):    
     if len(args) == 1:
         ShowDatasets()
     elif len(args) == 2:
-        print 'MONTRER LA DOCSTRING DU DATASETS: ' + args[1]
-        ShowDatasetDocstring()
+        ShowDatasetDocstring(args[1])
 
  
 def VerifyLearnersMode(args):
-    print 'VerifyLearnersMode\n'
-    
     if len(args) == 1:
         ShowLearners()
     elif len(args) == 2:
@@ -71,37 +67,75 @@ def VerifyLearnersMode(args):
         
     
 def ShowDatasets():
-    print 'MONTRER TOUS LES DATASETS!'
-    print 'boucler sur les datasets...'
-    print 'ex: '
-    print 'TASK: classification'
-    print '   - heart'
-    print '   - mnist'
-    print '   - store'
-    print '   - etc.'
-    print ''
-    print 'TASK: regression'
-    print '   - reg1'
-    print '   - reg2'
-    print '   - etc.'
+    # Get file contents
+    fd = open(storeFilePath)
+    contents = fd.readlines()
+    fd.close()
+    new_contents = GetRidEmptyLine(contents)
+
+    densityNames = GetDatasetVariableFromContent('density_names =', new_contents)
+    classificationNames = GetDatasetVariableFromContent('classification_names =', new_contents)
+    multilabelNames = GetDatasetVariableFromContent('multilabel_names =', new_contents)
+    multiregressionsNames = GetDatasetVariableFromContent('multiregression_names =', new_contents)
+    
+    print '\nTASK = density'
+    for item in densityNames:
+        print '        -' + item
+
+    print '\nTASK = classification'
+    for item in classificationNames:
+        print '        -' + item
+        
+    print '\nTASK = multilabel'
+    for item in multilabelNames:
+        print '        -' + item
+        
+    print '\nTASK = multiregression'
+    for item in multiregressionsNames:
+        print '        -' + item
+
+
+
+def GetRidEmptyLine(contents):
+    new_contents = []
+    # Get rid of empty lines
+    for line in contents:
+        if not line.strip(): # Strip whitespace, should leave nothing if empty line was just "\n"
+            continue
+        else: # We got something, save it
+            new_contents.append(line)
+            
+    return new_contents
 
 
 def ShowLearners():
-    print 'MONTRER TOUT LES LEARNERS!'
-    print 'ex: '
-    print 'MODULE : . . .'
-    print '   - object1'
-    print '   - object2'
-    print '   - etc.'
-    print ''
-    print 'MODULE : . . .'
-    print '   - object1'
-    print '   - object2'
-    print '   - etc.'   
-    
+    filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
 
-def ShowDatasetDocstring():
-    print 'dedans ShowDatasetDocstring'
+    for (path, dirs, files) in os.walk(filePath):
+        for item in files: # We do not want .pyc, __init__ and README files
+            if item.find(".pyc") == -1:
+                if item.find("__") == -1:
+                    if item.find("README") == -1:
+                        fd = open(path + "/" + item)
+                        contents = fd.readlines()
+                        fd.close()
+                        new_contents = GetRidEmptyLine(contents)
+                        
+                        classes = GetClassFromContent("class ", new_contents)
+                        if len(classes) > 0:
+                            #print 'MODULE: ' + item + ' (' + path[path.find("/learners") + 1:len(path)] + ')'
+                            print 'MODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
+                            for item in classes:
+                                print '            -' + item
+    
+            
+def ShowDatasetDocstring(dataset):
+    datasetFilePath = sys.path[0][0:sys.path[0].rfind("/")] + "/datasets/" + dataset + ".py"
+    
+    if os.path.isfile(datasetFilePath):
+        print GetModuleDocstring(datasetFilePath)
+    else:
+        print 'Dataset \'' + dataset + '\' do not exist.'
 
 
 def ShowLearnerDocstring():
@@ -109,15 +143,48 @@ def ShowLearnerDocstring():
 
 
 
+def GetClassFromContent(varToSearch, contents):
+    #Get all density datasets in the file content
+    l = []
+    for index, item in enumerate(contents):
+        if item.find(varToSearch) > -1:
+            if item.find(":") > -1:
+                if item.find("(") > -1:
+                    if item.find(".") == -1:
+                        l.append(item[item.find(" ") + 1:item.rfind("(")])
+
+    return l  
+
+def GetDatasetVariableFromContent(varToSearch, contents):
+    #Get all density datasets in the file content
+    l = []
+    for index, item in enumerate(contents):
+        if item.find(varToSearch) > -1:
+            l.append(item[item.find("'") + 1:item.rfind("'")])
+            end = 0
+            i = 0
+            while end == 0:
+                i = i + 1
+                right = contents[i + index].rfind("'")
+                l.append(contents[i + index][contents[i + index].find("'") + 1:contents[i + index].rfind("'")])
+                if contents[i + index].find(")") > -1:
+                    end = 1
+
+    return l
+
+    
+def GetModuleDocstring(filepath):
+    "Get module-level docstring of Python module at filepath, e.g. 'path/to/file.py'."
+    co = compile(open(filepath).read(), filepath, 'exec')
+    if co.co_consts and isinstance(co.co_consts[0], basestring):
+        docstring = co.co_consts[0]
+    else:
+        docstring = None
+    return docstring
+
+
+
+
 # MAIN CODE
-print 'mlpython helper welcome!\n'
 
 VerifyMode()
-
-print '\nFIN!'
-
-
-
-
-
-
