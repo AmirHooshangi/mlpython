@@ -191,7 +191,7 @@ if (len(sys.argv) >= 6):
         result += '        str_ParamOptionValue += item\n\n'
 
     
-    result += 'if (len(sys.argv) > 1):\n'
+    result += 'if (len(sys.argv) >= 1):\n'
     if earlyStoppingParam == 4: # Early_Stopping
         result += Template('    objectString = \'myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG},\' + str_ParamOption + \')\'\n\n').safe_substitute(dict_Arguments)
     else:
@@ -305,7 +305,7 @@ else:
     print ""
     print "Example 1:"
     print "python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file min_split criterion > script.py"
-    print "python script.py 4 \'information_gain\'"
+    print "python script.py 4 \\'information_gain\\'"
     print ""
     print "Example 2:"
     print "python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS_FILE=result_file seed EARLY_STOPPING=n_stages BEG=1 INCR=1 END=500 LOOK_AHEAD=10 > script.py"
