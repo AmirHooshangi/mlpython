@@ -118,7 +118,6 @@ if (len(sys.argv) >= 6):
     # Verify if the param 'KFOLD is provided
     kfoldParam = 0
     if 'KFOLD' in dict_Arguments:
-        dict_Arguments['RESULTS_FILE'] = dict_Arguments['RESULTS_FILE'] + '_fold_' + dict_Arguments['KFOLD']
         kfoldParam = 1
          
                 
@@ -142,14 +141,11 @@ if (len(sys.argv) >= 6):
     result += 'from string import Template\n'
     result += 'import mlpython.datasets.store as dataset_store\n'
     result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(dict_Arguments)
-    if kfoldParam == 1:
-        result += Template('k_fold_datasets = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(dict_Arguments)
-    else:
-        result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(dict_Arguments)
+
     result += 'str_ParamOption = ""\n'
     result += 'str_ParamOptionValue = ""\n'
     result += 'str_header = ""\n'
-    #result += 'if (len(sys.argv) > 1):\n'
+    result += 'splitedArguments = []\n'
     result += 'requiredOptionFromParentScript = ' + str_RequiredParam + '\n\n'
     result += 'requiredOption = []\n'
     result += 'for item in requiredOptionFromParentScript.split("\\t"):\n'
@@ -157,36 +153,49 @@ if (len(sys.argv) >= 6):
     result += 'requiredOption.remove("") # Remove empty string in the list\n\n' 
     result += 'arguments = sys.argv\n'
     result += 'arguments.pop(0);	# Remove first argument\n\n'
-    result += 'splitedArguments = []\n'
     result += 'for item in arguments:\n'
     result += '    splitedArguments.append(item) # Option(s)\n\n'
     result += '# Check if every option(s) from parent\'s script are here.\n'
-    result += 'if ' + str(len(options)) + ' != len(splitedArguments):\n'
-    result += '    exempleOption = ""\n'
-    result += '    for item in requiredOption:\n'
-    result += '        exempleOption += item + " "\n'
-    
-    
-    if len(options) >= 1:
-        result += '    raise ValueError(\'Parameter(s) must be in this order: \' + requiredOptionFromParentScript.replace("\\t", " ") + "\\nex: python script.py " + exempleOption + "\\n")\n'
+    if kfoldParam == 1:
+        result += 'if ' + str(len(options) + 1) + ' != len(splitedArguments):\n'
+        result += '    exempleOption = "kfold=\'value\' "\n'
+        result += '    for item in requiredOption:\n'
+        result += '        exempleOption += item \n'
+        result += '        exempleOption += "=\'value\' "\n'
+        result += '    raise ValueError(\'Parameter(s) must be in this order: kfold \' + requiredOptionFromParentScript.replace("\\t", " ") + "\\nex: python script.py " + exempleOption + "\\n")\n'
+        result += 'for index, item in enumerate(splitedArguments):\n'
+        result += '    if index != 0:\n'
+        result += '        str_ParamOption += requiredOption[index - 1]\n'
+        result += '        str_ParamOption += \'=\' \n'
+        result += '        str_ParamOption += item\n'
+        result += '        if ((index+1) < len(splitedArguments)): # If not the last\n'
+        result += '            str_ParamOptionValue += item+\'\\t\'\n'
+        result += '            str_ParamOption += \', \'\n'
+        result += '        else:\n'
+        result += '            str_ParamOptionValue += item\n\n'
     else:
-        result += '    raise ValueError(\"No parameter is required.\" + "\\nex: python script.py " + exempleOption + "\\n")\n'
+        result += 'if ' + str(len(options)) + ' != len(splitedArguments):\n'
+        result += '    exempleOption = ""\n'
+        result += '    for item in requiredOption:\n'
+        result += '        exempleOption += item \n'
+        result += '        exempleOption += "=\'value\' "\n'
+        result += '    raise ValueError(\'Parameter(s) must be in this order: \' + requiredOptionFromParentScript.replace("\\t", " ") + "\\nex: python script.py " + exempleOption + "\\n")\n'
+        result += 'for index, item in enumerate(splitedArguments):\n'
+        result += '    str_ParamOption += requiredOption[index]\n'
+        result += '    str_ParamOption += \'=\' \n'
+        result += '    str_ParamOption += item\n'
+        result += '    if ((index+1) < len(splitedArguments)): # If not the last\n'
+        result += '        str_ParamOptionValue += item+\'\\t\'\n'
+        result += '        str_ParamOption += \', \'\n'
+        result += '    else:\n'
+        result += '        str_ParamOptionValue += item\n\n'
+
     
-    result += 'for index, item in enumerate(splitedArguments):\n'
-    result += '    str_ParamOption += requiredOption[index]\n'
-    result += '    str_ParamOption += \'=\' \n'
-    result += '    str_ParamOption += item\n'
-    result += '    if ((index+1) < len(splitedArguments)): # If not the last\n'
-    result += '        str_ParamOptionValue += item+\'\\t\'\n'
-    result += '        str_ParamOption += \', \'\n'
-    result += '    else:\n'
-    result += '        str_ParamOptionValue += item\n\n'
     result += 'if (len(sys.argv) > 1):\n'
     if earlyStoppingParam == 4: # Early_Stopping
         result += Template('    objectString = \'myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG},\' + str_ParamOption + \')\'\n\n').safe_substitute(dict_Arguments)
     else:
         result += Template('    objectString = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n\n').safe_substitute(dict_Arguments)
-    result += '    print str_ParamOption\n'
     result += '    code = compile(objectString, \'<string>\', \'exec\')\n'
     result += '    exec code\n'
     result += 'else:\n'
@@ -195,8 +204,17 @@ if (len(sys.argv) >= 6):
     else:
         result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
 
+    if kfoldParam == 1:
+        result += Template('k_fold_datasets = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(dict_Arguments)
+        result += 'if len(splitedArguments) == 0:\n'
+        result += '    raise ValueError(\'K_Fold parameter is missing. For example, \"3\" here is the k_fold value.\\nex: python script.py 3\')\n'
+        result += Template('k_fold_experiment = dataset_store.get_k_fold_experiment(k_fold_datasets,k=${KFOLD})\n\n').safe_substitute(dict_Arguments)
+        result += 'trainset, validset, testset = k_fold_experiment[int(splitedArguments[0])-1]\n'
+    else:
+        result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(dict_Arguments)
+    
+    # Main code
     if earlyStoppingParam == 4: # Early_Stopping
-        result += '# Early_Stopping Code\n'
         result += 'best_val_error = np.inf\n'
         result += 'best_it = 0\n'
         result += 'str_header = \'best_it\\t\'\n'
@@ -221,37 +239,19 @@ if (len(sys.argv) >= 6):
         result += 'columnCount = len(costs_tr.__iter__().next())\n'
         result += 'outputs_v,costs_v = best_model.test(validset)\n'
         result += 'outputs_t,costs_t = best_model.test(testset)\n\n'
-    elif kfoldParam == 1:
-        result += '# K Fold Code\n'
-        result += Template('k_fold_experiment = dataset_store.get_k_fold_experiment(k_fold_datasets,k=${KFOLD})\n\n').safe_substitute(dict_Arguments)
-        result += 'train_average = 0\n'
-        result += 'valid_average = 0\n'
-        result += 'test_average = 0\n'
-        result += 'for trainset,validset,testset in k_fold_experiment:\n'
-        result += '    myObject.train(trainset)\n'
-        result += '    outputs_tr,costs_tr = myObject.test(trainset)\n'
-        result += '    columnCount = 1 # Multiple costs not handled yet.\n'
-        result += '    outputs_v,costs_v = myObject.test(validset)\n'
-        result += '    outputs_t,costs_t = myObject.test(testset)\n\n'
-        result += '    train_average += np.mean(costs_tr,axis=0)[0]\n'
-        result += '    valid_average += np.mean(costs_v,axis=0)[0]\n'
-        result += '    test_average += np.mean(costs_t,axis=0)[0]\n'
-        result += 'train_average = str(train_average / len(k_fold_experiment))\n'
-        result += 'valid_average = str(valid_average / len(k_fold_experiment))\n'
-        result += 'test_average = str(test_average / len(k_fold_experiment))\n'
+        result += 'str_modelinfo = str(best_it) + \'\\t\'\n'
     else:
         result += 'model = myObject.train(trainset)\n'
         result += 'outputs_tr,costs_tr = myObject.test(trainset)\n'
         result += 'columnCount = costs_tr.shape[1]\n'
         result += 'outputs_v,costs_v = myObject.test(validset)\n'
         result += 'outputs_t,costs_t = myObject.test(testset)\n\n'
+        result += 'str_modelinfo = ""\n'
     
-    result += 'str_modelinfo = ""\n'
     result += 'if columnCount > 1:\n'
     result += '    train = ""\n'
     result += '    valid = ""\n'
     result += '    test = ""\n\n'
-    result += '    str_modelinfo = str(best_it) + \'\\t\'\n'
     result += '    # Get average of each costs\n'
     result += '    for index in range(columnCount):\n'
     result += '        train = str(np.mean(costs_tr,axis=0)[index])\n'
@@ -265,19 +265,21 @@ if (len(sys.argv) >= 6):
     result += '    str_header += \'\\n\'\n'
     result += 'else:\n'
     result += '    str_header = \'train1\\tvalid1\\ttest1\\n\'\n\n'
+    result += '    train_error = str(np.mean(costs_tr,axis=0)[0])\n'
+    result += '    valid_error = str(np.mean(costs_v,axis=0)[0])\n'
+    result += '    test_error = str(np.mean(costs_t,axis=0)[0])\n'
+    result += '    str_modelinfo = train_error + \'\\t\' + valid_error + \'\\t\' + test_error\n\n'
+    # Different result_file name and content if kfold is used.
     if kfoldParam == 1:
-        result += '    str_modelinfo = train_average + \'\\t\' + valid_average + \'\\t\' + test_average\n\n'
+        result += Template('file_name, ext = os.path.splitext(\'${RESULTS_FILE}\')\n').safe_substitute(dict_Arguments)
+        result += 'result_file = file_name + \'_fold_\' + splitedArguments[0] + ext\n\n'
     else:
-        result += '    train_error = str(np.mean(costs_tr,axis=0)[0])\n'
-        result += '    valid_error = str(np.mean(costs_v,axis=0)[0])\n'
-        result += '    test_error = str(np.mean(costs_t,axis=0)[0])\n'
-        result += '    str_modelinfo = train_error + \'\\t\' + valid_error + \'\\t\' + test_error\n\n'
+        result += Template('result_file = \'${RESULTS_FILE}\'\n\n').safe_substitute(dict_Arguments)
     result += '# Preparing result file\n'
     result += 'header_line = ""\n'
     if len(options) >= 1: # If more options was set
         result += 'header_line += ' + str_RequiredParam + '\n'
     result += 'header_line += str_header\n'
-    result += Template('result_file = \'${RESULTS_FILE}\'\n\n').safe_substitute(dict_Arguments)
     result += 'if not os.path.exists(result_file):\n'
     result += '    f = open(result_file, \'w\')\n'
     result += '    f.write(header_line)\n'
@@ -295,20 +297,21 @@ if (len(sys.argv) >= 6):
     
     print result # Print result in a file (' > ' must be used)
 else:
-    # TODO: Example 3 about k-fold.
-    print "You must provide at least 5 parameters"
-    print "INSTRUCTIONS: There are 3 examples below to show you how to run the create_experiment_script."
-    print "The example number 1 is the normal way. Every time you want to use the script, you need 5 parameters TASK, DATASET, MODULE, LEARNERS and RESULTS_FILE that can't be forgotten to run it and a file name to write it. The file name in all the example is \"script.py\". Optionnal parameters can be added for the learner. In this example, \"min_split\" and \"criterion\" are TreeClassifier's options. "
+    print "\"\"\""
+    print "Usage: python create_experiment_script TASK=task DATASET=dataset MODULE=mlpython.module"
+    print "LEARNER=Learner RESULTS_FILE=result_file [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]"
     print ""
-    print "We added the option Early Stopping in the example number 2. It is the same has number 1 but you have 5 more parameters to set that make Early Stopping work. In this example, \"seed\" is the NNet's option."
+    print "The options \'option1\' and \'option2\' here are Learner's options that will be set when you call your script. For example: python scrypt.py option1_value option2_value"
     print ""
-    print "For the example 3, we added the option k fold. The number followed by the parameter \"KFOLD\" is the value of k. In this example, k = 5."
-    print ""
-    print "Example 1: "
+    print "Example 1:"
     print "python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file min_split criterion > script.py"
+    print "python script.py 4 \'information_gain\'"
     print ""
-    print "Example 2: "
+    print "Example 2:"
     print "python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS_FILE=result_file seed EARLY_STOPPING=n_stages BEG=1 INCR=1 END=500 LOOK_AHEAD=10 > script.py"
+    print "python script.py 1234"
     print ""
+    print "Example 3:"
     print "python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file KFOLD=5 > script.py"
-
+    print "python script.py 2"
+    print "\"\"\""
