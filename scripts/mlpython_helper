@@ -1,0 +1,246 @@
+#! /usr/bin/python
+
+# Copyright 2011 David Brouillard & Guillaume Roy-Fontaine. All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without modification, are
+# permitted provided that the following conditions are met:
+# 
+#    1. Redistributions of source code must retain the above copyright notice, this list of
+#       conditions and the following disclaimer.
+# 
+#    2. Redistributions in binary form must reproduce the above copyright notice, this list
+#       of conditions and the following disclaimer in the documentation and/or other materials
+#       provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY David Brouillard & Guillaume Roy-Fontaine ``AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL David Brouillard & Guillaume Roy-Fontaine OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+# ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# 
+# The views and conclusions contained in the software and documentation are those of the
+# authors and should not be interpreted as representing official policies, either expressed
+# or implied, of David Brouillard & Guillaume Roy-Fontaine.
+
+
+import os
+import imp
+import sys
+
+modes = ["-datasets", "-learners"] # parameters of the scripts
+storeFilePath = sys.path[0][0:sys.path[0].rfind("/")] + "/datasets/store.py" # store.py location
+
+
+def VerifyMode():    
+    arguments = sys.argv
+    arguments.pop(0);	# Remove first argument
+    
+    if len(arguments) >= 1:
+        #print arguments[0]
+        #print modes[0]
+        if arguments[0] == modes[0]:
+            #print 'mode: ' + modes[0]
+            VerifyDatasetsMode(arguments)
+        elif arguments[0] == modes[1]:
+            #print 'mode: ' + modes[1]
+            VerifyLearnersMode(arguments)
+        else:
+            print 'Unhandled parameter, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+    else:
+        print 'You must specify at least one parameter, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+		
+    
+def VerifyDatasetsMode(args):    
+    if len(args) == 1:
+        ShowDatasets()
+    elif len(args) == 2:
+        ShowDatasetDocstring(args[1])
+    elif len(args) >= 3:
+        print 'Unhandled number of parameters, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+
+ 
+def VerifyLearnersMode(args):
+    if len(args) == 1:
+        ShowLearners()
+    elif len(args) == 2:
+        ShowClassDocstring(args[1])
+    elif len(args) >= 3:
+        print 'Unhandled number of parameters, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+        
+    
+def ShowDatasets():
+    # Get file contents
+    fd = open(storeFilePath)
+    contents = fd.readlines()
+    fd.close()
+    new_contents = GetRidEmptyLine(contents)
+
+    densityNames = GetDatasetVariableFromContent('density_names =', new_contents)
+    classificationNames = GetDatasetVariableFromContent('classification_names =', new_contents)
+    multilabelNames = GetDatasetVariableFromContent('multilabel_names =', new_contents)
+    multiregressionsNames = GetDatasetVariableFromContent('multiregression_names =', new_contents)
+    
+    print '\nTASK = density'
+    for item in densityNames:
+        print '        -' + item
+
+    print '\nTASK = classification'
+    for item in classificationNames:
+        print '        -' + item
+        
+    print '\nTASK = multilabel'
+    for item in multilabelNames:
+        print '        -' + item
+        
+    print '\nTASK = multiregression'
+    for item in multiregressionsNames:
+        print '        -' + item
+
+
+def GetRidEmptyLine(contents):
+    new_contents = []
+    # Get rid of empty lines
+    for line in contents:
+        if not line.strip(): # Strip whitespace, should leave nothing if empty line was just "\n"
+            continue
+        else: # We got something, save it
+            new_contents.append(line)
+            
+    return new_contents
+
+
+def ShowLearners():
+    filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
+
+    for (path, dirs, files) in os.walk(filePath):
+        for item in files: # We do not want .pyc, __init__ and README files
+            if item.find(".pyc") == -1:
+                if item.find("__") == -1:
+                    if item.find("README") == -1:
+                        fd = open(path + "/" + item)
+                        contents = fd.readlines()
+                        fd.close()
+                        new_contents = GetRidEmptyLine(contents)
+                        
+                        classes = GetClassFromContent("class ", new_contents)
+                        if len(classes) > 0:
+                            #print 'MODULE: ' + item + ' (' + path[path.find("/learners") + 1:len(path)] + ')'
+                            print 'MODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
+                            for item in classes:
+                                print '            -' + item
+    
+            
+def ShowDatasetDocstring(dataset):
+    datasetFilePath = sys.path[0][0:sys.path[0].rfind("/")] + "/datasets/" + dataset + ".py"
+    
+    if os.path.isfile(datasetFilePath):
+        print GetModuleDocstring(datasetFilePath)
+    else:
+        print 'Dataset \'' + dataset + '\' do not exist.'
+        
+        
+def ShowClassDocstring(varClass):    
+    filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
+    isFound = 0
+    for (path, dirs, files) in os.walk(filePath):
+        for item in files: # We do not want .pyc, __init__ and README files
+            if item.find(".pyc") == -1:
+                if item.find("__") == -1:
+                    if item.find("README") == -1:
+                        fd = open(path + "/" + item)
+                        contents = fd.readlines()
+                        fd.close()
+                        new_contents = GetRidEmptyLine(contents)
+                        classes = GetClassFromContent("class ", new_contents)
+                        if len(classes) > 0:
+                            for item2 in classes:
+                                if item2.find(varClass) >= 0:
+                                    isFound = 1
+                                    print '\nMODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
+
+                                    filePath2 = path + "/" + item
+                                    classDocstring = GetClassDocstring(filePath2, varClass)
+                                    print 'Docstring: ' + varClass
+                                    print classDocstring
+
+    if isFound == 0:
+        print 'Learner \'' + varClass + '\' do not exist'
+
+
+def GetClassFromContent(varToSearch, contents):
+    #Get class from content file
+    l = []
+    for index, item in enumerate(contents):
+        if item.find(varToSearch) > -1:
+            if item.find(":") > -1:
+                if item.find("(") > -1:
+                    if item.find(".") == -1:
+                        l.append(item[item.find(" ") + 1:item.rfind("(")])
+
+    return l  
+
+
+def GetDatasetVariableFromContent(varToSearch, contents):
+    #Get all density datasets from a content file
+    l = []
+    for index, item in enumerate(contents):
+        if item.find(varToSearch) > -1:
+            l.append(item[item.find("'") + 1:item.rfind("'")])
+            end = 0
+            i = 0
+            while end == 0:
+                i = i + 1
+                right = contents[i + index].rfind("'")
+                l.append(contents[i + index][contents[i + index].find("'") + 1:contents[i + index].rfind("'")])
+                if contents[i + index].find(")") > -1:
+                    end = 1
+
+    return l
+
+    
+def GetClassDocstring(filePath, classs):
+    stripedFilePath = filePath[0:filePath.rfind("/")]
+    module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
+
+    sys.path.insert(0, stripedFilePath)
+    
+    m = __import__(module, globals(), locals(), [])
+    del sys.path[0]
+    
+    objectString = "docstring = m." + classs + ".__doc__"
+    code = compile(objectString, '<string>', 'exec')
+    exec code
+    
+    return docstring
+    
+    
+def GetModuleDocstring(filepath):
+    "Get module-level docstring of Python module at filepath, e.g. 'path/to/file.py'."
+    co = compile(open(filepath).read(), filepath, 'exec')
+    if co.co_consts and isinstance(co.co_consts[0], basestring):
+        docstring = co.co_consts[0]
+    else:
+        docstring = None
+    return docstring
+    
+
+# Not used
+def GetModule(filePath):
+    stripedFilePath = filePath[0:filePath.rfind("/")]
+    module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
+
+    sys.path.insert(0, stripedFilePath)
+        
+    m = __import__(module, globals(), locals(), [])
+    del sys.path[0]
+        
+    return m
+    
+
+# MAIN CODE
+
+VerifyMode()

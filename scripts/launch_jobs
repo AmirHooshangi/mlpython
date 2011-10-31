@@ -36,6 +36,7 @@ where:
        - job_desc:    string describing the jobs to launch. 
 
 Option "machines" should have the following format: machine1:maxjobs1,machine2:maxjobs2,...
+If the machine name is "localhost", then the jobs will be launched locally on this machine.
 
 Option "job_desc" should describe what command to run and how to vary the options
 of the command could be. For instance, if "job_desc" was 'program {val1,val2} {val3,val4}',
@@ -125,8 +126,12 @@ def launch_and_track(list_jobs,processes,process_jobs,process_machines,machines,
     job_output_file = expdir + '/' + job_output_file
     machine_id = find_free_machine(maxjobs,njobs)
     machine = machines[machine_id]
+
     # Format job appropriately and choose machine on which to launch
-    job = 'ssh ' + machine + ' "cd ' + expdir + '/../ ;' + job + '"'
+    if machine == 'localhost':
+        job = 'cd ' + expdir + '/../ ;' + job  
+    else:
+        job = 'ssh ' + machine + ' "cd ' + expdir + '/../ ;' + job + '"'
 
     # Launch job and keep track of information about jobs
     process_machines += [machine_id]
