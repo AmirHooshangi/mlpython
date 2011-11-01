@@ -31,7 +31,7 @@ from numpy import dot,ones,zeros,log,argmax,sum,sqrt,roots,array,diag,eye,pi,inf
 from numpy.random.mtrand import RandomState
 import scipy.linalg
 from scipy.special import gammaln
-from mathutils.linalg import product_matrix_vector, product_matrix_matrix, outer, solve, lu, getdiag, setdiag
+from mlpython.mathutils.linalg import product_matrix_vector, product_matrix_matrix, outer, solve, lu, getdiag, setdiag
 #from mathutils.linalg_debug import product_matrix_vector, product_matrix_matrix, outer, solve, lu, getdiag, setdiag
 import sys, time
 
