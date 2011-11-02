@@ -44,17 +44,20 @@ import numpy as np
 try :
     import orange
 except ImportError:
-    print 'Warning in mlpython.learners.third_party.orange.classification:''import orange'' failed. The Orange library is not properly installed. See mlpython/misc/third_party/orange/README for instructions.'
+    import warnings
+    warnings.warn('\'import orange\' failed. The Orange library is not properly installed. See mlpython/learners/third_party/orange/README for instructions.')
 
 try :
     import orngEnsemble
 except ImportError:
-    print 'Warning in mlpython.learners.third_party.orange.classification:''import orngEnsemble'' failed. The Orange library is not properly installed. See mlpython/misc/third_party/orange/README for instructions.'
+    import warnings
+    warnings.warn('\'import orngEnsemble\' failed. The Orange library is not properly installed. See mlpython/learners/third_party/orange/README for instructions.')
 
 try :
     import orngTree
 except ImportError:
-    print 'Warning in mlpython.learners.third_party.orange.classification:''import orngTree'' failed. The Orange library is not properly installed. See mlpython/misc/third_party/orange/README for instructions.'
+    import warnings
+    warnings.warn('\'import orngTree\' failed. The Orange library is not properly installed. See mlpython/learners/third_party/orange/README for instructions.')
 
 def make_orange_dataset(dataset,domain = None):
     """

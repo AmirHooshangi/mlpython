@@ -39,12 +39,14 @@ import numpy as np
 try :
     import randomized_tree
 except ImportError:
-    print 'Warning in mlpython.learners.third_party.treelearn.classification:''import randomized_tree'' failed. The TreeLearn library is not properly installed. See mlpython/misc/third_party/treelearn/README for instructions.'
+    import warnings
+    warnings.warn('\'import randomized_tree\' failed. The TreeLearn library is not properly installed. See mlpython/learners/third_party/treelearn/README for instructions.')
 
 try :
     import bagging
 except ImportError:
-    print 'Warning in mlpython.learners.third_party.treelearn.classification:''import bagging'' failed. The TreeLearn library is not properly installed. See mlpython/misc/third_party/treelearn/README for instructions.'
+    import warnings
+    warnings.warn('\'import bagging\' failed. The TreeLearn library is not properly installed. See mlpython/learners/third_party/treelearn/README for instructions.')
 
 class RandomForest(Learner):
     """ 

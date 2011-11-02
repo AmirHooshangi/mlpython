@@ -61,7 +61,8 @@ def tsne_2D(inputs, colors=None, labels=None, initial_dims = 50, perplexity = 30
         import mlpython.misc.third_party.tsne.tsne as tsne
         
     except:
-        print 'Warning in mlpython.misc.visualize: tsne_2D requires the t-SNE python code prodived by Laurens van der Maaten. See mlpython/misc/third_party/tsne/README for instructions.'
+        import warnings
+        warnings.warn('tsne_2D requires the t-SNE python code prodived by Laurens van der Maaten. See mlpython/misc/third_party/tsne/README for instructions.')
         return
 
     Y = tsne.tsne(inputs, 2, 50, 20.0);
