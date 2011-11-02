@@ -162,7 +162,7 @@ if (len(sys.argv) >= 6):
     result += '# Check if every option(s) from parent\'s script are here.\n'
     if kfoldParam == 1:
         result += 'if ' + str(len(options) + 1) + ' != len(splitedArguments):\n'
-        result += '    raise ValueError(\'Parameter(s) must be in this order: fold \'' + str_RequiredParamError + '"\\nex: python script.py "' + str_RequiredParamError + '"\\n")\n'
+        result += '    raise ValueError(\'Parameter(s) must be in this order: fold \'' + str_RequiredParamError + '"\\nex: python script.py fold "' + str_RequiredParamError + '"\\n")\n'
         result += '# Prepare the string that will be used for the constructor\n'
         result += 'for index, item in enumerate(splitedArguments):\n'
         result += '    if index != 0:\n'
