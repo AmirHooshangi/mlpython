@@ -39,7 +39,8 @@ import numpy as np
 try :
     import milk as libmilk
 except ImportError:
-    print 'Warning in mlpython.learners.third_party.milk.classification:''import milk'' failed. The Milk library is not properly installed. See mlpython/misc/third_party/milk/README for instructions.'
+    import warnings
+    warnings.warn('\'import milk\' failed. The Milk library is not properly installed. See mlpython/learners/third_party/milk/README for instructions.')
 
 
 class TreeClassifier(Learner):
