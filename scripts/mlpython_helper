@@ -32,6 +32,7 @@ import imp
 import inspect
 import sys
 import re
+import numpy
 
 
 modes = ["-datasets", "-learners"] # parameters of the scripts
@@ -69,6 +70,7 @@ def VerifyDatasetsMode(args):
 def VerifyLearnersMode(args):
     if len(args) == 1:
         ShowLearners()
+        #test()
     elif len(args) == 2:
         ShowClassDocstring(args[1])
     elif len(args) >= 3:
@@ -115,41 +117,47 @@ def GetRidEmptyLine(contents):
             
     return new_contents
 
-
 def ShowLearners():
     filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
 
-    # Code avec version vars, retournes les imports et pour third_party, retourne des choses pas bonnes
-    #for (path, dirs, files) in os.walk(filePath):
-        #for item in files:
-            #if item.find("__") == -1:
-                #match = re.search(r'py$', item)
-                #if match: # If-statement after search() tests if it succeeded                    
-                    #print 'MODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
-                    #try:
-                        #m = GetModule(path + "/" + item)
-                        #for x,y in vars(m).items():
-                           #if inspect.isclass(y):
-                                  #print '            -' + x   
-                    #except:
-                        #print 'Import error\n'
+    for (path, dirs, files) in os.walk(filePath):
+        for item in files:
+            if item.find("__") == -1:
+                if item.find("test.py") == -1:
+                    match = re.search(r'py$', item)
+                    if match: # If-statement after search() tests if it succeeded                   
+                        print 'MODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
+                        try:
+                            modulePath = path + "/" + item
+                            module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
+                            m = ImportModuleFromPath(modulePath, module, None)
+                                
+                            d = vars(m)
+                            for x,y in d.items():
+                                if inspect.isclass(y):
+                                    if str(y).find("learner.") >= 0: # Only the class that herite from learner
+                                        print '            -' + x   
+                                    
+ 
+                        except:
+                            print 'Import error\n'
 
     ## Ancient code: Lit dans chaques fichiers, ne plante pas si l'import ne fonctionne pas
-    for (path, dirs, files) in os.walk(filePath):
-        for item in files: # We only one .py files
-            if item.find("__") == -1:
-                match = re.search(r'py$', item)
-                if match: # If-statement after search() tests if it succeeded
-                    fd = open(path + "/" + item)
-                    contents = fd.readlines()
-                    fd.close()
-                    new_contents = GetRidEmptyLine(contents)
+    #for (path, dirs, files) in os.walk(filePath):
+        #for item in files: # We only one .py files
+            #if item.find("__") == -1:
+                #match = re.search(r'py$', item)
+                #if match: # If-statement after search() tests if it succeeded
+                    #fd = open(path + "/" + item)
+                    #contents = fd.readlines()
+                    #fd.close()
+                    #new_contents = GetRidEmptyLine(contents)
                     
-                    classes = GetClassFromContent("class ", new_contents)
-                    if len(classes) > 0:
-                        print 'MODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
-                        for item in classes:
-                            print '            -' + item
+                    #classes = GetClassFromContent("class ", new_contents)
+                    #if len(classes) > 0:
+                        #print 'MODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
+                        #for item in classes:
+                            #print '            -' + item
     
             
 def ShowDatasetDocstring(dataset):
@@ -179,9 +187,7 @@ def ShowClassDocstring(varClass):
                                 if item2.find(varClass) >= 0:
                                     isFound = 1
                                     print '\nMODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
-
-                                    filePath2 = path + "/" + item
-                                    classDocstring = GetClassDocstring(filePath2, varClass)
+                                    classDocstring = GetClassDocstring(path + "/" + item, varClass)
                                     print 'Docstring: ' + varClass
                                     print classDocstring
 
@@ -227,6 +233,7 @@ def GetClassDocstring(filePath, classs):
     sys.path.insert(0, stripedFilePath)
     
     m = __import__(module, globals(), locals(), [])
+        
     del sys.path[0]
     
     objectString = "docstring = m." + classs + ".__doc__"
@@ -251,21 +258,43 @@ def GetModule(filePath):
     module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
 
     sys.path.insert(0, stripedFilePath)
-        
-    #try:
-        #m = __import__(module, globals(), locals(), [])
-        #del sys.path[0]
-        #return m
-    #except: # catch *all* exceptions
-        #print "Import error"
-        #del sys.path[0]
-        #return "error"
-        
-    m = __import__(module, globals(), locals(), [])
+
+    #m = __import__(module, globals(), locals(), [])
+    m = imp.load_source(module, filePath)
+
     del sys.path[0]
     return m 
     
+#def GetModule2(filePath):
+    ##stripedFilePath = filePath[0:filePath.rfind("/")]
+    #module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
 
+    ##m = imp.load_source('classification', '/home/xecar/python/mlpython/learners/third_party/milk/classification.py')
+    #m = imp.load_source(module, filePath)
+
+    #return m 
+    
+def ImportModuleFromPath(path, name='', package_path=None):
+    """Import a module from a specified file path.
+
+    If the module is a package, set package_path to a list of directories that
+    is to become __path__.
+
+    """
+    stripedFilePath = path[0:path.rfind("/")]
+    sys.path.insert(0, stripedFilePath)
+    
+    mod = imp.new_module(name)
+    mod.__file__ = path
+    if package_path is not None:
+        mod.__path__ = package_path
+    with open(path, 'r') as file:
+        code = compile(file.read(), path, 'exec', dont_inherit=True)
+
+    exec(code, mod.__dict__)
+    
+    del sys.path[0]
+    return mod
     
 
 # MAIN CODE
