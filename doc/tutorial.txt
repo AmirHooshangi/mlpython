@@ -478,6 +478,7 @@ new Learners or to perform data analysis:
 In the subdirectory mlpython/scripts/, you will also find:
 
 * ``launch_jobs``: This is a script which can be used to spawn several jobs in parallel, on different machines, through ssh. Call it with ``-help`` for more information on how to use it.
+   
 * ``print_ascii_table``: This script takes a text file in which each row provides details for a single experiment (values of hyper-parameters, results on training/validation/test sets), and prints it out with nicely aligned columns, to facilitate viewing. Each row should be segmented into columns, separated by the tab character '\\t'. 
 
 Third-party Learners
@@ -493,6 +494,67 @@ In such cases, the third-party code must be downloaded and installed
 separately. Instructions should be available in a README file, in the
 subdirectory corresponding to the object's package (for example,
 mlpython/learners/third_party/libsvm/).
+
+Useful scripts
+----------------
+
+There are some usefuls scripts that come with mlpython.
+
+* ``create_experiment_script``: This script creates an experiment
+  script that can be run or changed as you want. It takes several
+  parameters in which the resulted script will be generated with. Call
+  it without parameters ``python create_experiment_script`` for more
+  information on how to use it. Here is an example: ::
+   python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification
+   LEARNER=TreeClassifier RESULTS_FILE=result_file.txt min_split criterion > script.py
+   python script.py 4 \'information_gain\'
+  It should be a good idea to use the script ``launch_jobs`` above with
+  this one. Here is an exemple: ::
+   python launch_jobs test localhost:4 "python script.py {1,4,20,100} {\'information_gain\', \'z1_loss\'}"   
+  Now the result can be combined with the script
+  ``print_ascii_table``. ::
+   python print_ascii_table result_file.txt
+          #1                  #2      #3              #4               #5
+   min_split           criterion  train1          valid1            test1
+           4  'information_gain'    0.06             0.3   0.310160427807
+           1  'information_gain'    0.04             0.3   0.310160427807
+           1           'z1_loss'    0.48  0.533333333333   0.919786096257
+           4           'z1_loss'    0.48  0.533333333333   0.919786096257
+          20  'information_gain'    0.18  0.266666666667   0.272727272727
+          20           'z1_loss'    0.48  0.533333333333   0.919786096257
+         100  'information_gain'    0.48  0.533333333333   0.919786096257
+         100           'z1_loss'    0.48  0.533333333333   0.919786096257
+
+* ``mlpython_helper``: This script shows all datasets and learners
+  that mlpython owns. It also gives the information of the dataset or
+  learner given by the user. Here is an exemple: ::
+   python mlpython_helper -learners TreeClassifier
+   MODULE: learners/third_party/milk/classification.py
+   Docstring: TreeClassifier
+
+      Decision Tree Classifier using Milk library
+
+      A decision tree classifier (currently, implements the greedy ID3
+      algorithm without any pruning).
+
+      Option ``criterion`` should be a string. Set it to
+      ``'information_gain'``, to use the information gain splitting
+      criterion (see
+      http://en.wikipedia.org/wiki/Information_gain_in_decision_trees),
+      or to ``'z1_loss'`` to use the 0-1 classification accuracy as the
+      splitting criterion (default: ``'information_gain'``).
+
+      Option ``min_split`` is a threshold, such that a node will not be
+      split further if it has less than ``min_split`` examples in it
+      (default: 4).
+
+      If option ``include_entropy`` is True, the information gain criterion will
+      include the original entropy (default: False).
+
+      **Required metadata:**
+
+      * ``'targets'``
+      * ``'class_to_id'``
 
 Before you leave
 ----------------
