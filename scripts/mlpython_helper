@@ -32,9 +32,7 @@ import imp
 import inspect
 import sys
 import re
-
-#from generic import Learner as classLearner
-
+import warnings
 
 modes = ["-datasets", "-learners"] # parameters of the scripts
 storeFilePath = sys.path[0][0:sys.path[0].rfind("/")] + "/datasets/store.py" # store.py location
@@ -45,13 +43,9 @@ def VerifyMode():
     arguments.pop(0);	# Remove first argument
     
     if len(arguments) >= 1:
-        #print arguments[0]
-        #print modes[0]
         if arguments[0] == modes[0]:
-            #print 'mode: ' + modes[0]
             VerifyDatasetsMode(arguments)
         elif arguments[0] == modes[1]:
-            #print 'mode: ' + modes[1]
             VerifyLearnersMode(arguments)
         else:
             print 'Unhandled parameter, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
@@ -107,95 +101,30 @@ def ShowDatasets():
         print '        -' + item
 
 
-def GetRidEmptyLine(contents):
-    new_contents = []
-    # Get rid of empty lines
-    for line in contents:
-        if not line.strip(): # Strip whitespace, should leave nothing if empty line was just "\n"
-            continue
-        else: # We got something, save it
-            new_contents.append(line)
-            
-    return new_contents
-
-
-
-def ImportLearnerClass():
-    filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
-    sys.path.insert(0, filePath)
-    from generic import Learner as myClass
-    del sys.path[0]
-    return myClass
-    
-    
-def ImportOnlineLearnerClass():
-    filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
-    sys.path.insert(0, filePath)
-    from generic import OnlineLearner as myClass
-    del sys.path[0]
-    return myClass
-    
-    
-def ImportClass(filePath, fileName, className):
-    
-    #print fileName
-    #print className
-    
-    filePath2 = filePath[0:filePath.rfind("/")]
-    #print 'Import class filepath: ' + filePath2
-    
-    sys.path.insert(0, filePath2)
-
-    #from generic import Learner as myClass
-    objectString = "from " + fileName + " import " + className + " as myClass"
-    
-    print 'objectString: ' + objectString
-    
-    code = compile(objectString, '<string>', 'exec')
-    exec code
-    
-    del sys.path[0]
-    
-    #myClass = None
-    return myClass   
-    
-    
-
-
 def ShowLearners():
     filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
 
-
-    myLearner = ImportLearnerClass()
-    myOnlineLearner = ImportOnlineLearnerClass()
-    
-    #print type(cLearner)
-    
-    #print cLearner.__doc__
-    
+    #myLearner = ImportLearnerClass()
+    #myOnlineLearner = ImportOnlineLearnerClass()
 
     for (path, dirs, files) in os.walk(filePath):
         for item in files:
             if item.find("__") == -1:
                 if item.find("test.py") == -1:
-                    #if path.find("gpu") == -1:
-                    #if path.find("libsvm") == -1:
                     match = re.search(r'py$', item)
                     if match: # If-statement after search() tests if it succeeded                   
                         print 'MODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
                         try:
                             modulePath = path + "/" + item
                             module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
-                            m = ImportModuleFromPath(modulePath, module, None)
+                            m = GetModuleFromPath(modulePath, module, None)
                                 
-                            #classPath = "mlpython." + path[path.find("/learners") + 1:len(path)] + '.' + item
-
                             d = vars(m)
                             for x,y in d.items():
                                 if inspect.isclass(y):
-                                    #print '            -' + x
                                     if str(y).find("learner.") >= 0: # Only the class that herite from learner
                                         print '            -' + x
+                                        #print '            -' + str(y)
                                         
                             #for name, obj in inspect.getmembers(m):
                             #    if inspect.isclass(obj):
@@ -203,8 +132,9 @@ def ShowLearners():
                             #         #   if not issubclass(myOnlineLearner, obj):
                             #        print '            -' + str(obj)
 
-                        except Exception:
-                            print 'Import error\n'
+                        except Exception as inst:
+                            print "*Unexpected import error: " + str(type(inst))
+                            print inst
 
     ## Ancient code: Lit dans chaques fichiers, ne plante pas si l'import ne fonctionne pas
     #for (path, dirs, files) in os.walk(filePath):
@@ -259,6 +189,18 @@ def ShowClassDocstring(varClass):
         print 'Learner \'' + varClass + '\' do not exist'
 
 
+def GetRidEmptyLine(contents):
+    new_contents = []
+    # Get rid of empty lines
+    for line in contents:
+        if not line.strip(): # Strip whitespace, should leave nothing if empty line was just "\n"
+            continue
+        else: # We got something, save it
+            new_contents.append(line)
+            
+    return new_contents
+
+
 def GetClassFromContent(varToSearch, contents):
     #Get class from content file
     l = []
@@ -295,7 +237,6 @@ def GetClassDocstring(filePath, classs):
     module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
 
     sys.path.insert(0, stripedFilePath)
-    
     m = __import__(module, globals(), locals(), [])
         
     del sys.path[0]
@@ -317,28 +258,7 @@ def GetModuleDocstring(filepath):
     return docstring
     
 
-def GetModule(filePath):
-    stripedFilePath = filePath[0:filePath.rfind("/")]
-    module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
-
-    sys.path.insert(0, stripedFilePath)
-
-    #m = __import__(module, globals(), locals(), [])
-    m = imp.load_source(module, filePath)
-
-    del sys.path[0]
-    return m 
-    
-#def GetModule2(filePath):
-    ##stripedFilePath = filePath[0:filePath.rfind("/")]
-    #module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
-
-    ##m = imp.load_source('classification', '/home/xecar/python/mlpython/learners/third_party/milk/classification.py')
-    #m = imp.load_source(module, filePath)
-
-    #return m 
-    
-def ImportModuleFromPath(path, name='', package_path=None):
+def GetModuleFromPath(path, name='', package_path=None):
     """Import a module from a specified file path.
 
     If the module is a package, set package_path to a list of directories that
@@ -355,16 +275,59 @@ def ImportModuleFromPath(path, name='', package_path=None):
     with open(path, 'r') as file:
         code = compile(file.read(), path, 'exec', dont_inherit=True)
 
-
-	#print 'path: ' + path
-	#print mod.__dict__
-
     exec(code, mod.__dict__)
     
     del sys.path[0]
     return mod
     
+    
+def ImportLearnerClass():
+    filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
+    sys.path.insert(0, filePath)
+    from generic import Learner as myClass
+    del sys.path[0]
+    return myClass
+    
+    
+def ImportOnlineLearnerClass():
+    filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
+    sys.path.insert(0, filePath)
+    from generic import OnlineLearner as myClass
+    del sys.path[0]
+    return myClass
+    
+
+#def ImportClass(filePath, fileName, className):
+    
+    #filePath2 = filePath[0:filePath.rfind("/")]
+    #sys.path.insert(0, filePath2)
+
+    ##from generic import Learner as myClass
+    #objectString = "from " + fileName + " import " + className + " as myClass"
+    
+    #code = compile(objectString, '<string>', 'exec')
+    #exec code
+    
+    #del sys.path[0]
+    #return myClass   
+
+    
+#def GetModule(filePath):
+    ##stripedFilePath = filePath[0:filePath.rfind("/")]
+    #module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
+
+    ##m = imp.load_source('classification', '/home/xecar/python/mlpython/learners/third_party/milk/classification.py')
+    #m = imp.load_source(module, filePath)
+
+    #return m 
+    
 
 # MAIN CODE
+with warnings.catch_warnings(record=True) as w:
+    # Cause all warnings to always be triggered.
+    warnings.simplefilter("always")  # always print matching warnings
+    #warnings.simplefilter("ignore") # never print matching warnings
+    #warnings.simplefilter("error")  # turn matching warnings into exceptions
+    
+    VerifyMode()
 
-VerifyMode()
