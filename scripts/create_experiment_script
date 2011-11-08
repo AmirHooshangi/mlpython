@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! python
 
 # Copyright 2011 David Brouillard & Guillaume Roy-Fontaine. All rights reserved.
 # 
@@ -128,7 +128,7 @@ if (len(sys.argv) >= 6):
     lst_requiredOption = []
     if len(options) >= 1:
         str_RequiredParam = "\'"
-        str_RequiredParamError = "\'"
+        str_RequiredParamError = ""
         for item in options:
             str_RequiredParam += item
             str_RequiredParam += "\\t"
@@ -137,7 +137,7 @@ if (len(sys.argv) >= 6):
             lst_requiredOption.append(item)
     
         str_RequiredParam += "\'"
-        str_RequiredParamError += "\'"
+        str_RequiredParamError += ""
             
     # Substitute dictionary's keywords in the template
     result = 'import numpy as np\n'
@@ -162,7 +162,8 @@ if (len(sys.argv) >= 6):
     result += '# Check if every option(s) from parent\'s script are here.\n'
     if kfoldParam == 1:
         result += 'if ' + str(len(options) + 1) + ' != len(splitedArguments):\n'
-        result += '    raise ValueError(\'Parameter(s) must be in this order: fold \'' + str_RequiredParamError + '"\\nex: python script.py fold "' + str_RequiredParamError + '"\\n")\n'
+        result += '    print "Usage: python script.py fold ' + str_RequiredParamError + '"\n'
+        result += '    sys.exit()\n'
         result += '# Prepare the string that will be used for the constructor\n'
         result += 'for index, item in enumerate(splitedArguments):\n'
         result += '    if index != 0:\n'
@@ -176,7 +177,8 @@ if (len(sys.argv) >= 6):
         result += '            str_ParamOptionValue += item\n\n'
     else:
         result += 'if ' + str(len(options)) + ' != len(splitedArguments):\n'
-        result += '    raise ValueError(\'Parameter(s) must be in this order: \'' + str_RequiredParamError + '"\\nex: python script.py "' + str_RequiredParamError + '"\\n")\n'
+        result += '    print "Usage: python script.py ' + str_RequiredParamError + '"\n'
+        result += '    sys.exit()\n'
         result += '# Prepare the string that will be used for the constructor\n'
         result += 'for index, item in enumerate(splitedArguments):\n'
         result += '    str_ParamOption += requiredOption[index]\n'
