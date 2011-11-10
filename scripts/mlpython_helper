@@ -33,10 +33,10 @@ import inspect
 import sys
 import re
 import warnings
+import mlpython
 
 modes = ["-datasets", "-learners"] # parameters of the scripts
-storeFilePath = sys.path[0][0:sys.path[0].rfind("/")] + "/datasets/store.py" # store.py location
-
+storeFilePath = mlpython.__path__[0] + "/datasets/store.py" # store.py location
 
 def VerifyMode():    
     arguments = sys.argv
@@ -102,7 +102,7 @@ def ShowDatasets():
 
 
 def ShowLearners():
-    filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
+    filePath = mlpython.__path__[0] + "/learners"
 
     from mlpython.learners.generic import Learner
     for (path, dirs, files) in os.walk(filePath):
@@ -111,54 +111,69 @@ def ShowLearners():
                 match = re.search(r'py$', item)
                 if match: # If-statement after search() tests if it succeeded                   
                     moduleLocalPath = path[path.rfind("/learners") + 1:len(path)] + '/' + item
-                    print 'MODULE: ' + moduleLocalPath
+                    modulePath = path + "/" + item
+
+                    # Figuring out module from file name
+                    module_import_str = moduleLocalPath.replace('/','.')
+                    module_import_str = module_import_str[:module_import_str.rfind('.py')]
+
                     try:
-                        modulePath = path + "/" + item
-                        module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
-                        module_import_str = moduleLocalPath.replace('/','.')
-                        module_import_str = module_import_str[:module_import_str.rfind('.py')]
-                        exec 'import mlpython.' + module_import_str + ' as m'
-                        d = vars(m)
-                        for x,y in d.items():
-                            if inspect.isclass(y):
-                                if issubclass(y,Learner) and y.__module__ == 'mlpython.'+module_import_str:
-                                    print '            -' + x
-                                    
+                        # If the .py file is not importable or causes any other exception, we ignore it.
+                        try:
+                            exec 'import mlpython.' + module_import_str + ' as m'
+
+                            found_one_learner = False
+                            d = vars(m)
+                            for x,y in d.items():
+                                if inspect.isclass(y):
+                                    if issubclass(y,Learner) and y.__module__ == 'mlpython.'+module_import_str:
+                                        if not found_one_learner:
+                                            print 'MODULE: mlpython.' + module_import_str
+                                            found_one_learner = True
+                                        print '            -' + x
+                        except:
+                            pass
+
                     except Exception as inst:
                         print "*Unexpected import error: " + str(type(inst))
                         print inst
 
             
 def ShowDatasetDocstring(dataset):
-    datasetFilePath = sys.path[0][0:sys.path[0].rfind("/")] + "/datasets/" + dataset + ".py"
+    datasetFilePath = mlpython.__path__[0] + "/datasets/" + dataset + ".py"
     
     if os.path.isfile(datasetFilePath):
         print GetModuleDocstring(datasetFilePath)
     else:
-        print 'Dataset \'' + dataset + '\' does not exist.'
+        print 'Dataset \'' + dataset + '\' do not exist.'
         
         
 def ShowClassDocstring(varClass):    
-    filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
+    filePath = mlpython.__path__[0] + "/learners"
     isFound = 0
     for (path, dirs, files) in os.walk(filePath):
         for item in files: # We do not want .pyc, __init__ and README files
-            if item.find(".pyc") == -1:
-                if item.find("__") == -1:
-                    if item.find("README") == -1:
-                        fd = open(path + "/" + item)
-                        contents = fd.readlines()
-                        fd.close()
-                        new_contents = GetRidEmptyLine(contents)
-                        classes = GetClassFromContent("class ", new_contents)
-                        if len(classes) > 0:
-                            for item2 in classes:
-                                if item2.find(varClass) >= 0:
-                                    isFound = 1
-                                    print '\nMODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
-                                    classDocstring = GetClassDocstring(path + "/" + item, varClass)
-                                    print 'Docstring: ' + varClass
-                                    print classDocstring
+            match = re.search(r'py$', item)
+            if match:
+                fd = open(path + "/" + item)
+                contents = fd.readlines()
+                fd.close()
+                new_contents = GetRidEmptyLine(contents)
+                classes = GetClassFromContent("class ", new_contents)
+                if len(classes) > 0:
+                    for item2 in classes:
+                        if item2.find(varClass) >= 0:
+                            isFound = 1
+
+                            # Figuring out module from file name
+                            module_import_str = path[path.find("/learners") + 1:len(path)] + '/' + item
+                            module_import_str = module_import_str.replace('/','.')
+                            module_import_str = module_import_str[:module_import_str.rfind('.py')]
+
+                            print '\nMODULE: mlpython.' + module_import_str
+                            classDocstring = GetClassDocstring(module_import_str, varClass)
+                            print 'Docstring: ' + varClass
+                            print classDocstring
 
     if isFound == 0:
         print 'Learner \'' + varClass + '\' do not exist'
@@ -207,19 +222,11 @@ def GetDatasetVariableFromContent(varToSearch, contents):
     return l
 
     
-def GetClassDocstring(filePath, classs):
-    stripedFilePath = filePath[0:filePath.rfind("/")]
-    module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
+def GetClassDocstring(module_import_str, classs):
 
-    sys.path.insert(0, stripedFilePath)
-    m = __import__(module, globals(), locals(), [])
-        
-    del sys.path[0]
-    
-    objectString = "docstring = m." + classs + ".__doc__"
-    code = compile(objectString, '<string>', 'exec')
-    exec code
-    
+    exec 'import mlpython.' + module_import_str
+    exec 'docstring = mlpython.' + module_import_str + '.' + classs + '.__doc__'
+
     return docstring
     
     
