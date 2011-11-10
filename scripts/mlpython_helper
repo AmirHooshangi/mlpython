@@ -36,7 +36,6 @@ import warnings
 import mlpython
 
 modes = ["-datasets", "-learners"] # parameters of the scripts
-storeFilePath = mlpython.__path__[0] + "/datasets/store.py" # store.py location
 
 def VerifyMode():    
     arguments = sys.argv
@@ -73,31 +72,22 @@ def VerifyLearnersMode(args):
         
     
 def ShowDatasets():
-    # Get file contents
-    fd = open(storeFilePath)
-    contents = fd.readlines()
-    fd.close()
-    new_contents = GetRidEmptyLine(contents)
+    import mlpython.datasets.store as datasets_store
 
-    densityNames = GetDatasetVariableFromContent('density_names =', new_contents)
-    classificationNames = GetDatasetVariableFromContent('classification_names =', new_contents)
-    multilabelNames = GetDatasetVariableFromContent('multilabel_names =', new_contents)
-    multiregressionsNames = GetDatasetVariableFromContent('multiregression_names =', new_contents)
-    
     print 'TASK = density'
-    for item in densityNames:
+    for item in datasets_store.density_names:
         print '        -' + item
 
     print '\nTASK = classification'
-    for item in classificationNames:
+    for item in datasets_store.classification_names:
         print '        -' + item
         
     print '\nTASK = multilabel'
-    for item in multilabelNames:
+    for item in datasets_store.multilabel_names:
         print '        -' + item
         
     print '\nTASK = multiregression'
-    for item in multiregressionsNames:
+    for item in datasets_store.multiregression_names:
         print '        -' + item
 
 
@@ -138,53 +128,37 @@ def ShowLearners():
 def ShowDatasetDocstring(dataset):
     datasetFilePath = mlpython.__path__[0] + "/datasets/" + dataset + ".py"
     
-    if os.path.isfile(datasetFilePath):
-        print GetModuleDocstring(datasetFilePath)
-    else:
+    try:
+        exec 'import mlpython.datasets.' + dataset
+        exec 'print mlpython.datasets.' + dataset + '.__doc__'
+    except:
         print 'Dataset \'' + dataset + '\' do not exist.'
         
         
 def ShowClassDocstring(varClass):    
     filePath = mlpython.__path__[0] + "/learners"
-    isFound = 0
+    isFound = False
     for (path, dirs, files) in os.walk(filePath):
         for item in files: # We do not want .pyc, __init__ and README files
             match = re.search(r'py$', item)
             if match:
-                fd = open(path + "/" + item)
-                contents = fd.readlines()
-                fd.close()
-                new_contents = GetRidEmptyLine(contents)
-                classes = GetClassFromContent("class ", new_contents)
-                if len(classes) > 0:
-                    for item2 in classes:
-                        if item2.find(varClass) >= 0:
-                            isFound = 1
 
-                            # Figuring out module from file name
-                            module_import_str = path[path.find("/learners") + 1:len(path)] + '/' + item
-                            module_import_str = module_import_str.replace('/','.')
-                            module_import_str = module_import_str[:module_import_str.rfind('.py')]
+                # Figuring out module from file name
+                module_import_str = path[path.find("/learners") + 1:len(path)] + '/' + item
+                module_import_str = module_import_str.replace('/','.')
+                module_import_str = module_import_str[:module_import_str.rfind('.py')]
 
-                            print '\nMODULE: mlpython.' + module_import_str
-                            classDocstring = GetClassDocstring(module_import_str, varClass)
-                            print 'Docstring: ' + varClass
-                            print classDocstring
+                try:
+                    classDocstring = GetClassDocstring(module_import_str, varClass)
+                    print '\nMODULE: mlpython.' + module_import_str
+                    print 'Docstring: ' + varClass
+                    print classDocstring
+                    isFound = True
+                except:
+                    pass
 
-    if isFound == 0:
+    if not isFound:
         print 'Learner \'' + varClass + '\' do not exist'
-
-
-def GetRidEmptyLine(contents):
-    new_contents = []
-    # Get rid of empty lines
-    for line in contents:
-        if not line.strip(): # Strip whitespace, should leave nothing if empty line was just "\n"
-            continue
-        else: # We got something, save it
-            new_contents.append(line)
-            
-    return new_contents
 
 
 def GetClassFromContent(varToSearch, contents):
@@ -200,24 +174,6 @@ def GetClassFromContent(varToSearch, contents):
     return l  
 
 
-def GetDatasetVariableFromContent(varToSearch, contents):
-    #Get all density datasets from a content file
-    l = []
-    for index, item in enumerate(contents):
-        if item.find(varToSearch) > -1:
-            l.append(item[item.find("'") + 1:item.rfind("'")])
-            end = 0
-            i = 0
-            while end == 0:
-                i = i + 1
-                right = contents[i + index].rfind("'")
-                l.append(contents[i + index][contents[i + index].find("'") + 1:contents[i + index].rfind("'")])
-                if contents[i + index].find(")") > -1:
-                    end = 1
-
-    return l
-
-    
 def GetClassDocstring(module_import_str, classs):
 
     exec 'import mlpython.' + module_import_str
@@ -225,17 +181,6 @@ def GetClassDocstring(module_import_str, classs):
 
     return docstring
     
-    
-def GetModuleDocstring(filepath):
-    "Get module-level docstring of Python module at filepath, e.g. 'path/to/file.py'."
-    co = compile(open(filepath).read(), filepath, 'exec')
-    if co.co_consts and isinstance(co.co_consts[0], basestring):
-        docstring = co.co_consts[0]
-    else:
-        docstring = None
-    return docstring
-    
-
 # MAIN CODE
 with warnings.catch_warnings(record=True) as w:
     # Cause all warnings to always be triggered.
