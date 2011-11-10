@@ -118,25 +118,21 @@ def ShowLearners():
                     module_import_str = module_import_str[:module_import_str.rfind('.py')]
 
                     try:
-                        # If the .py file is not importable or causes any other exception, we ignore it.
-                        try:
-                            exec 'import mlpython.' + module_import_str + ' as m'
+                        exec 'import mlpython.' + module_import_str + ' as m'
 
-                            found_one_learner = False
-                            d = vars(m)
-                            for x,y in d.items():
-                                if inspect.isclass(y):
-                                    if issubclass(y,Learner) and y.__module__ == 'mlpython.'+module_import_str:
-                                        if not found_one_learner:
-                                            print 'MODULE: mlpython.' + module_import_str
-                                            found_one_learner = True
-                                        print '            -' + x
-                        except:
-                            pass
-
+                        found_one_learner = False
+                        d = vars(m)
+                        for x,y in d.items():
+                            if inspect.isclass(y):
+                                if issubclass(y,Learner) and y.__module__ == 'mlpython.'+module_import_str:
+                                    if not found_one_learner:
+                                        print 'MODULE: mlpython.' + module_import_str
+                                        found_one_learner = True
+                                    print '            -' + x
                     except Exception as inst:
-                        print "*Unexpected import error: " + str(type(inst))
-                        print inst
+                        pass
+                        #print "*Unexpected import error: " + str(type(inst))
+                        #print inst
 
             
 def ShowDatasetDocstring(dataset):
