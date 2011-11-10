@@ -135,7 +135,7 @@ def ShowDatasetDocstring(dataset):
     if os.path.isfile(datasetFilePath):
         print GetModuleDocstring(datasetFilePath)
     else:
-        print 'Dataset \'' + dataset + '\' do not exist.'
+        print 'Dataset \'' + dataset + '\' does not exist.'
         
         
 def ShowClassDocstring(varClass):    

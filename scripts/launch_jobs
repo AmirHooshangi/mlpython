@@ -26,11 +26,11 @@
 # authors and should not be interpreted as representing official policies, either expressed
 # or implied, of Hugo Larochelle.
 
-msg = """Usage: launch_jobs job_name machines job_desc'
+msg = """Usage: launch_jobs batch_name machines job_desc'
 
 where:
 
-       - job_name:    name designating the jobs batch
+       - batch_name:  name designating the jobs batch
        - machines:    string determining on which machines to launch jobs,
 	              and maximum number of jobs to run on each. 
        - job_desc:    string describing the jobs to launch. 
@@ -51,7 +51,7 @@ If the total number of jobs is greater than the total maximum of jobs allowed by
 then the remaining jobs will be launched as soon as previous ones finish.
 
 The output from each of those commands would be put in seperate files of a directory with
-name "job_name". 
+name "batch_name". 
 
 Example of use: ::
 
@@ -185,7 +185,7 @@ if __name__ == '__main__':
     if len(sys.argv)>1 and sys.argv[1] == '-help':
         print msg
     elif len(sys.argv) != 4:
-        print 'ERROR: found', len(sys.argv)-1, 'arguments, expected 3'
+        #print 'ERROR: found', len(sys.argv)-1, 'arguments, expected 3'
         print msg
     else:
         try: 
