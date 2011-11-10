@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! python
 
 # Copyright 2011 David Brouillard & Guillaume Roy-Fontaine. All rights reserved.
 # 
@@ -29,7 +29,10 @@
 
 import os
 import imp
+import inspect
 import sys
+import re
+import warnings
 
 modes = ["-datasets", "-learners"] # parameters of the scripts
 storeFilePath = sys.path[0][0:sys.path[0].rfind("/")] + "/datasets/store.py" # store.py location
@@ -40,18 +43,14 @@ def VerifyMode():
     arguments.pop(0);	# Remove first argument
     
     if len(arguments) >= 1:
-        #print arguments[0]
-        #print modes[0]
         if arguments[0] == modes[0]:
-            #print 'mode: ' + modes[0]
             VerifyDatasetsMode(arguments)
         elif arguments[0] == modes[1]:
-            #print 'mode: ' + modes[1]
             VerifyLearnersMode(arguments)
         else:
-            print 'Unhandled parameter, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+            print 'Usage:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
     else:
-        print 'You must specify at least one parameter, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+        print 'Usage:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
 		
     
 def VerifyDatasetsMode(args):    
@@ -60,16 +59,17 @@ def VerifyDatasetsMode(args):
     elif len(args) == 2:
         ShowDatasetDocstring(args[1])
     elif len(args) >= 3:
-        print 'Unhandled number of parameters, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+        print 'Usage:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
 
  
 def VerifyLearnersMode(args):
     if len(args) == 1:
         ShowLearners()
+        #test()
     elif len(args) == 2:
         ShowClassDocstring(args[1])
     elif len(args) >= 3:
-        print 'Unhandled number of parameters, ex:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+        print 'Usage:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
         
     
 def ShowDatasets():
@@ -84,7 +84,7 @@ def ShowDatasets():
     multilabelNames = GetDatasetVariableFromContent('multilabel_names =', new_contents)
     multiregressionsNames = GetDatasetVariableFromContent('multiregression_names =', new_contents)
     
-    print '\nTASK = density'
+    print 'TASK = density'
     for item in densityNames:
         print '        -' + item
 
@@ -101,38 +101,33 @@ def ShowDatasets():
         print '        -' + item
 
 
-def GetRidEmptyLine(contents):
-    new_contents = []
-    # Get rid of empty lines
-    for line in contents:
-        if not line.strip(): # Strip whitespace, should leave nothing if empty line was just "\n"
-            continue
-        else: # We got something, save it
-            new_contents.append(line)
-            
-    return new_contents
-
-
 def ShowLearners():
     filePath = sys.path[0][0:sys.path[0].rfind("/")] + "/learners"
 
+    from mlpython.learners.generic import Learner
     for (path, dirs, files) in os.walk(filePath):
-        for item in files: # We do not want .pyc, __init__ and README files
-            if item.find(".pyc") == -1:
-                if item.find("__") == -1:
-                    if item.find("README") == -1:
-                        fd = open(path + "/" + item)
-                        contents = fd.readlines()
-                        fd.close()
-                        new_contents = GetRidEmptyLine(contents)
-                        
-                        classes = GetClassFromContent("class ", new_contents)
-                        if len(classes) > 0:
-                            #print 'MODULE: ' + item + ' (' + path[path.find("/learners") + 1:len(path)] + ')'
-                            print 'MODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
-                            for item in classes:
-                                print '            -' + item
-    
+        for item in files:
+            if item.find("__init__") == -1:
+                match = re.search(r'py$', item)
+                if match: # If-statement after search() tests if it succeeded                   
+                    moduleLocalPath = path[path.rfind("/learners") + 1:len(path)] + '/' + item
+                    print 'MODULE: ' + moduleLocalPath
+                    try:
+                        modulePath = path + "/" + item
+                        module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
+                        module_import_str = moduleLocalPath.replace('/','.')
+                        module_import_str = module_import_str[:module_import_str.rfind('.py')]
+                        exec 'import mlpython.' + module_import_str + ' as m'
+                        d = vars(m)
+                        for x,y in d.items():
+                            if inspect.isclass(y):
+                                if issubclass(y,Learner) and y.__module__ == 'mlpython.'+module_import_str:
+                                    print '            -' + x
+                                    
+                    except Exception as inst:
+                        print "*Unexpected import error: " + str(type(inst))
+                        print inst
+
             
 def ShowDatasetDocstring(dataset):
     datasetFilePath = sys.path[0][0:sys.path[0].rfind("/")] + "/datasets/" + dataset + ".py"
@@ -161,14 +156,24 @@ def ShowClassDocstring(varClass):
                                 if item2.find(varClass) >= 0:
                                     isFound = 1
                                     print '\nMODULE: ' + path[path.find("/learners") + 1:len(path)] + '/' + item
-
-                                    filePath2 = path + "/" + item
-                                    classDocstring = GetClassDocstring(filePath2, varClass)
+                                    classDocstring = GetClassDocstring(path + "/" + item, varClass)
                                     print 'Docstring: ' + varClass
                                     print classDocstring
 
     if isFound == 0:
         print 'Learner \'' + varClass + '\' do not exist'
+
+
+def GetRidEmptyLine(contents):
+    new_contents = []
+    # Get rid of empty lines
+    for line in contents:
+        if not line.strip(): # Strip whitespace, should leave nothing if empty line was just "\n"
+            continue
+        else: # We got something, save it
+            new_contents.append(line)
+            
+    return new_contents
 
 
 def GetClassFromContent(varToSearch, contents):
@@ -207,8 +212,8 @@ def GetClassDocstring(filePath, classs):
     module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
 
     sys.path.insert(0, stripedFilePath)
-    
     m = __import__(module, globals(), locals(), [])
+        
     del sys.path[0]
     
     objectString = "docstring = m." + classs + ".__doc__"
@@ -228,19 +233,12 @@ def GetModuleDocstring(filepath):
     return docstring
     
 
-# Not used
-def GetModule(filePath):
-    stripedFilePath = filePath[0:filePath.rfind("/")]
-    module = filePath[filePath.rfind("/") + 1:filePath.rfind(".")]
-
-    sys.path.insert(0, stripedFilePath)
-        
-    m = __import__(module, globals(), locals(), [])
-    del sys.path[0]
-        
-    return m
-    
-
 # MAIN CODE
+with warnings.catch_warnings(record=True) as w:
+    # Cause all warnings to always be triggered.
+    #warnings.simplefilter("always")  # always print matching warnings
+    warnings.simplefilter("ignore") # never print matching warnings
+    #warnings.simplefilter("error")  # turn matching warnings into exceptions
+    
+    VerifyMode()
 
-VerifyMode()

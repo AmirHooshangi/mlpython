@@ -383,4 +383,3 @@ class NNet(OnlineLearner):
       self.update_learner(example)
       self.d[:] = d_copy
       print 'dd diff.:',np.sum(np.abs(self.dd.ravel()-emp_dd.ravel()))/self.d.ravel().shape[0]
-

@@ -35,7 +35,16 @@ classification algorithms that uses a GPU.
 
 from mlpython.learners.generic import Learner
 import numpy as np
-import cudamat as cm
+
+try :
+    import cudamat as cm
+except ImportError:
+    import warnings
+    warnings.warn('\'import cudamat\' failed. The CUDAMat library is not properly installed. See http://code.google.com/p/cudamat/ for instructions.')
+except OSError:
+    import warnings
+    warnings.warn('\'import cudamat\' failed. The CUDAMat library is not properly installed. See http://code.google.com/p/cudamat/ for instructions.')
+
 
 class ClassificationRestrictedBoltzmannMachine(Learner):
     """

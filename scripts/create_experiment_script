@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! python
 
 # Copyright 2011 David Brouillard & Guillaume Roy-Fontaine. All rights reserved.
 # 
@@ -121,16 +121,23 @@ if (len(sys.argv) >= 6):
         kfoldParam = 1
          
                 
-    # Create a string that will be used in the child script to generate the header
+    # Create a string str_RequiredParam that will be used in the child script to generate the header, create a string str_RequiredParamError for errors
+    # and create a list for constructors
     str_RequiredParam = "\'\'"
+    str_RequiredParamError = ""
+    lst_requiredOption = []
     if len(options) >= 1:
         str_RequiredParam = "\'"
+        str_RequiredParamError = ""
         for item in options:
             str_RequiredParam += item
             str_RequiredParam += "\\t"
+            str_RequiredParamError += item
+            str_RequiredParamError += " "
+            lst_requiredOption.append(item)
     
         str_RequiredParam += "\'"
-        
+        str_RequiredParamError += ""
             
     # Substitute dictionary's keywords in the template
     result = 'import numpy as np\n'
@@ -141,16 +148,13 @@ if (len(sys.argv) >= 6):
     result += 'from string import Template\n'
     result += 'import mlpython.datasets.store as dataset_store\n'
     result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(dict_Arguments)
-
+    result += '# Script\'s parameter : DO NOT MODIFY THIS PART\n'
+    result += '# Prepare option(s) to be checked\n'
     result += 'str_ParamOption = ""\n'
     result += 'str_ParamOptionValue = ""\n'
     result += 'str_header = ""\n'
     result += 'splitedArguments = []\n'
-    result += 'requiredOptionFromParentScript = ' + str_RequiredParam + '\n\n'
-    result += 'requiredOption = []\n'
-    result += 'for item in requiredOptionFromParentScript.split("\\t"):\n'
-    result += '    requiredOption.append(item)\n\n'
-    result += 'requiredOption.remove("") # Remove empty string in the list\n\n' 
+    result += 'requiredOption = ' + str(lst_requiredOption) + '\n' 
     result += 'arguments = sys.argv\n'
     result += 'arguments.pop(0);	# Remove first argument\n\n'
     result += 'for item in arguments:\n'
@@ -158,11 +162,9 @@ if (len(sys.argv) >= 6):
     result += '# Check if every option(s) from parent\'s script are here.\n'
     if kfoldParam == 1:
         result += 'if ' + str(len(options) + 1) + ' != len(splitedArguments):\n'
-        result += '    exempleOption = "kfold=\'value\' "\n'
-        result += '    for item in requiredOption:\n'
-        result += '        exempleOption += item \n'
-        result += '        exempleOption += "=\'value\' "\n'
-        result += '    raise ValueError(\'Parameter(s) must be in this order: kfold \' + requiredOptionFromParentScript.replace("\\t", " ") + "\\nex: python script.py " + exempleOption + "\\n")\n'
+        result += '    print "Usage: python script.py fold ' + str_RequiredParamError + '"\n'
+        result += '    sys.exit()\n'
+        result += '# Prepare the string that will be used for the constructor\n'
         result += 'for index, item in enumerate(splitedArguments):\n'
         result += '    if index != 0:\n'
         result += '        str_ParamOption += requiredOption[index - 1]\n'
@@ -175,11 +177,9 @@ if (len(sys.argv) >= 6):
         result += '            str_ParamOptionValue += item\n\n'
     else:
         result += 'if ' + str(len(options)) + ' != len(splitedArguments):\n'
-        result += '    exempleOption = ""\n'
-        result += '    for item in requiredOption:\n'
-        result += '        exempleOption += item \n'
-        result += '        exempleOption += "=\'value\' "\n'
-        result += '    raise ValueError(\'Parameter(s) must be in this order: \' + requiredOptionFromParentScript.replace("\\t", " ") + "\\nex: python script.py " + exempleOption + "\\n")\n'
+        result += '    print "Usage: python script.py ' + str_RequiredParamError + '"\n'
+        result += '    sys.exit()\n'
+        result += '# Prepare the string that will be used for the constructor\n'
         result += 'for index, item in enumerate(splitedArguments):\n'
         result += '    str_ParamOption += requiredOption[index]\n'
         result += '    str_ParamOption += \'=\' \n'
@@ -188,9 +188,10 @@ if (len(sys.argv) >= 6):
         result += '        str_ParamOptionValue += item+\'\\t\'\n'
         result += '        str_ParamOption += \', \'\n'
         result += '    else:\n'
-        result += '        str_ParamOptionValue += item\n\n'
+        result += '        str_ParamOptionValue += item\n'
 
-    
+    result += '# Script\'s parameter end\n\n'
+    result += '# Set the constructor\n'
     result += 'if (len(sys.argv) >= 1):\n'
     if earlyStoppingParam == 4: # Early_Stopping
         result += Template('    objectString = \'myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG},\' + str_ParamOption + \')\'\n\n').safe_substitute(dict_Arguments)
@@ -205,9 +206,8 @@ if (len(sys.argv) >= 6):
         result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
 
     if kfoldParam == 1:
+        result += '# K fold code\n'
         result += Template('k_fold_datasets = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(dict_Arguments)
-        result += 'if len(splitedArguments) == 0:\n'
-        result += '    raise ValueError(\'K_Fold parameter is missing. For example, \"3\" here is the k_fold value.\\nex: python script.py 3\')\n'
         result += Template('k_fold_experiment = dataset_store.get_k_fold_experiment(k_fold_datasets,k=${KFOLD})\n\n').safe_substitute(dict_Arguments)
         result += 'trainset, validset, testset = k_fold_experiment[int(splitedArguments[0])-1]\n'
     else:
@@ -215,6 +215,7 @@ if (len(sys.argv) >= 6):
     
     # Main code
     if earlyStoppingParam == 4: # Early_Stopping
+        result += '# Early stopping code\n'
         result += 'best_val_error = np.inf\n'
         result += 'best_it = 0\n'
         result += 'str_header = \'best_it\\t\'\n'
