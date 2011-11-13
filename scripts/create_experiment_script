@@ -27,16 +27,6 @@
 # or implied, of David Brouillard & Guillaume Roy-Fontaine.
 
 
-# ex: python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file min_split criterion > script.py
-# To execute the generated script: python script.py 3 \'information_gain\'
-
-
-# Early_Stopping ex : python create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS_FILE=result_file EARLY_STOPPING=n_stage BEG=1 INCR=2 END=500 LOOK_AHEAD=10 > script.py
-
-
-# TODO: Dans une doc, expliquer que les quotes donc etre passee avec backslash
-
-
 import os
 import sys
 from string import Template
@@ -138,6 +128,25 @@ if (len(sys.argv) >= 6):
     
         str_RequiredParam += "\'"
         str_RequiredParamError += ""
+        
+    # Create two strings that will be used in the child script to generate the object constructor and part of the header
+    str_ParamOption = ""
+    str_ParamOptionValue = ""
+    if kfoldParam == 0:
+        for index, item in enumerate(options):
+            str_ParamOption += '"' + item + '=\"' + ' + sys.argv[' + str(index) + ']'
+            str_ParamOptionValue += 'sys.argv[' + str(index) + ']'
+            if ((index+1) < len(options)):
+                str_ParamOption += ' + \", \" + '
+                str_ParamOptionValue += ' + \"\\t\" + '
+    else:
+         for index, item in enumerate(options):
+            str_ParamOption += '"' + item + '=\"' + ' + sys.argv[' + str(index + 1) + ']'
+            str_ParamOptionValue += 'sys.argv[' + str(index + 1) + ']'
+            if ((index+1) < len(options)):
+                str_ParamOption += ' + \", \" + '
+                str_ParamOptionValue += ' + \"\\t\" + '       
+            
             
     # Substitute dictionary's keywords in the template
     result = 'import numpy as np\n'
@@ -148,49 +157,22 @@ if (len(sys.argv) >= 6):
     result += 'from string import Template\n'
     result += 'import mlpython.datasets.store as dataset_store\n'
     result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(dict_Arguments)
-    result += '# Script\'s parameter : DO NOT MODIFY THIS PART\n'
-    result += '# Prepare option(s) to be checked\n'
-    result += 'str_ParamOption = ""\n'
-    result += 'str_ParamOptionValue = ""\n'
-    result += 'str_header = ""\n'
-    result += 'splitedArguments = []\n'
-    result += 'requiredOption = ' + str(lst_requiredOption) + '\n' 
-    result += 'arguments = sys.argv\n'
-    result += 'arguments.pop(0);	# Remove first argument\n\n'
-    result += 'for item in arguments:\n'
-    result += '    splitedArguments.append(item) # Option(s)\n\n'
+    result += 'sys.argv.pop(0);	# Remove first argument\n\n'
     result += '# Check if every option(s) from parent\'s script are here.\n'
-    if kfoldParam == 1:
-        result += 'if ' + str(len(options) + 1) + ' != len(splitedArguments):\n'
-        result += '    print "Usage: python script.py fold ' + str_RequiredParamError + '"\n'
-        result += '    sys.exit()\n'
-        result += '# Prepare the string that will be used for the constructor\n'
-        result += 'for index, item in enumerate(splitedArguments):\n'
-        result += '    if index != 0:\n'
-        result += '        str_ParamOption += requiredOption[index - 1]\n'
-        result += '        str_ParamOption += \'=\' \n'
-        result += '        str_ParamOption += item\n'
-        result += '        if ((index+1) < len(splitedArguments)): # If not the last\n'
-        result += '            str_ParamOptionValue += item+\'\\t\'\n'
-        result += '            str_ParamOption += \', \'\n'
-        result += '        else:\n'
-        result += '            str_ParamOptionValue += item\n\n'
-    else:
-        result += 'if ' + str(len(options)) + ' != len(splitedArguments):\n'
+    
+    if kfoldParam == 0:
+        result += 'if ' + str(len(options)) + ' != len(sys.argv):\n'
         result += '    print "Usage: python script.py ' + str_RequiredParamError + '"\n'
-        result += '    sys.exit()\n'
-        result += '# Prepare the string that will be used for the constructor\n'
-        result += 'for index, item in enumerate(splitedArguments):\n'
-        result += '    str_ParamOption += requiredOption[index]\n'
-        result += '    str_ParamOption += \'=\' \n'
-        result += '    str_ParamOption += item\n'
-        result += '    if ((index+1) < len(splitedArguments)): # If not the last\n'
-        result += '        str_ParamOptionValue += item+\'\\t\'\n'
-        result += '        str_ParamOption += \', \'\n'
-        result += '    else:\n'
-        result += '        str_ParamOptionValue += item\n'
-
-    result += '# Script\'s parameter end\n\n'
+        result += '    sys.exit()\n\n'
+        result += 'str_ParamOption = ' + str_ParamOption + '\n'
+        result += 'str_ParamOptionValue = ' + str_ParamOptionValue + '\n\n'
+    else:
+        result += 'if ' + str(len(options) + 1) + ' != len(sys.argv):\n' 
+        result += '    print "Usage: python script.py fold ' + str_RequiredParamError + '"\n'
+        result += '    sys.exit()\n\n'
+        result += 'str_ParamOption = ' + str_ParamOption + '\n'
+        result += 'str_ParamOptionValue = ' + str_ParamOptionValue + '\n\n'
+        
     result += '# Set the constructor\n'
     result += 'if (len(sys.argv) >= 1):\n'
     if earlyStoppingParam == 4: # Early_Stopping
@@ -207,9 +189,9 @@ if (len(sys.argv) >= 6):
 
     if kfoldParam == 1:
         result += '# K fold code\n'
-        result += Template('k_fold_datasets = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(dict_Arguments)
+        result += Template('k_fold_datasets = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n').safe_substitute(dict_Arguments)
         result += Template('k_fold_experiment = dataset_store.get_k_fold_experiment(k_fold_datasets,k=${KFOLD})\n\n').safe_substitute(dict_Arguments)
-        result += 'trainset, validset, testset = k_fold_experiment[int(splitedArguments[0])-1]\n'
+        result += 'trainset, validset, testset = k_fold_experiment[int(sys.argv[0]) - 1]\n'
     else:
         result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(dict_Arguments)
     
@@ -253,6 +235,8 @@ if (len(sys.argv) >= 6):
     result += '    train = ""\n'
     result += '    valid = ""\n'
     result += '    test = ""\n\n'
+    if earlyStoppingParam != 4: # If not Early Stopping
+		result += '    str_header = ""\n'
     result += '    # Get average of each costs\n'
     result += '    for index in range(columnCount):\n'
     result += '        train = str(np.mean(costs_tr,axis=0)[index])\n'
@@ -273,7 +257,7 @@ if (len(sys.argv) >= 6):
     # Different result_file name and content if kfold is used.
     if kfoldParam == 1:
         result += Template('file_name, ext = os.path.splitext(\'${RESULTS_FILE}\')\n').safe_substitute(dict_Arguments)
-        result += 'result_file = file_name + \'_fold_\' + splitedArguments[0] + ext\n\n'
+        result += 'result_file = file_name + \'_fold_\' + sys.argv[0] + ext\n\n'
     else:
         result += Template('result_file = \'${RESULTS_FILE}\'\n\n').safe_substitute(dict_Arguments)
     result += '# Preparing result file\n'
