@@ -37,16 +37,10 @@ from mlpython.learners.generic import Learner
 import numpy as np
 
 try :
-    import randomized_tree
+    import treelearn
 except ImportError:
     import warnings
-    warnings.warn('\'import randomized_tree\' failed. The TreeLearn library is not properly installed. See mlpython/learners/third_party/treelearn/README for instructions.')
-
-try :
-    import bagging
-except ImportError:
-    import warnings
-    warnings.warn('\'import bagging\' failed. The TreeLearn library is not properly installed. See mlpython/learners/third_party/treelearn/README for instructions.')
+    warnings.warn('\'import treelearn\' failed. The TreeLearn library is not properly installed. See mlpython/learners/third_party/treelearn/README for instructions.')
 
 class RandomForest(Learner):
     """ 
@@ -109,14 +103,14 @@ class RandomForest(Learner):
             features[i] = x
             labels[i] = y
 
-        base_tree = randomized_tree.RandomizedTree( num_features_per_node = self.n_features_per_node,
-                                                    min_leaf_size = self.min_leaf_size,
-                                                    max_height = self.max_height,
-                                                    max_thresholds = self.max_thresholds,
-                                                    classes = classes)
-        learner = bagging.BaggedClassifier(num_classifiers = self.n_trees,
-                                           sample_percent = self.sample_percent,
-                                           base_classifier = base_tree)
+        base_tree = treelearn.RandomizedTree( num_features_per_node = self.n_features_per_node,
+                                              min_leaf_size = self.min_leaf_size,
+                                              max_height = self.max_height,
+                                              max_thresholds = self.max_thresholds,
+                                              classes = classes)
+        learner = treelearn.ClassifierEnsemble(num_models = self.n_trees,
+                                               bagging_percent = self.sample_percent,
+                                               base_model = base_tree)
 
         learner.fit(features,labels)
         

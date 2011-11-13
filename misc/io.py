@@ -96,9 +96,12 @@ class ASCIIResultTable():
     providing names for each field of the table. The remaining rows correspond
     to the results. Each field (column) of the table must be separated by 
     character ``separator`` (default is ``'\t'``). 
+
+    If the file doesn't contain a first line header, the list of field names
+    can be explicitly given using option ``fields``).
     """
 
-    def __init__(self,file,separator='\t'):
+    def __init__(self,file,separator='\t',fields=None):
 
         self.file = file
         self.separator = separator
@@ -106,8 +109,13 @@ class ASCIIResultTable():
         stream = open(os.path.expanduser(self.file))
 
         self.all_results = [ line.rstrip('\n').split(self.separator) for line in stream]
-        self.fields = self.all_results[0]
-        self.all_results = [ ASCIIResult(result,self.fields) for result in self.all_results[1:] ]
+        if fields is None:
+            self.fields = self.all_results[0]
+            idx = 1
+        else:
+            self.fields = fields
+            idx = 0
+        self.all_results = [ ASCIIResult(result,self.fields) for result in self.all_results[idx:] ]
         def filter_func(item):
             return True
 

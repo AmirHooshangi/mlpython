@@ -25,7 +25,13 @@
 # or implied, of Hugo Larochelle.
 
 """
-Module ``datasets.yahoo_ltrc`` gives access to the Yahoo! Learning to Rank Challenge data.
+Module ``datasets.yahoo_ltrc`` gives access to Set 1 of the Yahoo!
+Learning to Rank Challenge data.
+
+| **Reference:** 
+| Yahoo! Learning to Rank Challenge Overview
+| Chapelle and Chang
+| http://jmlr.csail.mit.edu/proceedings/papers/v14/chapelle11a/chapelle11a.pdf
 
 """
 
@@ -33,18 +39,19 @@ import mlpython.misc.io as mlio
 import numpy as np
 import os
 
-def load(dir_path,set_id=0,load_to_memory=False):
+def load(dir_path,load_to_memory=False,home_made_valid_split=False):
     """
-    Loads the Yahoo! Learning to Rank Challenge data.
+    Loads the Yahoo! Learning to Rank Challenge, Set 1 data.
 
     The data is given by a dictionary mapping from strings
     ``'train'``, ``'valid'`` and ``'test'`` to the associated pair of data and metadata.
     
-    Option ``set_id`` determines the set that is loaded (0, 1 or 2, default is 0).
-
-    Set 0 is a "home made" train/valid split of the original training set, 
-    required since only the training set is labeled (until all the data is
-    released). No test set is generated for that purpose.
+    Option ``home_made_valid_split`` determines whether the original
+    training set should be further split into a "home made"
+    train/valid split (default: False). If True, the dictionary mapping
+    will contain 4 keys instead of 3: ``'train'`` (home made training set), 
+    ``'valid'`` (home made validation set), ``'test'`` (original validation set)
+    and ``'test2'`` (original test set).
 
     **Defined metadata:**
 
@@ -67,36 +74,31 @@ def load(dir_path,set_id=0,load_to_memory=False):
     def load_line(line):
         return mlio.libsvm_load_line(line,convert,int,sparse,input_size)
 
-    if set_id == 0:
-        n_queries = [16951,2993]
-        lengths = [402167,70967]
-        #lengths = [294336,178798]
+    if home_made_valid_split:
+        n_queries = [16951,2993,2994,6983]
+        lengths = [402167,70967,71083,165660]
 
-        train_file,valid_file = [os.path.join(dir_path, 'set1.' + ds + '.txt') for ds in ['in_house_train','in_house_valid']]
+        train_file,valid_file,test_file,test2_file = [os.path.join(dir_path, 'set1.' + ds + '.txt') for ds in ['in_house_train','in_house_valid','valid','test']]
         # Get data
-        train,valid = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file]]
+        train,valid,test,test2 = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file,test_file,test2_file]]
 
         if load_to_memory:
-            train,valid = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],[np.float64,int],l) for d,l in zip([train,valid],lengths)]
+            train,valid,test,test2 = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],[np.float64,int],l) for d,l in zip([train,valid,test,test2],lengths)]
 
         # Get metadata
-        train_meta,valid_meta = [{'input_size':input_size,
-                                  'scores':range(5),
-                                  'n_queries':nq,
-                                  'length':l,
-                                  'n_pairs':l} for nq,l in zip(n_queries,lengths)]
+        train_meta,valid_meta,test_meta,test2_meta = [{'input_size':input_size,
+                                                       'scores':range(5),
+                                                       'n_queries':nq,
+                                                       'length':l,
+                                                       'n_pairs':l} for nq,l in zip(n_queries,lengths)]
 
-        return {'train':(train,train_meta),'valid':(valid,valid_meta)}
+        return {'train':(train,train_meta),'valid':(valid,valid_meta),'test':(test,test_meta),'test2':(test2,test2_meta)}
     else:
-        if set_id == 1:
-            n_queries = [19944,2994,6983]
-            lengths = [473134,71083,165660]
-        else:
-            n_queries = [1266,1266,3798]
-            lengths = [34815,34881,103174]
+        n_queries = [19944,2994,6983]
+        lengths = [473134,71083,165660]
 
         # Get data file paths
-        train_file,valid_file,test_file = [os.path.join(dir_path, 'set' + str(set_id) + '.' + ds + '.txt') for ds in ['train','valid','test']]
+        train_file,valid_file,test_file = [os.path.join(dir_path, 'set1.' + ds + '.txt') for ds in ['train','valid','test']]
         # Get data
         train,valid,test = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file,test_file]]
         if load_to_memory:
@@ -111,7 +113,9 @@ def load(dir_path,set_id=0,load_to_memory=False):
 
 def obtain(dir_path):
     """
-    Gives information about how to obtain this dataset (``dir_path`` is ignored).
+    This dataset must be downloaded manually first through the Yahoo! Webscope Program at:
+        http://webscope.sandbox.yahoo.com/
+    Then, this function should be called to generate the necessary preprocessing of the data.
     """
 
     dir_path = os.path.expanduser(dir_path)
@@ -140,28 +144,9 @@ def obtain(dir_path):
         train_file.close()
         valid_file.close()
 
-        #file = open(train_file)
-        #n_queries = 0
-        #small_train_file = os.path.join(dir_path, 'set1.small_train.txt')
-        #small_valid_file = os.path.join(dir_path, 'set1.small_valid.txt')
-        #train_file = open(small_train_file,'w')
-        #valid_file = open(small_valid_file,'w')
-        #qid_split = 13944
-        #print 'Seperating training into smaller training/validation sets'
-        #qid = 0
-        #for line in file:
-        #    new_qid = int(line.split('qid:')[1].split(' ')[0])
-        #    if qid != new_qid:
-        #        print '...reading query %i\r' % new_qid,
-        #    qid = new_qid
-        #    if qid <= qid_split:
-        #        train_file.write(line)
-        #    else:
-        #        valid_file.write(line)
-        #train_file.close()
-        #valid_file.close()
-
         print 'Done                     '
     except IOError:
-        print 'Go to http://learningtorankchallenge.yahoo.com/ to download the data.'
-        print 'Once this is done, call this function again.'
+        print 'The data must first be downloaded manually through the Yahoo! Webscope Program at:'
+        print '   http://webscope.sandbox.yahoo.com/'
+        print 'Once this is done, put the uncompressed data in ' + dir_path
+        print 'and call this function again.'

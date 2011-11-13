@@ -10,10 +10,8 @@ For other ways of installing scikits-learn, see http://scikit-learn.sourceforge.
 To install TreeLearn:
 
 1. download TreeLearn through this link: https://github.com/capitalk/treelearn/zipball/master
-2. unzip the downloaded content and configure PYTHONPATH so that it is accessible through Python
+2. unzip the downloaded content and run (possibly with sudo): ::
 
-One option for where to put the TreeLearn files is in
-learners/third_party/treelearn/, which will ensure that the correct
-modules will be imported by the MLPython modules there.
+    python setup.py install
 
 And that should do it!
