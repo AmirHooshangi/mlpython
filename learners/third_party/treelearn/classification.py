@@ -44,7 +44,7 @@ except ImportError:
 
 class RandomForest(Learner):
     """ 
-    Random Forest classifeir based on the TreeLearn library
+    Random Forest classifier based on the TreeLearn library
  
     Option ``n_trees`` is the number of trees to train in the ensemble
     (default = 50).

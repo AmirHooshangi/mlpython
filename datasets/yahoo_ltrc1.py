@@ -26,7 +26,8 @@
 
 """
 Module ``datasets.yahoo_ltrc`` gives access to Set 1 of the Yahoo!
-Learning to Rank Challenge data.
+Learning to Rank Challenge data. The queries correspond to query IDs,
+while the inputs already contain query-dependent information.
 
 | **Reference:** 
 | Yahoo! Learning to Rank Challenge Overview
