@@ -46,7 +46,7 @@ import mlpython.mlproblems.ranking as mlpb
 def default_merge(input, query):
     return input
 
-def err_and_ndcg(self,output,target,max_score,k=10):
+def err_and_ndcg(output,target,max_score,k=10):
     """
     Computes the ERR and NDCG score 
     (taken from here: http://learningtorankchallenge.yahoo.com/evaluate.py.txt)

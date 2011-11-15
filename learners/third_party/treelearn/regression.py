@@ -61,7 +61,7 @@ class RandomForest(Learner):
 
     Option ``min_leaf_size`` is a minimum threshold on the number of
     training examples in a node, below which a node is not split
-    (default = 15).
+    (default = 1).
 
     Option ``max_height`` is the maximum height of the trees 
     (default = 100).
@@ -74,15 +74,14 @@ class RandomForest(Learner):
 
     **Required metadata:**
 
-    * ``'targets'``
-    * ``'class_to_id'``
+    * ``'input_size'``
 
     """
     def __init__(self, n_trees = 50, 
                  additive = False,
                  sample_percent = 0.5, 
                  n_features_per_node = None, 
-                 min_leaf_size = 15, 
+                 min_leaf_size = 1, 
                  max_height = 100, 
                  max_thresholds = None):
         self.n_trees = n_trees
@@ -97,9 +96,6 @@ class RandomForest(Learner):
         """
         Trains a random forest using TreeLearn.
         """
-        
-        self.n_classes = len(trainset.metadata['targets'])
-        classes = np.array(trainset.metadata['class_to_id'].values(),dtype='int')
 
         features = np.zeros((len(trainset),trainset.metadata['input_size']))
         labels = np.zeros((len(trainset)),dtype='int')

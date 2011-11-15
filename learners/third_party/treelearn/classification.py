@@ -58,7 +58,7 @@ class RandomForest(Learner):
 
     Option ``min_leaf_size`` is a minimum threshold on the number of
     training examples in a node, below which a node is not split
-    (default = 15).
+    (default = 1).
 
     Option ``max_height`` is the maximum height of the trees 
     (default = 100).
@@ -71,6 +71,7 @@ class RandomForest(Learner):
 
     **Required metadata:**
 
+    * ``'input_size'``
     * ``'targets'``
     * ``'class_to_id'``
 
@@ -78,15 +79,21 @@ class RandomForest(Learner):
     def __init__(self, n_trees = 50, 
                  sample_percent = 0.5, 
                  n_features_per_node = None, 
-                 min_leaf_size = 15, 
+                 min_leaf_size = 1, 
                  max_height = 100, 
-                 max_thresholds = None):
+                 max_thresholds = None,
+                 seed = 1234):
         self.n_trees = n_trees
         self.sample_percent = sample_percent
         self.n_features_per_node = n_features_per_node
         self.min_leaf_size = min_leaf_size
         self.max_height = max_height
         self.max_thresholds = max_thresholds
+        self.seed = seed
+
+        import random
+        random.seed(self.seed)
+        np.random.seed(self.seed)
 
     def train(self,trainset):
         """
@@ -94,20 +101,19 @@ class RandomForest(Learner):
         """
         
         self.n_classes = len(trainset.metadata['targets'])
-        classes = np.array(trainset.metadata['class_to_id'].values(),dtype='int')
 
-        features = np.zeros((len(trainset),trainset.metadata['input_size']))
-        labels = np.zeros((len(trainset)),dtype='int')
         for i,xy in enumerate(trainset):
             x,y = xy
+            if i == 0:
+                features = np.zeros((len(trainset),trainset.metadata['input_size']),dtype=x.dtype)
+                labels = np.zeros((len(trainset)),dtype='int')
             features[i] = x
             labels[i] = y
 
         base_tree = treelearn.RandomizedTree( num_features_per_node = self.n_features_per_node,
                                               min_leaf_size = self.min_leaf_size,
                                               max_height = self.max_height,
-                                              max_thresholds = self.max_thresholds,
-                                              classes = classes)
+                                              max_thresholds = self.max_thresholds)
         learner = treelearn.ClassifierEnsemble(num_models = self.n_trees,
                                                bagging_percent = self.sample_percent,
                                                base_model = base_tree)
@@ -118,19 +124,29 @@ class RandomForest(Learner):
 
     def use(self,dataset):
         """
-        Outputs the class predictions for ``dataset``.
+        Outputs the class predictions for ``dataset`` and the class probabilities.
         """
-        features = []
-        outputs = np.zeros((len(dataset),1))
-        for xy in dataset:
-            x,y = xy
-            features += [x]
 
-        outputs[:,0] = self.forest.predict(features)
+        for i,xy in enumerate(dataset):
+            x,y = xy
+            if i == 0:
+                features = np.zeros((len(dataset),dataset.metadata['input_size']),dtype=x.dtype)
+            features[i] = x
+
+        outputs_cl = self.forest.predict(features)
+        outputs_probs = self.forest.predict_proba(features)
+
+        outputs = []
+        for ocl,opr in zip(outputs_cl,outputs_probs):
+            outputs += [(ocl,opr)]
+
         return outputs
 
     def forget(self):
         self.forest = None
+        import random
+        random.seed(self.seed)
+        np.random.seed(self.seed)
 
     def test(self,dataset):
         """

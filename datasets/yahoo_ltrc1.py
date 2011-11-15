@@ -84,7 +84,7 @@ def load(dir_path,load_to_memory=False,home_made_valid_split=False):
         train,valid,test,test2 = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file,test_file,test2_file]]
 
         if load_to_memory:
-            train,valid,test,test2 = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],[np.float64,int],l) for d,l in zip([train,valid,test,test2],lengths)]
+            train,valid,test,test2 = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],[np.float64,int,int],l) for d,l in zip([train,valid,test,test2],lengths)]
 
         # Get metadata
         train_meta,valid_meta,test_meta,test2_meta = [{'input_size':input_size,
@@ -103,12 +103,13 @@ def load(dir_path,load_to_memory=False,home_made_valid_split=False):
         # Get data
         train,valid,test = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file,test_file]]
         if load_to_memory:
-            train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],[np.float64,int],l) for d,l in zip([train,valid,test],lengths)]
+            train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,),(1,)],[np.float64,int,int],l) for d,l in zip([train,valid,test],lengths)]
 
         train_meta,valid_meta,test_meta = [{'input_size':input_size,
                                             'scores':range(5),
                                             'n_queries':nq,
-                                            'length':l} for nq,l in zip(n_queries,lengths)]
+                                            'length':l,
+                                            'n_pairs':l} for nq,l in zip(n_queries,lengths)]
 
         return {'train':(train,train_meta),'valid':(valid,valid_meta),'test':(test,test_meta)}
 
