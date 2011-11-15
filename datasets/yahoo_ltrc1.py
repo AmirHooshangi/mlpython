@@ -59,6 +59,7 @@ def load(dir_path,load_to_memory=False,home_made_valid_split=False):
     * ``'input_size'``
     * ``'scores'``
     * ``'n_queries'``
+    * ``'n_pairs'``
     * ``'length'``
 
     """

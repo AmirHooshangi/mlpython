@@ -338,6 +338,9 @@ def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sp
     If ``sparse`` is False, option ``'input_size'`` is used to determine the size 
     of the returned 1D array  (it must be big enough to fit all features).
     """
+    if line.find('#') >= 0:
+        line = line[:line.find('#')] # Remove comments
+
     line = line.rstrip() # Must not remove whitespace on the left, for multi-label datasets
                          # where an empty labels means all labels are 0.
     tokens = line.split(' ')

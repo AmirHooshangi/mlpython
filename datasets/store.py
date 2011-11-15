@@ -91,7 +91,9 @@ multiregression_names = set(['occluded_faces_lfw',
                              'sarcos'])
 
 ranking_names = set(['yahoo_ltrc1',
-                     'yahoo_ltrc2'])
+                     'yahoo_ltrc2',
+                     'letor_mq2007',
+                     'letor_mq2008'])
 
 all_names = density_names | classification_names | multilabel_names | multiregression_names | ranking_names
 
@@ -123,7 +125,7 @@ def download(name,dataset_dir=None):
         os.makedirs(dataset_dir)
     mldataset.obtain(dataset_dir)
 
-def get_density_problem(name,dataset_dir=None,load_to_memory=True):
+def get_density_problem(name,dataset_dir=None,load_to_memory=True,**kw):
     """
     Creates train/valid/test density estimation MLProblems from dataset ``name``.
 
@@ -152,7 +154,7 @@ def get_density_problem(name,dataset_dir=None,load_to_memory=True):
             raise ValueError('environment variable MLPYTHON_DATASET_REPO is not defined')
         dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + name
 
-    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory)
+    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory,**kw)
 
     train_data, train_metadata = all_data['train']
     valid_data, valid_metadata = all_data['valid']
@@ -168,7 +170,7 @@ def get_density_problem(name,dataset_dir=None,load_to_memory=True):
 
     return trainset,validset,testset
 
-def get_classification_problem(name,dataset_dir=None,load_to_memory=True):
+def get_classification_problem(name,dataset_dir=None,load_to_memory=True,**kw):
     """
     Creates train/valid/test classification MLProblems from dataset ``name``.
 
@@ -197,7 +199,7 @@ def get_classification_problem(name,dataset_dir=None,load_to_memory=True):
             raise ValueError('environment variable MLPYTHON_DATASET_REPO is not defined')
         dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + name
 
-    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory)
+    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory,**kw)
 
     train_data, train_metadata = all_data['train']
     valid_data, valid_metadata = all_data['valid']
@@ -210,7 +212,7 @@ def get_classification_problem(name,dataset_dir=None,load_to_memory=True):
 
     return trainset,validset,testset
 
-def get_multilabel_problem(name,dataset_dir=None,load_to_memory=True):
+def get_multilabel_problem(name,dataset_dir=None,load_to_memory=True,**kw):
     """
     Creates train/valid/test multilabel classification MLProblems from dataset ``name``.
 
@@ -239,7 +241,7 @@ def get_multilabel_problem(name,dataset_dir=None,load_to_memory=True):
             raise ValueError('environment variable MLPYTHON_DATASET_REPO is not defined')
         dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + name
 
-    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory)
+    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory,**kw)
 
     train_data, train_metadata = all_data['train']
     valid_data, valid_metadata = all_data['valid']
@@ -252,7 +254,7 @@ def get_multilabel_problem(name,dataset_dir=None,load_to_memory=True):
 
     return trainset,validset,testset
 
-def get_multiregression_problem(name,dataset_dir=None,load_to_memory=True):
+def get_multiregression_problem(name,dataset_dir=None,load_to_memory=True,**kw):
     """
     Creates train/valid/test multidimensional regression MLProblems from dataset ``name``.
 
@@ -281,7 +283,7 @@ def get_multiregression_problem(name,dataset_dir=None,load_to_memory=True):
             raise ValueError('environment variable MLPYTHON_DATASET_REPO is not defined')
         dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + name
 
-    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory)
+    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory,**kw)
 
     train_data, train_metadata = all_data['train']
     valid_data, valid_metadata = all_data['valid']
@@ -294,7 +296,7 @@ def get_multiregression_problem(name,dataset_dir=None,load_to_memory=True):
 
     return trainset,validset,testset
 
-def get_ranking_problem(name,dataset_dir=None,load_to_memory=True):
+def get_ranking_problem(name,dataset_dir=None,load_to_memory=True,**kw):
     """
     Creates train/valid/test ranking MLProblems from dataset ``name``.
 
@@ -323,7 +325,7 @@ def get_ranking_problem(name,dataset_dir=None,load_to_memory=True):
             raise ValueError('environment variable MLPYTHON_DATASET_REPO is not defined')
         dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + name
 
-    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory)
+    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory,**kw)
 
     train_data, train_metadata = all_data['train']
     valid_data, valid_metadata = all_data['valid']
