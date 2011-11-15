@@ -18,7 +18,7 @@ To learn more about Mercurial, see http://mercurial.selenic.com/ (or
 for a very quick-and-dirty presentation, see
 http://mercurial.selenic.com/wiki/QuickStart).  Mercurial is available
 through its advanced packaging tool on Ubuntu (``sudo apt-get
-mercurial``) or through MacPorts on Mac OS X (``sudo port install
+install mercurial``) or through MacPorts on Mac OS X (``sudo port install
 mercurial``).
 
 Required libraries
@@ -34,7 +34,7 @@ MLPython requires a few, fairly standard scientific computing libraries:
 Installing these libraries on Ubuntu is straightforward, using its advanced packaging tool: ::
 
    sudo apt-get install liblapack-dev python-dev python-numpy 
-   sudo apt-get python-scipy ipython python-matplotlib
+   sudo apt-get install python-scipy ipython python-matplotlib
 
 For Mac OS X, you can follow the instructions given here http://sublimated.wordpress.com/2009/01/20/how-to-install-matplotlib-and-scipy-using-macports/.
 

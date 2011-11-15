@@ -158,37 +158,37 @@ if (len(sys.argv) >= 6):
     result += 'import mlpython.datasets.store as dataset_store\n'
     result += Template('from $MODULE import ${LEARNER}\n\n').safe_substitute(dict_Arguments)
     result += 'sys.argv.pop(0);	# Remove first argument\n\n'
-    result += '# Check if every option(s) from parent\'s script are here.\n'
-    
-    if kfoldParam == 0:
-        result += 'if ' + str(len(options)) + ' != len(sys.argv):\n'
-        result += '    print "Usage: python script.py ' + str_RequiredParamError + '"\n'
-        result += '    sys.exit()\n\n'
-        result += 'str_ParamOption = ' + str_ParamOption + '\n'
-        result += 'str_ParamOptionValue = ' + str_ParamOptionValue + '\n\n'
-    else:
-        result += 'if ' + str(len(options) + 1) + ' != len(sys.argv):\n' 
-        result += '    print "Usage: python script.py fold ' + str_RequiredParamError + '"\n'
-        result += '    sys.exit()\n\n'
-        result += 'str_ParamOption = ' + str_ParamOption + '\n'
-        result += 'str_ParamOptionValue = ' + str_ParamOptionValue + '\n\n'
+
+    if len(options) > 0:
+        result += '# Check if every option(s) from parent\'s script are here.\n'
         
-    result += '# Set the constructor\n'
-    result += 'if (len(sys.argv) >= 1):\n'
-    if earlyStoppingParam == 4: # Early_Stopping
-        result += Template('    objectString = \'myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG},\' + str_ParamOption + \')\'\n\n').safe_substitute(dict_Arguments)
+        if kfoldParam == 0:
+            result += 'if ' + str(len(options)) + ' != len(sys.argv):\n'
+            result += '    print "Usage: python script.py ' + str_RequiredParamError + '"\n'
+        else:
+            result += 'if ' + str(len(options) + 1) + ' != len(sys.argv):\n' 
+            result += '    print "Usage: python script.py fold ' + str_RequiredParamError + '"\n'
+        result += '    sys.exit()\n\n'
+
+        result += '# Set the constructor\n'
+        result += 'str_ParamOption = ' + str_ParamOption + '\n'
+        result += 'str_ParamOptionValue = ' + str_ParamOptionValue + '\n'
+        
+        if earlyStoppingParam == 4: # Early_Stopping
+            result += Template('objectString = \'myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG},\' + str_ParamOption + \')\'\n').safe_substitute(dict_Arguments)
+        else:
+            result += Template('objectString = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n').safe_substitute(dict_Arguments)
+        result += 'code = compile(objectString, \'<string>\', \'exec\')\n'
+        result += 'exec code\n'
     else:
-        result += Template('    objectString = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n\n').safe_substitute(dict_Arguments)
-    result += '    code = compile(objectString, \'<string>\', \'exec\')\n'
-    result += '    exec code\n'
-    result += 'else:\n'
-    if earlyStoppingParam == 4: # Early_Stopping
-        result += Template('    myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG})\n\n').safe_substitute(dict_Arguments)
-    else:
-        result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
+        result += 'str_ParamOptionValue = ""\n'
+        if earlyStoppingParam == 4: # Early_Stopping
+            result += Template('myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG})\n\n').safe_substitute(dict_Arguments)
+        else:
+            result += Template('myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
 
     if kfoldParam == 1:
-        result += '# K fold code\n'
+        result += '\n# K fold code\n'
         result += Template('k_fold_datasets = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n').safe_substitute(dict_Arguments)
         result += Template('k_fold_experiment = dataset_store.get_k_fold_experiment(k_fold_datasets,k=${KFOLD})\n\n').safe_substitute(dict_Arguments)
         result += 'trainset, validset, testset = k_fold_experiment[int(sys.argv[0]) - 1]\n'
@@ -222,6 +222,7 @@ if (len(sys.argv) >= 6):
         result += 'columnCount = len(costs_tr.__iter__().next())\n'
         result += 'outputs_v,costs_v = best_model.test(validset)\n'
         result += 'outputs_t,costs_t = best_model.test(testset)\n\n'
+        result += '# Preparing result line\n'
         result += 'str_modelinfo = str(best_it) + \'\\t\'\n'
     else:
         result += 'model = myObject.train(trainset)\n'
@@ -229,31 +230,25 @@ if (len(sys.argv) >= 6):
         result += 'columnCount = costs_tr.shape[1]\n'
         result += 'outputs_v,costs_v = myObject.test(validset)\n'
         result += 'outputs_t,costs_t = myObject.test(testset)\n\n'
+        result += '# Preparing result line\n'
         result += 'str_modelinfo = ""\n'
-    
-    result += 'if columnCount > 1:\n'
-    result += '    train = ""\n'
-    result += '    valid = ""\n'
-    result += '    test = ""\n\n'
+
+    result += 'train = ""\n'
+    result += 'valid = ""\n'
+    result += 'test = ""\n'
     if earlyStoppingParam != 4: # If not Early Stopping
-		result += '    str_header = ""\n'
-    result += '    # Get average of each costs\n'
-    result += '    for index in range(columnCount):\n'
-    result += '        train = str(np.mean(costs_tr,axis=0)[index])\n'
-    result += '        valid = str(np.mean(costs_v,axis=0)[index])\n'
-    result += '        test = str(np.mean(costs_t,axis=0)[index])\n'
-    result += '        str_header += \'train\' + str(index+1) + \'\\tvalid\' + str(index+1) + \'\\ttest\' + str(index+1)\n'
-    result += '        str_modelinfo += train + \'\\t\' + valid + \'\\t\' + test\n'
-    result += '        if ((index+1) < columnCount): # If not the last\n'
-    result += '            str_header += \'\\t\'\n'
-    result += '            str_modelinfo += \'\\t\'\n'
-    result += '    str_header += \'\\n\'\n'
-    result += 'else:\n'
-    result += '    str_header = \'train1\\tvalid1\\ttest1\\n\'\n\n'
-    result += '    train_error = str(np.mean(costs_tr,axis=0)[0])\n'
-    result += '    valid_error = str(np.mean(costs_v,axis=0)[0])\n'
-    result += '    test_error = str(np.mean(costs_t,axis=0)[0])\n'
-    result += '    str_modelinfo = train_error + \'\\t\' + valid_error + \'\\t\' + test_error\n\n'
+		result += 'str_header = ""\n'
+    result += '# Get average of each costs\n'
+    result += 'for index in range(columnCount):\n'
+    result += '    train = str(np.mean(costs_tr,axis=0)[index])\n'
+    result += '    valid = str(np.mean(costs_v,axis=0)[index])\n'
+    result += '    test = str(np.mean(costs_t,axis=0)[index])\n'
+    result += '    str_header += \'train\' + str(index+1) + \'\\tvalid\' + str(index+1) + \'\\ttest\' + str(index+1)\n'
+    result += '    str_modelinfo += train + \'\\t\' + valid + \'\\t\' + test\n'
+    result += '    if ((index+1) < columnCount): # If not the last\n'
+    result += '        str_header += \'\\t\'\n'
+    result += '        str_modelinfo += \'\\t\'\n'
+    result += 'str_header += \'\\n\'\n'
     # Different result_file name and content if kfold is used.
     if kfoldParam == 1:
         result += Template('file_name, ext = os.path.splitext(\'${RESULTS_FILE}\')\n').safe_substitute(dict_Arguments)

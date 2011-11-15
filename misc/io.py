@@ -322,7 +322,7 @@ def ascii_load(filename, convert_input=float, last_column_is_target = False, con
 
 ### LIBSVM format ###
 
-def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sparse=True,input_size=-1):
+def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sparse=False,input_size=-1):
     """
     Converts a line (string) of a LIBSVM file into an example (list).
 
@@ -374,7 +374,7 @@ def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sp
         example += extra
     return example
 
-def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,sparse=True,input_size=None):
+def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,sparse=False,input_size=None):
     """
     Reads a LIBSVM file and returns the list of all examples (data)
     and metadata information.

@@ -492,108 +492,46 @@ mlpython/learners/third_party/libsvm/).
 Useful scripts
 ----------------
 
-There are some usefuls scripts that come with mlpython.
+There are some useful scripts that come with MLPython (you might want
+to consider adding the path to those script to your PATH environment
+variable).
 
-*Before using the scripts, i suggest you to add the path
-"mlpython/scripts" to your $PATH to be able to run these scripts anywhere. For
-example,  they can create new files in your current directory when launched.*
+* ``create_experiment_script``: This script prints in the standard output
+  an experiment script in Python. You can redirect this output into a file
+  and use it as is, or edit it to apply any additional modification. 
 
-* ``create_experiment_script``: This script creates an experiment
-  script that can be run or changed as you want. It takes several
-  parameters in which the resulted script will be generated with. The
-  usage of this script is this ::
+  ``create_experiment_script`` takes several arguments from which the
+  resulted script will be generated with: ::
 
    Usage: create_experiment_script TASK=task DATASET=dataset MODULE=mlpython.module LEARNER=Learner RESULTS_FILE=result_file [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
 
-   The options 'option1' and 'option2' here are Learner's options that will be set when you call your script. For example: python scrypt.py option1_value option2_value
+  The options 'option1' and 'option2' here are the Learner's options
+  that will be set when you call the generated experiement script (e.g.
+  ``python scrypt.py option1_value option2_value``).
 
-  and it can be outputed by calling
-  it without parameters ``python create_experiment_script``. The
-  ``TASK`` parameter is the task that will be used in the experiment
-  which can be either ``density``, ``classification``, ``multilabel``
-  or ``multiregression``. See the script ``mlpython_helper`` to help
-  you choose ``DATASET``, ``MODULE`` and ``LEARNER``. The
-  ``RESULTS_FILE`` is the name of the file where the output is write
-  when the generated script is launched. Please note that the
-  generated script is created by adding *" > script.py"* at the end of
-  the command line if you want it in a file.
+  The ``TASK`` argument is the task that will be used in the
+  experiment (e.g. ``density``, ``classification``, ``multilabel``,
+  etc.).  See the script ``mlpython_helper`` to help you choose
+  ``DATASET``, ``MODULE`` and ``LEARNER``. The ``RESULTS_FILE`` is the
+  name of the file where the output is write when the generated script
+  is launched.
 
   Here is an example: ::
 
-     create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file.txt min_split criterion > script.py
-     python script.py 4 \'information_gain\'
+     create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS_FILE=result_file.txt n_stages learning_rate > train_nnet.py
+     python train_nnet.py 50 0.001
 
-  *Please note here that string parameters need to be between
-  quotes (*\'parameter_name\'*) or it will not work in the python
-  generated script.*
+  Please note that, for string options, the quotes must be preceded by
+  a backslash for the script to treat it as an actual string: ::
 
-* ``launch_jobs`` is a script that will launch jobs on different
-  machines. The usage of this script is ::
-
-   Usage: launch_jobs batch_name machines job_desc'
-   The ``batch_name`` is the name designating the jobs batch. The ``machines`` is a
-   string determining on which machines to launch jobs, and maximum
-   number of jobs to run on each. It should have the following format:
-   machine1:maxjobs1,machine2:maxjobs2,...
-   If the machine name is "localhost", then the jobs will be launched
-   locally on this machine. The ``job_desc`` is a string describing
-   the jobs to launch. It should describe what command to run and how
-   to vary the options of the command could be. For instance, if
-   "job_desc" was 'program {val1,val2} {val3,val4}', then the following
-   jobs would be launched:
-    * program val1 val3
-    * program val1 val4
-    * program val2 val3
-    * program val2 val4
-
-  If the total number of jobs is greater than the total maximum of
-  jobs allowed by ``machines``, then the remaining jobs will be launched
-  as soon as previous ones finish.
-
-  The output from each of those commands would be put in seperate files
-  of a directory with name ``batch_name``. 
-
-  It should be a good idea to use the script ``launch_jobs`` above with
-  this one. Here is an exemple: ::
-
-   launch_jobs test localhost:4 "python script.py {1,4,20,100} {\'information_gain\', \'z1_loss\'}"   
-
-  All results will be appended in file ``result_file.txt``, which was
-  specified when ``create_experiment_script`` was called.
-
-* ``print_ascii_table``: This script takes a text file in which each
-  row provides details for a single experiment (values of
-  hyper-parameters, results on training/validation/test sets), and
-  prints it out with nicely aligned columns, to facilitate
-  viewing. Each row should be segmented into columns, separated by the
-  tab character '\\t'. The scripts generated by ``create_experiment_script``
-  use this format.
-
-  Continuing our previous example, we can look at the results in ``result_file.txt``
-  by running: ::
-
-   print_ascii_table result_file.txt
-
-  which will output something like this: ::
-
-          #1                  #2      #3              #4               #5
-   min_split           criterion  train1          valid1            test1
-           4  'information_gain'    0.06             0.3   0.310160427807
-           1  'information_gain'    0.04             0.3   0.310160427807
-           1           'z1_loss'    0.48  0.533333333333   0.919786096257
-           4           'z1_loss'    0.48  0.533333333333   0.919786096257
-          20  'information_gain'    0.18  0.266666666667   0.272727272727
-          20           'z1_loss'    0.48  0.533333333333   0.919786096257
-         100  'information_gain'    0.48  0.533333333333   0.919786096257
-         100           'z1_loss'    0.48  0.533333333333   0.919786096257
+     create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file.txt min_split criterion > train_decision_tree.py
+     python train_decision_tree.py 4 \'information_gain\'
 
 * ``mlpython_helper``: This script shows all datasets and learners
-  that mlpython owns. It also gives the information of the dataset or
-  learner given by the user. The usage of this script is ::
-
-   Usage:
-     mlpython_helper -datasets [dataset] or
-     mlpython_helper -learners [object]
+  that MLPython supports. It also gives the information specific to a
+  given dataset or learner. Hence, it is particularly useful for
+  finding the information you need to provide to the
+  ``create_experiment_script`` script. 
 
   Here is some exemples: ::
 
@@ -698,6 +636,76 @@ example,  they can create new files in your current directory when launched.*
       **Required metadata:**
 
       * ``'targets'``
+
+* ``launch_jobs`` is a script that will launch jobs on different
+  machines. The usage of this script is ::
+
+   Usage: launch_jobs batch_name machines job_desc'
+   
+  The ``batch_name`` is the name designating the jobs batch. The
+  ``machines`` is a string determining on which machines to launch
+  jobs, and maximum number of jobs to run on each. It should have the
+  following format: ::
+
+    machine1:maxjobs1,machine2:maxjobs2,...
+
+  You need to be able to connect to those machines via ssh (without
+  having to enter a password), and your home directory should be
+  accessible on those machines. 
+
+  If the machine name is "localhost", then the jobs will be launched
+  locally on this machine. The ``job_desc`` is a string describing
+  the jobs to launch. It should describe what command to run and how
+  to vary the options of the command could be. For instance, if
+  "job_desc" was 'program {val1,val2} {val3,val4}', then the following
+  jobs would be launched: ::
+
+    program val1 val3
+    program val1 val4
+    program val2 val3
+    program val2 val4
+
+  If the total number of jobs is greater than the total maximum of
+  jobs allowed by ``machines``, then the remaining jobs will be launched
+  as soon as previous ones finish.
+
+  The output from each of those commands would be put in seperate files
+  of a directory with name ``batch_name``. 
+
+  Going back to our previous example, ``launch_jobs`` could be used to
+  run the script ``train_nnet.py`` with many different settings of
+  hyper-parameters, to perform model selection: ::
+
+   launch_jobs test localhost:4 "python train_nnet.py {5,25,50} {0.01,0.001,0.0001}"   
+
+  All results will be appended in file ``result_file.txt``, which was
+  specified when ``create_experiment_script`` was called.
+
+* ``print_ascii_table``: This script takes a text file in which each
+  row provides details for a single experiment (values of
+  hyper-parameters, results on training/validation/test sets), and
+  prints it out with nicely aligned columns, to facilitate
+  viewing. Each row should be segmented into columns, separated by the
+  tab character '\\t'. The experiment scripts generated by ``create_experiment_script``
+  use this format to create their results file.
+
+  Continuing our previous example, we can look at the results in ``result_file.txt``
+  by running: ::
+
+   print_ascii_table result_file.txt
+
+  which will output something like this: ::
+
+          #1                  #2      #3              #4               #5
+   min_split           criterion  train1          valid1            test1
+           4  'information_gain'    0.06             0.3   0.310160427807
+           1  'information_gain'    0.04             0.3   0.310160427807
+           1           'z1_loss'    0.48  0.533333333333   0.919786096257
+           4           'z1_loss'    0.48  0.533333333333   0.919786096257
+          20  'information_gain'    0.18  0.266666666667   0.272727272727
+          20           'z1_loss'    0.48  0.533333333333   0.919786096257
+         100  'information_gain'    0.48  0.533333333333   0.919786096257
+         100           'z1_loss'    0.48  0.533333333333   0.919786096257
 
 Before you leave
 ----------------
