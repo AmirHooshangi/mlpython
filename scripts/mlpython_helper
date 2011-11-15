@@ -90,6 +90,10 @@ def ShowDatasets():
     for item in datasets_store.multiregression_names:
         print '        -' + item
 
+    print '\nTASK = ranking'
+    for item in datasets_store.ranking_names:
+        print '        -' + item
+
 
 def ShowLearners():
     filePath = mlpython.__path__[0] + "/learners"

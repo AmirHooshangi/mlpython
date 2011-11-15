@@ -47,5 +47,6 @@ And that should do it!
 Currently, ``learner.third_party.treelearn`` contains the following modules:
 
 * ``learning.third_party.treelearn.classification``:    Classifiers from the TreeLearn library.
+* ``learning.third_party.treelearn.regression``:        Regression models from the TreeLearn library.
 
 """

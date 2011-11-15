@@ -37,6 +37,7 @@ It defines the following variables:
 * ``datasets.store.density_names``:         set of dataset names for density estimation
 * ``datasets.store.multilabel_names``:      set of dataset names for multilabel classification
 * ``datasets.store.multiregression_names``: set of dataset names for multidimensional regression
+* ``datasets.store.ranking_names``:         set of dataset names for ranking problems
 
 It also defines the following functions:
 
@@ -89,7 +90,10 @@ multiregression_names = set(['occluded_faces_lfw',
                              'face_completion_lfw',
                              'sarcos'])
 
-all_names = density_names | classification_names | multilabel_names | multiregression_names
+ranking_names = set(['yahoo_ltrc1',
+                     'yahoo_ltrc2'])
+
+all_names = density_names | classification_names | multilabel_names | multiregression_names | ranking_names
 
 def download(name,dataset_dir=None):
     """
@@ -285,6 +289,48 @@ def get_multiregression_problem(name,dataset_dir=None,load_to_memory=True):
 
     import mlpython.mlproblems.generic as mlpb
     trainset = mlpb.MLProblem(train_data,train_metadata)
+    validset = trainset.apply_on(valid_data,valid_metadata)
+    testset = trainset.apply_on(test_data,test_metadata)
+
+    return trainset,validset,testset
+
+def get_ranking_problem(name,dataset_dir=None,load_to_memory=True):
+    """
+    Creates train/valid/test ranking MLProblems from dataset ``name``.
+
+    ``name`` must be one of the supported dataset (see variable
+    ``ranking_names`` of this module).
+
+    Option ``load_to_memory`` determines whether the dataset should
+    be loaded into memory or always read from its files.
+
+    If environment variable MLPYTHON_DATASET_REPO has been set to a
+    valid directory path, this function will look into its appropriate
+    subdirectory to find the dataset. Alternatively the subdirectory path
+    can be given by the user through option ``dataset_dir``.
+    """
+
+    if name not in ranking_names:
+        raise ValueError('dataset '+name+' unknown for ranking learning')
+    
+    exec 'import mlpython.datasets.'+name+' as mldataset'
+
+    if dataset_dir is None:
+        # Try to find dataset in MLPYTHON_DATASET_REPO
+        import os
+        repo = os.environ.get('MLPYTHON_DATASET_REPO')
+        if repo is None:
+            raise ValueError('environment variable MLPYTHON_DATASET_REPO is not defined')
+        dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + name
+
+    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory)
+
+    train_data, train_metadata = all_data['train']
+    valid_data, valid_metadata = all_data['valid']
+    test_data, test_metadata = all_data['test']
+
+    import mlpython.mlproblems.ranking as mlpb
+    trainset = mlpb.RankingProblem(train_data,train_metadata)
     validset = trainset.apply_on(valid_data,valid_metadata)
     testset = trainset.apply_on(test_data,test_metadata)
 
