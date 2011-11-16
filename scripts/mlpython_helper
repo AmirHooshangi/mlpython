@@ -28,7 +28,6 @@
 
 
 import os
-import imp
 import inspect
 import sys
 import re
@@ -64,7 +63,6 @@ def VerifyDatasetsMode(args):
 def VerifyLearnersMode(args):
     if len(args) == 1:
         ShowLearners()
-        #test()
     elif len(args) == 2:
         ShowClassDocstring(args[1])
     elif len(args) >= 3:
@@ -145,7 +143,6 @@ def ShowClassDocstring(varClass):
         for item in files: # We do not want .pyc, __init__ and README files
             match = re.search(r'py$', item)
             if match:
-
                 # Figuring out module from file name
                 module_import_str = path[path.find("/learners") + 1:len(path)] + '/' + item
                 module_import_str = module_import_str.replace('/','.')
@@ -164,32 +161,19 @@ def ShowClassDocstring(varClass):
         print 'Learner \'' + varClass + '\' do not exist'
 
 
-def GetClassFromContent(varToSearch, contents):
-    #Get class from content file
-    l = []
-    for index, item in enumerate(contents):
-        if item.find(varToSearch) > -1:
-            if item.find(":") > -1:
-                if item.find("(") > -1:
-                    if item.find(".") == -1:
-                        l.append(item[item.find(" ") + 1:item.rfind("(")])
-
-    return l  
-
-
 def GetClassDocstring(module_import_str, classs):
-
     exec 'import mlpython.' + module_import_str
     exec 'docstring = mlpython.' + module_import_str + '.' + classs + '.__doc__'
 
     return docstring
     
+    
 # MAIN CODE
 with warnings.catch_warnings(record=True) as w:
-    # Cause all warnings to always be triggered.
+    #warnings.simplefilter("ignore") # never print matching warnings
     #warnings.simplefilter("always")  # always print matching warnings
-    warnings.simplefilter("ignore") # never print matching warnings
-    #warnings.simplefilter("error")  # turn matching warnings into exceptions
+    warnings.simplefilter("error")  # turn matching warnings into exceptions
     
     VerifyMode()
+
 
