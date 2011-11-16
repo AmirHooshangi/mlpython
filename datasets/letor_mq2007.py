@@ -31,9 +31,10 @@ dataset, a learning to rank benchmark.
 The LETOR 4.0 datasets are obtained here:
 http://research.microsoft.com/en-us/um/beijing/projects/letor/letor4download.aspx.
 
-IMPORTANT: the evaluation for this benchmark will require the use of
+**IMPORTANT:** the evaluation for this benchmark will require the use of
 the official evaluation script, which can be downloaded at
 http://research.microsoft.com/en-us/um/beijing/projects/letor/LETOR4.0/Evaluation/Eval-Score-4.0.pl.txt.
+Alternatively, function ``letor_evaluation`` in this module can be used.
 
 | **Reference:** 
 | LETOR 4.0 Datasets

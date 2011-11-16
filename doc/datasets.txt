@@ -54,10 +54,28 @@ Corel5k
 .. automodule:: datasets.corel5k
    :members:
 
+Corrupted MNIST
+-------------------------------------------
+
+.. automodule:: datasets.corrupted_mnist
+   :members:
+
+Corrupted OCR letters
+-------------------------------------------
+
+.. automodule:: datasets.corrupted_ocr_letters
+   :members:
+
 DNA
 -----------
 
 .. automodule:: datasets.dna
+   :members:
+
+Heart
+-------------------------------------------
+
+.. automodule:: datasets.heart
    :members:
 
 Labeled Faces in the Wild (face completion)
@@ -70,6 +88,18 @@ Labeled Faces in the Wild (occluded faces)
 ------------------------------------------
 
 .. automodule:: datasets.occluded_faces_lfw
+   :members:
+
+LETOR 4.0 MQ 2007
+-------------------------------------------
+
+.. automodule:: datasets.letor_mq2007
+   :members:
+
+LETOR 4.0 MQ 2008
+-------------------------------------------
+
+.. automodule:: datasets.letor_mq2008
    :members:
 
 MajMin
@@ -96,16 +126,16 @@ MNIST
 .. automodule:: datasets.mnist
    :members:
 
-Mushrooms
------------------
-
-.. automodule:: datasets.mushrooms
-   :members:
-
 MTurk
 -----------------
 
 .. automodule:: datasets.mturk
+   :members:
+
+Mushrooms
+-----------------
+
+.. automodule:: datasets.mushrooms
    :members:
 
 NIPS
@@ -114,13 +144,19 @@ NIPS
 .. automodule:: datasets.nips
    :members:
 
+Occluded MNIST
+-------------------
+
+.. automodule:: datasets.occluded_mnist
+   :members:
+
 OCR letters
 -------------------
 
 .. automodule:: datasets.ocr_letters
    :members:
 
-Sarcos
+SARCOS
 -------------------
 
 .. automodule:: datasets.sarcos
@@ -130,6 +166,18 @@ Web
 -------------
 
 .. automodule:: datasets.web
+   :members:
+
+Yahoo! Learning to Rank Challenge, Set 1 
+----------------------------------------
+
+.. automodule:: datasets.yahoo_ltrc1
+   :members:
+
+Yahoo! Learning to Rank Challenge, Set 2
+----------------------------------------
+
+.. automodule:: datasets.yahoo_ltrc2
    :members:
 
 Yeast

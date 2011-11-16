@@ -46,6 +46,7 @@ It also defines the following functions:
 * ``datasets.store.get_density_problem``:         returns train/valid/test density estimation MLProblems from some given dataset name
 * ``datasets.store.get_multilabel_problem``:      returns train/valid/test multilabel classification MLProblems from some given dataset name
 * ``datasets.store.get_multiregression_problem``: returns train/valid/test multidimensional regression MLProblems from some given dataset name
+* ``datasets.store.get_ranking_problem``:         returns train/valid/test ranking MLProblems from some given dataset name
 * ``datasets.store.get_k_fold_experiment``:       returns a list of train/valid/test MLProblems for a k-fold experiment
 * ``get_semisupervised_experiment``:              returns new train/valid/test MLProblems corresponding to a semi-supervised learning experiment
 
