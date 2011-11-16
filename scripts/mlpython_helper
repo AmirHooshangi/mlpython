@@ -167,9 +167,9 @@ def GetClassDocstring(module_import_str, classs):
     
 # MAIN CODE
 with warnings.catch_warnings(record=True) as w:
-    warnings.simplefilter("ignore") # never print matching warnings
+    #warnings.simplefilter("ignore") # never print matching warnings
     #warnings.simplefilter("always")  # always print matching warnings
-    #warnings.simplefilter("error")  # turn matching warnings into exceptions
+    warnings.simplefilter("error")  # turn matching warnings into exceptions
     
     VerifyMode()
 
