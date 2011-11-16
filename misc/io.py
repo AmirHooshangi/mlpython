@@ -385,7 +385,7 @@ def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sp
         example += extra
     return example
 
-def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,sparse=True,input_size=None):
+def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,sparse=False,input_size=None):
     """
     Reads a LIBSVM file and returns the list of all examples (data)
     and metadata information.

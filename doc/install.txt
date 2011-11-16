@@ -36,8 +36,26 @@ Installing these libraries on Ubuntu is straightforward, using its advanced pack
    sudo apt-get install liblapack-dev python-dev python-numpy 
    sudo apt-get python-scipy ipython python-matplotlib
 
-For Mac OS X, you can follow the instructions given here
-http://sublimated.wordpress.com/2009/01/20/how-to-install-matplotlib-and-scipy-using-macports/.
+For Mac OS X, the simplest thing to do might be to install Python
+using the Mac OS X installer available here:
+http://www.python.org/download/ (we recommend Python 2.7 or later).
+Other Python libraries can then be installed through easy_install: ::
+
+   sudo easy_install numpy
+   sudo easy_install scipy
+
+You can try using ``easy_install`` to install matplotlib. When these
+instructions were written, it did not work for Python 2.7. Instead,
+you can obtain the source through `git <http://git-scm.com/>`_ and use the Makefile for Mac OS X: ::
+   
+   git clone git://github.com/matplotlib/matplotlib.git
+   cd matplotlib
+   mkdir ~/python/devjunk
+   sudo make -f make.osx PREFIX=~/python/devjunk PYVERSION=2.7 clean fetch deps mpl_install_std
+
+where ``~/python/devjunk`` is where certain dependencies will be
+install (you can change it to some other directory, as long as it exists).
+
 You might want to set macosx as the backend for mathplotlib. This is
 done by appending to the ~/.matplotlib/matplotlibrc file (which you might
 need to create) the line: ::
