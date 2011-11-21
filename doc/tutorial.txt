@@ -511,10 +511,7 @@ variable).
 
   The ``TASK`` argument is the task that will be used in the
   experiment (e.g. ``density``, ``classification``, ``multilabel``,
-  etc.).  See the script ``mlpython_helper`` to help you choose
-  ``DATASET``, ``MODULE`` and ``LEARNER``. The ``RESULTS_FILE`` is the
-  name of the file where the output is write when the generated script
-  is launched.
+  etc.). The ``DATASET`` argument is the name of the data the script will work with. The ``MODULE`` argument is the path of the mlpython's module that will be used. The ``LEARNER`` argument is the name of the learner that will be used in the learning process of the script. Finally, the ``RESULTS_FILE`` is the name of the file where the output is write when the generated script is launched.
 
   Here is an example: ::
 
@@ -527,13 +524,27 @@ variable).
      create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file.txt min_split criterion > train_decision_tree.py
      python train_decision_tree.py 4 \'information_gain\'
 
+  There are some other options that can be added with the script. The option early stopping can be used in the experiment. To use this, the following arguments need to be added. The argument ``EARLY_STOPPING`` is the kind of early stopping, ``BEG`` is the beginning value where the early stopping start, ``END`` is the ending value, ``INCR`` is the value of the incrementation from the beginning value to the end and  ``LOOK_AHEAD`` is used by the early stopping to stop doing he's thing after the look_ahead's value is reached.
+  
+  Here is an example: ::
+
+   create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS_FILE=result_file EARLY_STOPPING =n_stages BEG=1 INCR=1 END=500 LOOK_AHEAD=10 seed > train_early_stopping.py
+   python train_early_stopping.py 1234
+
+  The K-Fold method is also available to be used in the experiement. The only argument to add in the command line is ``KFOLD`` and it is the number of splits the method will do before learning. The exemple bellow show how to write the command line for K-Fold. The number 5 is for the splits and the number 2 means to do the experiement on 'k' of value 2. 
+
+  ::
+
+   create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file KFOLD=5 > train_fold.py
+   python train_fold.py 2 
+
 * ``mlpython_helper``: This script shows all datasets and learners
   that MLPython supports. It also gives the information specific to a
   given dataset or learner. Hence, it is particularly useful for
   finding the information you need to provide to the
-  ``create_experiment_script`` script. 
+  ``create_experiment_script`` script. If you want to use any of these datasets, the script can download it with a command line (do not consider these lists, they are often changed). 
 
-  Here is some exemples: ::
+  Here is the example where you want to know all the available datasets from mlptyhon: ::
 
    python mlpython_helper -datasets
    TASK = density
@@ -579,7 +590,7 @@ variable).
           -sarcos
           -occluded_faces_lfw
 
-  ::
+  In this example, we just added then name of a given dataset to see its doc string::
 
    python mlpython_helper -datasets heart
    Module ``datasets.heart`` gives access to the Heart (SPECT) dataset.
@@ -587,7 +598,11 @@ variable).
    The Heart dataset is obtained here:
    http://archive.ics.uci.edu/ml/machine-learning-databases/spect.
 
-  ::
+  To download a specific dataset, use this command line: ::
+
+   *OUTPUT DU HELPER*
+
+  The following command show all the learners you can use in mlpython: ::
 
    python mlpython_helper -learners
    MODULE: mlpython.learners.multilabel
@@ -614,14 +629,14 @@ variable).
               -SVMClassifier
    MODULE: mlpython.learners.third_party.gpu.density
               -RestrictedBoltzmannMachine
-   MODULE: mlpython.learners.third_party.gpu.classification
+   MODULE: mlpython.learners.third_party.gpu.classification 
               -ClassificationRestrictedBoltzmannMachine
    MODULE: mlpython.learners.third_party.milk.classification
               -TreeClassifier
    MODULE: mlpython.learners.sparse.classification
               -MultinomialNaiveBayesClassifier
 
-  ::
+  Here is the command line for a specified learner: ::
 
    python mlpython_helper -learners BayesClassifier
    MODULE: mlpython.learners.classification

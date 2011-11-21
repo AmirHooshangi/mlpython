@@ -69,11 +69,23 @@ if (len(sys.argv) >= 6):
         raiseRequiredError = 1
     if 'DATASET' in dict_Arguments:
         requiredParam += 1
+        datasetFromFile = 0
     else:
-        raiseRequiredError = 1
-                
+        datasetFromFile = 1
+        if 'TRAIN_FILE' in dict_Arguments:
+            requiredParam += 1
+        else:
+            raiseRequiredError = 1
+        if 'VALID_FILE' in dict_Arguments:
+            requiredParam += 1
+        else:
+            raiseRequiredError = 1
+        if 'TEST_FILE' in dict_Arguments:
+            requiredParam += 1
+        else:
+            raiseRequiredError = 1
     if raiseRequiredError == 1:
-        raise ValueError('There should be at least 5 parameters required. \'TASK\', \'DATASET\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\'')
+        raise ValueError('There should be at least 5 or 7 parameters required. \'TASK\', \'DATASET\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\' or \'TASK\', \'TRAIN_FILE\', \'VALID_FILE\', \'TEST_FILE\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\'')
       
             
     #if not True:
@@ -150,47 +162,6 @@ if (len(sys.argv) >= 6):
             if ((index+1) < len(options)):
                 str_ParamOption += ' + \", \" + '
                 str_ParamOptionValue += ' + \"\\t\" + '       
-        
-     
-        
-    ##############################################################################################################
-
-    #import mlpython.misc.io as mlpython_io
-    #from mlpython.learners.classification import NNet
-    #from mlpython.learners.features import RBM
-    #import mlpython.datasets.store as dataset_store
-    #import numpy as np
-    
-    #print "Loading train data from " + dict_Arguments['TRAIN_FILE']
-    ##trainData = mlpython_io.libsvm_load('train.libsvm')   
-    ##trainData = mlpython_io.libsvm_load('satimage.scale.tr') 
-    #trainData = mlpython_io.libsvm_load(dict_Arguments['TRAIN_FILE'])
-    #print "Loading test data from " + dict_Arguments['TEST_FILE']
-    ##testData = mlpython_io.libsvm_load('test.libsvm')
-    ##testData = mlpython_io.libsvm_load('satimage.scale.t')
-    #testData = mlpython_io.libsvm_load(dict_Arguments['TEST_FILE'])
-    #print "Loading valid data from " + dict_Arguments['VALID_FILE']
-    ##validData = mlpython_io.libsvm_load('valid.libsvm')
-    ##validData = mlpython_io.libsvm_load('satimage.scale.val')
-    #validData = mlpython_io.libsvm_load(dict_Arguments['VALID_FILE'])
-
-    #import mlpython.mlproblems.classification as classificationProblem
-    #trainset = classificationProblem.ClassificationProblem(trainData[0], trainData[1])
-    #validset = classificationProblem.ClassificationProblem(validData[0], validData[1])
-    #testset = classificationProblem.ClassificationProblem(testData[0], testData[1])
-    
-    #nnet = NNet(n_stages=10)
-    #print "Training ..."
-    #nnet.train(trainset)
-    #outputs_v,costs_v = nnet.test(validset)
-    #outputs_t,costs_t = nnet.test(testset)
-
-    ##outputs,costs = nnet.test(testset)
-    #print 'Classification error on validset set is',np.mean(costs_v,axis=0)[0]
-    #print 'Classification error on testset set is',np.mean(costs_t,axis=0)[0]
-
-    ##############################################################################################################
-      
             
     # Substitute dictionary's keywords in the template
     result = 'import numpy as np\n'
@@ -230,42 +201,60 @@ if (len(sys.argv) >= 6):
             result += Template('myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG})\n\n').safe_substitute(dict_Arguments)
         else:
             result += Template('myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
+    
+    result += "\n"
+    result += "import mlpython.misc.io as mlpython_io\n"
+    if dict_Arguments['TASK'] == 'classification': # Classification
+        result += "print \"Loading train data from " + dict_Arguments['TRAIN_FILE'] + "\"\n"
+        result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN_FILE'] + "')\n"
+        result += "print \"Loading test data from " + dict_Arguments['TEST_FILE'] + "\"\n"
+        result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST_FILE'] + "')\n"
+        result += "print \"Loading valid data from " + dict_Arguments['VALID_FILE'] + "\"\n"
+        result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID_FILE'] + "')\n\n"
+        result += "import mlpython.mlproblems.classification as classificationProblem\n"
+        result += "trainset = classificationProblem.ClassificationProblem(trainData[0], trainData[1])\n"
+        result += "validset = classificationProblem.ClassificationProblem(validData[0], validData[1])\n"
+        result += "testset = classificationProblem.ClassificationProblem(testData[0], testData[1])\n\n"
+    elif dict_Arguments['TASK'] == 'density': # Density
+        result += "print \"Loading train data from " + dict_Arguments['TRAIN_FILE'] + "\"\n"
+        result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN_FILE'] + "')\n"
+        result += "print \"Loading test data from " + dict_Arguments['TEST_FILE'] + "\"\n"
+        result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST_FILE'] + "')\n"
+        result += "print \"Loading valid data from " + dict_Arguments['VALID_FILE'] + "\"\n"
+        result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID_FILE'] + "')\n\n"
+        result += "import mlpython.mlproblems.generic as densityProblem\n"
+        result += "trainset = densityProblem.SubsetFieldsProblem(trainData[0], trainData[1])\n"
+        result += "validset = densityProblem.SubsetFieldsProblem(validData[0], validData[1])\n"
+        result += "testset = densityProblem.SubsetFieldsProblem(testData[0], testData[1])\n\n"               
+    elif dict_Arguments['TASK'] == 'regression': # Regression
+        result += "print \"Loading train data from " + dict_Arguments['TRAIN_FILE'] + "\"\n"
+        result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN_FILE'] + "', convert_target=float)\n"
+        result += "print \"Loading test data from " + dict_Arguments['TEST_FILE'] + "\"\n"
+        result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST_FILE'] + "', convert_target=float)\n"
+        result += "print \"Loading valid data from " + dict_Arguments['VALID_FILE'] + "\"\n"
+        result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID_FILE'] + "', convert_target=float)\n\n"
+        result += "import mlpython.mlproblems.generic as regressionProblem    \n"
+        result += "trainset = regressionProblem.MLProblem(trainData[0], trainData[1])\n"
+        result += "validset = regressionProblem.MLProblem(validData[0], validData[1])\n"
+        result += "testset = regressionProblem.MLProblem(testData[0], testData[1])\n\n"   
+    elif dict_Arguments['TASK'] == 'multilabel_classification': # Multilabel_classification
+        print 'multilabel_classification mode'
+        print 'NOT YET IMPLEMENTED'
 
     if kfoldParam == 1:
-        result += '\n# K fold code\n'
-        result += Template('k_fold_datasets = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n').safe_substitute(dict_Arguments)
-        result += Template('k_fold_experiment = dataset_store.get_k_fold_experiment(k_fold_datasets,k=${KFOLD})\n\n').safe_substitute(dict_Arguments)
-        result += 'trainset, validset, testset = k_fold_experiment[int(sys.argv[0]) - 1]\n'
+        if datasetFromFile == False: # If dataset not from file
+            result += '\n# K fold code\n'
+            result += Template('k_fold_datasets = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n').safe_substitute(dict_Arguments)
+            result += Template('k_fold_experiment = dataset_store.get_k_fold_experiment(k_fold_datasets,k=${KFOLD})\n\n').safe_substitute(dict_Arguments)
+            result += 'trainset, validset, testset = k_fold_experiment[int(sys.argv[0]) - 1]\n'
+        else:
+            result += '\n# K fold code\n'
+            result += 'k_fold_datasets = trainset,validset,testset\n'
+            result += Template('k_fold_experiment = dataset_store.get_k_fold_experiment(k_fold_datasets,k=${KFOLD})\n\n').safe_substitute(dict_Arguments)
+            result += 'trainset, validset, testset = k_fold_experiment[int(sys.argv[0]) - 1]\n'
     else:
-        datasetFromFile = True
         if datasetFromFile == False: # If dataset not from file
             result += Template('trainset,validset,testset = dataset_store.get_${TASK}_problem(\'${DATASET}\')\n\n').safe_substitute(dict_Arguments)
-        else:
-            result += "\n"
-            result += "import mlpython.misc.io as mlpython_io\n"
-            result += "print \"Loading train data from " + dict_Arguments['TRAIN_FILE'] + "\"\n"
-            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN_FILE'] + "')\n"
-            result += "print \"Loading test data from " + dict_Arguments['TEST_FILE'] + "\"\n"
-            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST_FILE'] + "')\n"
-            result += "print \"Loading valid data from " + dict_Arguments['VALID_FILE'] + "\"\n"
-            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID_FILE'] + "')\n\n"
-            if dict_Arguments['TASK'] == 'classification': # Classification
-                result += "import mlpython.mlproblems.classification as classificationProblem\n"
-                result += "trainset = classificationProblem.ClassificationProblem(trainData[0], trainData[1])\n"
-                result += "validset = classificationProblem.ClassificationProblem(validData[0], validData[1])\n"
-                result += "testset = classificationProblem.ClassificationProblem(testData[0], testData[1])\n\n"
-            elif dict_Arguments['TASK'] == 'density': # Density
-                print 'density mode'
-            elif dict_Arguments['TASK'] == 'regression': # Regression
-                #print 'regression mode'
-                result += "import mlpython.mlproblems.generic as densityProblem\n"
-                result += "trainset = densityProblem.SubsetFieldsProblem(trainData[0], trainData[1])\n"
-                result += "validset = densityProblem.SubsetFieldsProblem(validData[0], validData[1])\n"
-                result += "testset = densityProblem.SubsetFieldsProblem(testData[0], testData[1])\n\n"
-              
-            elif dict_Arguments['TASK'] == 'multilabel_classification': # Multilabel_classification
-                print 'multilabel_classification mode'
-            
         
     # Main code
     if earlyStoppingParam == 4: # Early_Stopping
