@@ -345,6 +345,13 @@ def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sp
                          # where an empty labels means all labels are 0.
     tokens = line.split(' ')
 
+    # Always keep the first token (target)
+    # but remove other empty tokens (happens when 
+    # features are separated by more than one space
+    def non_empty(x):
+        return len(x) > 0
+    tokens = tokens[0:1] + filter(non_empty,tokens[1:]) 
+        
     # Remove indices < 1
     n_removed = 0
     n_feat = 0
@@ -385,7 +392,7 @@ def libsvm_load_line(line,convert_non_digit_features=float,convert_target=str,sp
         example += extra
     return example
 
-def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,sparse=False,input_size=None):
+def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,sparse=False,input_size=None,compute_targets_metadata=True):
     """
     Reads a LIBSVM file and returns the list of all examples (data)
     and metadata information.
@@ -413,17 +420,22 @@ def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,spa
     it out from the file (won't work if the file format is sparse and some of the
     last features are all 0!).
 
+    The metadata 'targets' (i.e. the set of instantiated targets) will be computed
+    by default, but it can be ignored using option `compute_targets_metadata=False``.
+
     **Defined metadata:**
 
-    * 'targets'
-    * 'input_size'
+    * ``'targets'`` (if ``compute_targets_metadata`` is True)
+    * ``'input_size'``
 
     """
 
     stream = open(os.path.expanduser(filename))
     data = []
     metadata = {}
-    targets = set()
+    if compute_targets_metadata:
+        targets = set()
+
     if input_size is None:
         given_input_size = None
         input_size = 0
@@ -435,7 +447,8 @@ def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,spa
         max_non_zero_feature = max(example[0][1])
         if (given_input_size is None) and (max_non_zero_feature > input_size):
             input_size = max_non_zero_feature
-        targets.add(example[1])
+        if compute_targets_metadata:
+            targets.add(example[1])
         # If not sparse, first pass through libsvm file just 
         # figures out the input_size and targets
         if sparse:
@@ -450,7 +463,8 @@ def libsvm_load(filename,convert_non_digit_features=float,convert_target=str,spa
             data += [example]
         stream.close()
         
-    metadata['targets'] = targets
+    if compute_targets_metadata:
+        metadata['targets'] = targets
     metadata['input_size'] = input_size
     return data, metadata
 

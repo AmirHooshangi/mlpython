@@ -46,18 +46,20 @@ def VerifyMode():
         elif arguments[0] == modes[1]:
             VerifyLearnersMode(arguments)
         else:
-            print 'Usage:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+            print 'Usage:\n     mlpython_helper -datasets [[-download] dataset] or\n     mlpython_helper -learners [object]'
     else:
-        print 'Usage:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+        print 'Usage:\n     mlpython_helper -datasets [[-download] dataset] or\n     mlpython_helper -learners [object]'
 		
-    
+
 def VerifyDatasetsMode(args):    
     if len(args) == 1:
         ShowDatasets()
     elif len(args) == 2:
         ShowDatasetDocstring(args[1])
-    elif len(args) >= 3:
-        print 'Usage:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
+    elif len(args) == 3:
+        DownloadDataset(args[2])
+    elif len(args) >= 4:
+        print 'Usage:\n     mlpython_helper -datasets [[-download] dataset] or\n     mlpython_helper -learners [object]'
 
  
 def VerifyLearnersMode(args):
@@ -68,6 +70,15 @@ def VerifyLearnersMode(args):
     elif len(args) >= 3:
         print 'Usage:\n     mlpython_helper -datasets [dataset] or\n     mlpython_helper -learners [object]'
         
+  
+def DownloadDataset(args):
+    import mlpython.datasets.store as dataset_store
+    
+    try:
+       dataset_store.download(args) 
+    except Exception as inst:
+        print inst
+  
     
 def ShowDatasets():
     import mlpython.datasets.store as datasets_store
@@ -122,8 +133,6 @@ def ShowLearners():
                                     print '            -' + x
                     except Exception as inst:
                         pass
-                        #print "*Unexpected import error: " + str(type(inst))
-                        #print inst
 
             
 def ShowDatasetDocstring(dataset):
@@ -175,5 +184,4 @@ with warnings.catch_warnings(record=True) as w:
     warnings.simplefilter("error")  # turn matching warnings into exceptions
     
     VerifyMode()
-
 
