@@ -28,8 +28,6 @@
 The ``datasets.store`` module provides a unique interface for downloading datasets
 and creating MLProblems from those datasets.
 
-So far, it supports the creation of classification and density estimation problems.
-
 It defines the following variables:
 
 * ``datasets.store.all_names``:             set of all dataset names
