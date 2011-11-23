@@ -72,15 +72,15 @@ if (len(sys.argv) >= 6):
         datasetFromFile = False
     else:
         datasetFromFile = True
-        if 'TRAIN_FILE' in dict_Arguments:
+        if 'TRAIN' in dict_Arguments:
             requiredParam += 1
         else:
             raiseRequiredError = 1
-        if 'VALID_FILE' in dict_Arguments:
+        if 'VALID' in dict_Arguments:
             requiredParam += 1
         else:
             raiseRequiredError = 1
-        if 'TEST_FILE' in dict_Arguments:
+        if 'TEST' in dict_Arguments:
             requiredParam += 1
         else:
             raiseRequiredError = 1
@@ -88,7 +88,7 @@ if (len(sys.argv) >= 6):
         if datasetFromFile == False:
             raise ValueError('There should be at least 5 parameters required. \'TASK\', \'DATASET\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\'')
         else:
-            raise ValueError('There should be at least 7 parameters required. \'TASK\', \'TRAIN_FILE\', \'VALID_FILE\', \'TEST_FILE\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\'')        
+            raise ValueError('There should be at least 7 parameters required. \'TASK\', \'TRAIN\', \'VALID\', \'TEST\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\'')        
       
     # Verify if the param 'EARLY_STOPPING is provided
     earlyStoppingParam = 0
@@ -205,34 +205,37 @@ if (len(sys.argv) >= 6):
         result += "\n"
         result += "import mlpython.misc.io as mlpython_io\n"
         if dict_Arguments['TASK'] == 'classification': # Classification
-            result += "print \"Loading train data from " + dict_Arguments['TRAIN_FILE'] + "\"\n"
-            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN_FILE'] + "')\n"
-            result += "print \"Loading test data from " + dict_Arguments['TEST_FILE'] + "\"\n"
-            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST_FILE'] + "')\n"
-            result += "print \"Loading valid data from " + dict_Arguments['VALID_FILE'] + "\"\n"
-            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID_FILE'] + "')\n\n"
+            result += "print \"Loading train data from " + dict_Arguments['TRAIN'] + "\"\n"
+            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN'] + "')\n"
+            result += "print \"Loading test data from " + dict_Arguments['TEST'] + "\"\n"
+            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST'] + "')\n"
+            result += "print \"Loading valid data from " + dict_Arguments['VALID'] + "\"\n"
+            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID'] + "')\n\n"
             result += "import mlpython.mlproblems.classification as classificationProblem\n"
             result += "trainset = classificationProblem.ClassificationProblem(trainData[0], trainData[1])\n"
             result += "validset = classificationProblem.ClassificationProblem(validData[0], validData[1])\n"
             result += "testset = classificationProblem.ClassificationProblem(testData[0], testData[1])\n\n"
         elif dict_Arguments['TASK'] == 'density': # Density
-            result += "print \"Loading train data from " + dict_Arguments['TRAIN_FILE'] + "\"\n"
-            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN_FILE'] + "')\n"
-            result += "print \"Loading test data from " + dict_Arguments['TEST_FILE'] + "\"\n"
-            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST_FILE'] + "')\n"
-            result += "print \"Loading valid data from " + dict_Arguments['VALID_FILE'] + "\"\n"
-            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID_FILE'] + "')\n\n"
+            result += "print \"Loading train data from " + dict_Arguments['TRAIN'] + "\"\n"
+            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN'] + "')\n"
+            result += "print \"Loading test data from " + dict_Arguments['TEST'] + "\"\n"
+            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST'] + "')\n"
+            result += "print \"Loading valid data from " + dict_Arguments['VALID'] + "\"\n"
+            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID'] + "')\n\n"
             result += "import mlpython.mlproblems.generic as densityProblem\n"
             result += "trainset = densityProblem.SubsetFieldsProblem(trainData[0], trainData[1])\n"
             result += "validset = densityProblem.SubsetFieldsProblem(validData[0], validData[1])\n"
             result += "testset = densityProblem.SubsetFieldsProblem(testData[0], testData[1])\n\n"               
         elif dict_Arguments['TASK'] == 'regression': # Regression
-            result += "print \"Loading train data from " + dict_Arguments['TRAIN_FILE'] + "\"\n"
-            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN_FILE'] + "', convert_target=float)\n"
-            result += "print \"Loading test data from " + dict_Arguments['TEST_FILE'] + "\"\n"
-            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST_FILE'] + "', convert_target=float)\n"
-            result += "print \"Loading valid data from " + dict_Arguments['VALID_FILE'] + "\"\n"
-            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID_FILE'] + "', convert_target=float)\n\n"
+            result += "print \"Loading train data from " + dict_Arguments['TRAIN'] + "\"\n"
+            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN'] + "', convert_target=float)\n"
+            #result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN'] + "', convert_target=float, compute_targets_metadata=False)\n"
+            result += "print \"Loading test data from " + dict_Arguments['TEST'] + "\"\n"
+            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST'] + "', convert_target=float)\n"
+            #result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST'] + "', convert_target=float, compute_targets_metadata=False)\n"
+            result += "print \"Loading valid data from " + dict_Arguments['VALID'] + "\"\n"
+            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID'] + "', convert_target=float)\n\n"
+            #result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID'] + "', convert_target=float, compute_targets_metadata=False)\n\n"
             result += "import mlpython.mlproblems.generic as regressionProblem    \n"
             result += "trainset = regressionProblem.MLProblem(trainData[0], trainData[1])\n"
             result += "validset = regressionProblem.MLProblem(validData[0], validData[1])\n"
@@ -288,7 +291,8 @@ if (len(sys.argv) >= 6):
     else:
         result += 'model = myObject.train(trainset)\n'
         result += 'outputs_tr,costs_tr = myObject.test(trainset)\n'
-        result += 'columnCount = costs_tr.shape[1]\n'
+        #result += 'columnCount = costs_tr.shape[1]\n'
+        result += 'columnCount = len(costs_tr.__iter__().next())\n'
         result += 'outputs_v,costs_v = myObject.test(validset)\n'
         result += 'outputs_t,costs_t = myObject.test(testset)\n\n'
         result += '# Preparing result line\n'
