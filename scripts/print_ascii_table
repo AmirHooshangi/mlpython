@@ -26,25 +26,61 @@
 # authors and should not be interpreted as representing official policies, either expressed
 # or implied, of Hugo Larochelle.
 
+
+
+import re
+def RepresentsInt(s):
+    return re.match(r"[-+]?\d+$", s) is not None
+
+
+def RepresentsFloat(s):
+    return re.match("^\d+?\.\d+?$", s) is not None
+
+
 msg = """Usage: print_ascii_table file
 
 This is a simple script for printing result tables into nicely aligned columns.
 The columns in the file are assumed to be separated by tabs ('\\t').
+
+RAJOUTER DU STOCK...
 """
 
 import sys,os
 
-if len(sys.argv) != 2:
-    print msg
-    sys.exit()
+sort_column = False
+header = False
+arguments = sys.argv
 
-file = sys.argv[1]
+# Check for argument -sort_column
+for index, item in enumerate(arguments):
+    if item == '-sort_column':
+        if RepresentsInt(arguments[index + 1]) == True:
+            sort_column = True
+            sort_column_number = int(arguments[index + 1])
+        else:
+            print msg
+            sys.exit()
+
+# Check for argument -header
+for index, item in enumerate(arguments):
+    if item == '-header':
+        if RepresentsInt(arguments[index + 1]) == True:
+            header = True
+            number_of_header_to_skip = int(arguments[index + 1])
+        else:
+            print msg
+            sys.exit()       
+            
+
+file = sys.argv[len(sys.argv) - 1]
 stream = open(os.path.expanduser(file))
+
 
 def format_line(line,max_lengths):
     tokens = line.rstrip('\n').split('\t')
-    tokens = [' '*(max_lengths[i]-len(tokens[i]))+tokens[i] for i in range(len(tokens))]
+    tokens = [' '*(max_lengths[i] - len(tokens[i])) + tokens[i] for i in range(len(tokens))]
     return '  '.join(tokens)
+
 
 lines = [ line for line in stream]
 
@@ -54,8 +90,49 @@ all_lengths = [ [ len(elem) for elem in line.split('\t') ] for line in lines]
 # figure max length in each column
 max_lengths = [ max([ lengths[i] for lengths in all_lengths ]) for i in range(len(all_lengths[0]))]
 
-col_numbers = '\t'.join([ '#'+str(i) for i in range(1,len(max_lengths)+1) ]) + '\n'
-print format_line(col_numbers,max_lengths)
+col_numbers = '\t'.join([ '#' + str(i) for i in range(1, len(max_lengths) + 1) ]) + '\n'
 
-for line in lines:
-    print format_line(line,max_lengths)
+
+if sort_column == True: # If sorted by column number
+    lines_tuple = []
+    # Create tuple containing line item
+    for line in lines:
+        lines_tuple.append(line[:-1].split('\t'))
+
+    lines_tuple.pop(0) # Remove the header
+    
+    # Convert tuple item to float or int so we can sort on them
+    for index, line in enumerate(lines_tuple):
+        if index > 0:
+            if RepresentsFloat(line[0]) == True:
+                line[0] = float(line[0])
+            elif RepresentsInt(line[0]) == True:
+                line[0] = int(line[0])
+        
+    # Sort tuples on the designated column number
+    lines_tuple = sorted(lines_tuple, key=lambda myKey: myKey[sort_column_number - 1]) 
+
+    # Clear lines
+    firstLine = lines[0] ; lines = [] ; lines.append(firstLine)
+
+    # Addend sorted items in lines
+    for line in lines_tuple:
+        lineToAdd = ""
+        for index, lineItem in enumerate(line):
+            if ((index + 1) < len(line)): # If not the last
+                lineToAdd += str(lineItem) + '\t'
+            else:
+                lineToAdd += str(lineItem) # The last
+            
+        lines.append(lineToAdd)
+
+
+print format_line(col_numbers, max_lengths)
+
+if header == True: # If skipping header line
+    for index, line in enumerate(lines):
+        if index >= number_of_header_to_skip:
+            print format_line(line, max_lengths)
+else:
+    for line in lines:
+        print format_line(line, max_lengths)
