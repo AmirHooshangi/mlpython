@@ -27,34 +27,48 @@
 # or implied, of Hugo Larochelle.
 
 
+import sys,os, re
 
-import re
-def RepresentsInt(s):
+def representsInt(s):
     return re.match(r"[-+]?\d+$", s) is not None
 
 
-def RepresentsFloat(s):
+def representsFloat(s):
     return re.match("^\d+?\.\d+?$", s) is not None
+   
+    
+def format_line(line,max_lengths):
+    tokens = line.rstrip('\n').split('\t')
+    tokens = [' '*(max_lengths[i] - len(tokens[i])) + tokens[i] for i in range(len(tokens))]
+    return '  '.join(tokens)
 
 
-msg = """Usage: print_ascii_table file
+msg = """Usage: print_ascii_table file [-sort_column int] [-header int] file
 
 This is a simple script for printing result tables into nicely aligned columns.
 The columns in the file are assumed to be separated by tabs ('\\t').
 
-RAJOUTER DU STOCK...
-"""
+You can use -sort_column to sort data on one column and -header to remove a
+number of lines.
 
-import sys,os
+"""
 
 sort_column = False
 header = False
 arguments = sys.argv
 
+if len(arguments) <= 1:
+    print msg
+    sys.exit()
+
+if len(arguments) >= 7:
+    print msg
+    sys.exit()
+    
 # Check for argument -sort_column
 for index, item in enumerate(arguments):
     if item == '-sort_column':
-        if RepresentsInt(arguments[index + 1]) == True:
+        if representsInt(arguments[index + 1]) == True:
             sort_column = True
             sort_column_number = int(arguments[index + 1])
         else:
@@ -64,7 +78,7 @@ for index, item in enumerate(arguments):
 # Check for argument -header
 for index, item in enumerate(arguments):
     if item == '-header':
-        if RepresentsInt(arguments[index + 1]) == True:
+        if representsInt(arguments[index + 1]) == True:
             header = True
             number_of_header_to_skip = int(arguments[index + 1])
         else:
@@ -75,13 +89,6 @@ for index, item in enumerate(arguments):
 file = sys.argv[len(sys.argv) - 1]
 stream = open(os.path.expanduser(file))
 
-
-def format_line(line,max_lengths):
-    tokens = line.rstrip('\n').split('\t')
-    tokens = [' '*(max_lengths[i] - len(tokens[i])) + tokens[i] for i in range(len(tokens))]
-    return '  '.join(tokens)
-
-
 lines = [ line for line in stream]
 
 # figure out the length of all elements in the table
@@ -91,7 +98,6 @@ all_lengths = [ [ len(elem) for elem in line.split('\t') ] for line in lines]
 max_lengths = [ max([ lengths[i] for lengths in all_lengths ]) for i in range(len(all_lengths[0]))]
 
 col_numbers = '\t'.join([ '#' + str(i) for i in range(1, len(max_lengths) + 1) ]) + '\n'
-
 
 if sort_column == True: # If sorted by column number
     lines_tuple = []
@@ -104,14 +110,18 @@ if sort_column == True: # If sorted by column number
     # Convert tuple item to float or int so we can sort on them
     for index, line in enumerate(lines_tuple):
         if index > 0:
-            if RepresentsFloat(line[0]) == True:
+            if representsFloat(line[0]) == True:
                 line[0] = float(line[0])
-            elif RepresentsInt(line[0]) == True:
+            elif representsInt(line[0]) == True:
                 line[0] = int(line[0])
         
     # Sort tuples on the designated column number
-    lines_tuple = sorted(lines_tuple, key=lambda myKey: myKey[sort_column_number - 1]) 
-
+    try:
+       lines_tuple = sorted(lines_tuple, key=lambda myKey: myKey[sort_column_number - 1]) 
+    except Exception as inst:
+        print "You must sort on an existing column."
+        sys.exit()
+        
     # Clear lines
     firstLine = lines[0] ; lines = [] ; lines.append(firstLine)
 
@@ -129,7 +139,7 @@ if sort_column == True: # If sorted by column number
 
 print format_line(col_numbers, max_lengths)
 
-if header == True: # If skipping header line
+if header == True: # If skipping header line(s)
     for index, line in enumerate(lines):
         if index >= number_of_header_to_skip:
             print format_line(line, max_lengths)
