@@ -86,8 +86,12 @@ multilabel_names = set(['bibtex',
 multiregression_names = set(['occluded_faces_lfw',
                              'face_completion_lfw',
                              'sarcos'])
+                             
+regression_names = set(['abalone',
+                        'cadata',
+                        'housing'])
 
-all_names = density_names | classification_names | multilabel_names | multiregression_names
+all_names = density_names | classification_names | multilabel_names | multiregression_names | regression_names
 
 def download(name,dataset_dir=None):
     """
@@ -245,6 +249,51 @@ def get_multilabel_problem(name,dataset_dir=None,load_to_memory=True):
     testset = trainset.apply_on(test_data,test_metadata)
 
     return trainset,validset,testset
+    
+    
+def get_regression_problem(name,dataset_dir=None,load_to_memory=True):
+    """
+    Creates train/valid/test regression estimation MLProblems from dataset ``name``.
+
+    ``name`` must be one of the supported dataset (see variable
+    ``regression_names`` of this module).
+
+    Option ``load_to_memory`` determines whether the dataset should
+    be loaded into memory or always read from its files.
+
+    If environment variable MLPYTHON_DATASET_REPO has been set to a
+    valid directory path, this function will look into its appropriate
+    subdirectory to find the dataset. Alternatively the subdirectory path
+    can be given by the user through option ``dataset_dir``.
+    """
+
+    if name not in regression_names:
+        raise ValueError('dataset '+name+' unknown for regression learning')
+    
+    exec 'import mlpython.datasets.'+name+' as mldataset'
+
+    if dataset_dir is None:
+        # Try to find dataset in MLPYTHON_DATASET_REPO
+        import os
+        repo = os.environ.get('MLPYTHON_DATASET_REPO')
+        if repo is None:
+            raise ValueError('environment variable MLPYTHON_DATASET_REPO is not defined')
+        dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + name
+
+    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory)
+
+    train_data, train_metadata = all_data['train']
+    valid_data, valid_metadata = all_data['valid']
+    test_data, test_metadata = all_data['test']
+
+    import mlpython.mlproblems.generic as mlpb
+    trainset = mlpb.MLProblem(train_data,train_metadata)
+    validset = trainset.apply_on(valid_data,valid_metadata)
+    testset = trainset.apply_on(test_data,test_metadata)
+
+    return trainset,validset,testset
+    
+    
 
 def get_multiregression_problem(name,dataset_dir=None,load_to_memory=True):
     """

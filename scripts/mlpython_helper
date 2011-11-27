@@ -98,6 +98,10 @@ def ShowDatasets():
     print '\nTASK = multiregression'
     for item in datasets_store.multiregression_names:
         print '        -' + item
+        
+    print '\nTASK = regression'
+    for item in datasets_store.regression_names:
+        print '        -' + item
 
 
 def ShowLearners():
