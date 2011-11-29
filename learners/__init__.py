@@ -47,7 +47,7 @@ The modules are:
 
 * ``learners.generic``:          Learners not specific to a particular task or type of data.
 * ``learners.classification``:   Learners for classification problems.
-* ``learners.density``:          Learners for density or distrubtion estimation.
+* ``learners.distribution``:          Learners for distribution or distrubtion estimation.
 * ``learners.dynamic``:          Learners for sequential data.
 * ``learners.features``:         Learners for feature extraction.
 

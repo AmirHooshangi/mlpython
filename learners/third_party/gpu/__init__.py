@@ -33,6 +33,6 @@ Currently, all algorithms are based on the cudamat project: http://code.google.c
 ``learner.third_party.gpu`` contains the following modules:
 
 * ``learning.third_party.gpu.classification``:   classification algorithms based on a GPU.
-* ``learning.third_party.gpu.density``:          density estimation algorithms based on a GPU.
+* ``learning.third_party.gpu.distribution``:          distribution estimation algorithms based on a GPU.
 
 """

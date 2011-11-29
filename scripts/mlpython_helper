@@ -83,8 +83,8 @@ def DownloadDataset(args):
 def ShowDatasets():
     import mlpython.datasets.store as datasets_store
 
-    print 'TASK = density'
-    for item in datasets_store.density_names:
+    print 'TASK = distribution'
+    for item in datasets_store.distribution_names:
         print '        -' + item
 
     print '\nTASK = classification'

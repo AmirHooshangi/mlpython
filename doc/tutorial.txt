@@ -21,7 +21,7 @@ dataset with name ``dataset_name``, simply do the following: ::
    dataset_store.download(dataset_name)
 
 Then, ``mlpython.datasets.store`` provides several functions that will
-create a specific machine learning problem (classification, density
+create a specific machine learning problem (classification, distribution
 estimation, etc.)  from a downloaded dataset. These functions all
 return a training, validation and test split. Here are a few examples
 of using such functions (see the :ref:`datasets` library documentation 
@@ -30,8 +30,8 @@ for more such functions): ::
    # Generate a classification problem
    trainset,validset,testset = dataset_store.get_classification_problem(dataset_name)
    
-   # Generate a density estimation problem
-   trainset,validset,testset = dataset_store.get_density_problem(dataset_name)
+   # Generate a distribution estimation problem
+   trainset,validset,testset = dataset_store.get_distribution_problem(dataset_name)
 
    # Generate a multilabel classification problem
    trainset,validset,testset = dataset_store.get_multilabel_problem(dataset_name)
@@ -279,7 +279,7 @@ Learners all have four basic methods:
 * ``test(self, dataset)``:    Computes and returns the outputs of the Learner as well as the cost of those outputs for MLProblem ``dataset``. The method should return a pair of two iterators, the first being over the outputs and the second over the costs.
   
 Learner objects are separated in different module, for different types
-of problems (classification, density estimation, etc.). See the
+of problems (classification, distribution estimation, etc.). See the
 :ref:`learners` library documentation for more information.
 
 My first experiments
@@ -510,7 +510,7 @@ variable).
   ``python scrypt.py option1_value option2_value``).
 
   The ``TASK`` argument is the task that will be used in the
-  experiment (e.g. ``density``, ``classification``, ``multilabel``,
+  experiment (e.g. ``distribution``, ``classification``, ``multilabel``,
   etc.). The ``DATASET`` argument is the name of the data the script will work with. The ``MODULE`` argument is the path of the mlpython's module that will be used. The ``LEARNER`` argument is the name of the learner that will be used in the learning process of the script. Finally, the ``RESULTS`` is the name of the file where the output is write when the generated script is launched. If you have your own dataset splitted in train, valid and test files, you can replace the argument ``DATASET`` by ``TRAIN``, ``VALID`` and ``TEST``.
 
   Here is an example: ::
@@ -552,7 +552,7 @@ variable).
   Here is the example where you want to know all the available datasets from mlptyhon: ::
 
    python mlpython_helper -datasets
-   TASK = density
+   TASK = distribution
           -heart
           -dna
           -web
@@ -615,8 +615,8 @@ variable).
    MODULE: mlpython.learners.features
               -RBM
               -PCA
-   MODULE: mlpython.learners.density
-              -BagDensity
+   MODULE: mlpython.learners.distribution
+              -Bagdistribution
               -NADE
               -FVSBN
    MODULE: mlpython.learners.generic
@@ -632,7 +632,7 @@ variable).
               -SparseLinearDynamicalSystem
    MODULE: mlpython.learners.third_party.libsvm.classification
               -SVMClassifier
-   MODULE: mlpython.learners.third_party.gpu.density
+   MODULE: mlpython.learners.third_party.gpu.distribution
               -RestrictedBoltzmannMachine
    MODULE: mlpython.learners.third_party.gpu.classification 
               -ClassificationRestrictedBoltzmannMachine
@@ -647,9 +647,9 @@ variable).
    MODULE: mlpython.learners.classification
    Docstring: BayesClassifier
 
-      Bayes classifier from density estimators
+      Bayes classifier from distribution estimators
 
-      Given one density learner per class (option ``estimators``), this
+      Given one distribution learner per class (option ``estimators``), this
       learner will train each one on a separate class and classify
       examples using Bayes' rule.
 

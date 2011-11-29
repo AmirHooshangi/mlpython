@@ -218,7 +218,7 @@ if (len(sys.argv) >= 6):
             result += "trainset = classificationProblem.ClassificationProblem(trainData[0], trainData[1])\n"
             result += "validset = trainset.apply_on(validData[0], validData[1])\n"
             result += "testset = trainset.apply_on(testData[0], testData[1])\n\n"
-        elif dict_Arguments['TASK'] == 'density': # Density
+        elif dict_Arguments['TASK'] == 'distribution': # distribution
             result += "print \"Loading train data from " + dict_Arguments['TRAIN'] + "\"\n"
             result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN'] + "')\n"
             result += "input_size = trainData[1]['input_size']\n"
@@ -226,8 +226,8 @@ if (len(sys.argv) >= 6):
             result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST'] + "',input_size=input_size)\n"
             result += "print \"Loading valid data from " + dict_Arguments['VALID'] + "\"\n"
             result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID'] + "',input_size=input_size)\n\n"
-            result += "import mlpython.mlproblems.generic as densityProblem\n"
-            result += "trainset = densityProblem.SubsetFieldsProblem(trainData[0], trainData[1])\n"
+            result += "import mlpython.mlproblems.generic as distributionProblem\n"
+            result += "trainset = distributionProblem.SubsetFieldsProblem(trainData[0], trainData[1])\n"
             result += "validset = trainset.apply_on(validData[0], validData[1])\n"
             result += "testset = trainset.apply_on(testData[0], testData[1])\n\n"               
         elif dict_Arguments['TASK'] == 'regression': # Regression

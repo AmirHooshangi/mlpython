@@ -32,7 +32,7 @@ It defines the following variables:
 
 * ``datasets.store.all_names``:             set of all dataset names
 * ``datasets.store.classification_names``:  set of dataset names for classification
-* ``datasets.store.density_names``:         set of dataset names for density estimation
+* ``datasets.store.distribution_names``:         set of dataset names for distribution estimation
 * ``datasets.store.multilabel_names``:      set of dataset names for multilabel classification
 * ``datasets.store.multiregression_names``: set of dataset names for multidimensional regression
 
@@ -40,7 +40,7 @@ It also defines the following functions:
 
 * ``datasets.store.download``:                    downloads a given dataset
 * ``datasets.store.get_classification_problem``:  returns train/valid/test classification MLProblems from some given dataset name
-* ``datasets.store.get_density_problem``:         returns train/valid/test density estimation MLProblems from some given dataset name
+* ``datasets.store.get_distribution_problem``:         returns train/valid/test distribution estimation MLProblems from some given dataset name
 * ``datasets.store.get_multilabel_problem``:      returns train/valid/test multilabel classification MLProblems from some given dataset name
 * ``datasets.store.get_multiregression_problem``: returns train/valid/test multidimensional regression MLProblems from some given dataset name
 * ``datasets.store.get_k_fold_experiment``:       returns a list of train/valid/test MLProblems for a k-fold experiment
@@ -48,7 +48,7 @@ It also defines the following functions:
 
 """
 
-density_names = set(['adult',
+distribution_names = set(['adult',
                     'binarized_mnist',
                     'connect4',
                     'dna',
@@ -91,7 +91,7 @@ regression_names = set(['abalone',
                         'cadata',
                         'housing'])
 
-all_names = density_names | classification_names | multilabel_names | multiregression_names | regression_names
+all_names = distribution_names | classification_names | multilabel_names | multiregression_names | regression_names
 
 def download(name,dataset_dir=None):
     """
@@ -121,12 +121,12 @@ def download(name,dataset_dir=None):
         os.makedirs(dataset_dir)
     mldataset.obtain(dataset_dir)
 
-def get_density_problem(name,dataset_dir=None,load_to_memory=True):
+def get_distribution_problem(name,dataset_dir=None,load_to_memory=True):
     """
-    Creates train/valid/test density estimation MLProblems from dataset ``name``.
+    Creates train/valid/test distribution estimation MLProblems from dataset ``name``.
 
     ``name`` must be one of the supported dataset (see variable
-    ``density_names`` of this module).
+    ``distribution_names`` of this module).
 
     Option ``load_to_memory`` determines whether the dataset should
     be loaded into memory or always read from its files.
@@ -137,8 +137,8 @@ def get_density_problem(name,dataset_dir=None,load_to_memory=True):
     can be given by the user through option ``dataset_dir``.
     """
 
-    if name not in density_names:
-        raise ValueError('dataset '+name+' unknown for density learning')
+    if name not in distribution_names:
+        raise ValueError('dataset '+name+' unknown for distribution learning')
     
     exec 'import mlpython.datasets.'+name+' as mldataset'
 

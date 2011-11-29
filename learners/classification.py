@@ -32,7 +32,7 @@ of inputs and targets, with the target being a class index.
 
 The currently implemented algorithms are:
 
-* BayesClassifier: Bayes classifier obtained from density estimators.
+* BayesClassifier: Bayes classifier obtained from distribution estimators.
 * NNet:            Neural Network for classification.
 
 """
@@ -46,9 +46,9 @@ import mlpython.mathutils.linalg as mllin
 
 class BayesClassifier(Learner):
     """ 
-    Bayes classifier from density estimators
+    Bayes classifier from distribution estimators
  
-    Given one density learner per class (option ``estimators``), this
+    Given one distribution learner per class (option ``estimators``), this
     learner will train each one on a separate class and classify
     examples using Bayes' rule.
 
@@ -58,7 +58,7 @@ class BayesClassifier(Learner):
 
     """
     def __init__(   self,
-                    estimators=[],# The density learners to be trained
+                    estimators=[],# The distribution learners to be trained
                     ):
         self.stage = 0
         self.estimators = estimators
