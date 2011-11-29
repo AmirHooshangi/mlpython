@@ -43,7 +43,7 @@ def format_line(line,max_lengths):
     return '  '.join(tokens)
 
 
-msg = """Usage: print_ascii_table file [-sort_column int [-header int]] file
+msg = """Usage: print_ascii_table [-sort_column int [-header int]] file
 
 This is a simple script for printing result tables into nicely aligned columns.
 The columns in the file are assumed to be separated by tabs ('\\t').
