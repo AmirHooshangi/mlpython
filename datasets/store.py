@@ -32,7 +32,8 @@ It defines the following variables:
 
 * ``datasets.store.all_names``:             set of all dataset names
 * ``datasets.store.classification_names``:  set of dataset names for classification
-* ``datasets.store.density_names``:         set of dataset names for density estimation
+* ``datasets.store.regression_names``:      set of dataset names for regression
+* ``datasets.store.distribution_names``:    set of dataset names for distribution estimation
 * ``datasets.store.multilabel_names``:      set of dataset names for multilabel classification
 * ``datasets.store.multiregression_names``: set of dataset names for multidimensional regression
 * ``datasets.store.ranking_names``:         set of dataset names for ranking problems
@@ -41,7 +42,8 @@ It also defines the following functions:
 
 * ``datasets.store.download``:                    downloads a given dataset
 * ``datasets.store.get_classification_problem``:  returns train/valid/test classification MLProblems from some given dataset name
-* ``datasets.store.get_density_problem``:         returns train/valid/test density estimation MLProblems from some given dataset name
+* ``datasets.store.get_regression_problem``:      returns train/valid/test regression MLProblems from some given dataset name
+* ``datasets.store.get_distribution_problem``:    returns train/valid/test distribution estimation MLProblems from some given dataset name
 * ``datasets.store.get_multilabel_problem``:      returns train/valid/test multilabel classification MLProblems from some given dataset name
 * ``datasets.store.get_multiregression_problem``: returns train/valid/test multidimensional regression MLProblems from some given dataset name
 * ``datasets.store.get_ranking_problem``:         returns train/valid/test ranking MLProblems from some given dataset name
@@ -49,18 +51,6 @@ It also defines the following functions:
 * ``get_semisupervised_experiment``:              returns new train/valid/test MLProblems corresponding to a semi-supervised learning experiment
 
 """
-
-density_names = set(['adult',
-                    'binarized_mnist',
-                    'connect4',
-                    'dna',
-                    'heart',
-                    'mnist',
-                    'mushrooms',
-                    'nips',
-                    'ocr_letters',
-                    'rcv1',
-                    'web'])
 
 classification_names = set(['adult',
                             'connect4',
@@ -72,6 +62,22 @@ classification_names = set(['adult',
                             'ocr_letters',
                             'rcv1',
                             'web'])
+
+regression_names = set(['abalone',
+                        'cadata',
+                        'housing'])
+
+distribution_names = set(['adult',
+                    'binarized_mnist',
+                    'connect4',
+                    'dna',
+                    'heart',
+                    'mnist',
+                    'mushrooms',
+                    'nips',
+                    'ocr_letters',
+                    'rcv1',
+                    'web'])
 
 multilabel_names = set(['bibtex',
                         'corel5k',
@@ -94,7 +100,7 @@ ranking_names = set(['yahoo_ltrc1',
                      'letor_mq2007',
                      'letor_mq2008'])
 
-all_names = density_names | classification_names | multilabel_names | multiregression_names | ranking_names
+all_names = distribution_names | classification_names | multilabel_names | multiregression_names | regression_names | ranking_names
 
 def download(name,dataset_dir=None):
     """
@@ -123,51 +129,6 @@ def download(name,dataset_dir=None):
     if not os.path.exists(dataset_dir):
         os.makedirs(dataset_dir)
     mldataset.obtain(dataset_dir)
-
-def get_density_problem(name,dataset_dir=None,load_to_memory=True,**kw):
-    """
-    Creates train/valid/test density estimation MLProblems from dataset ``name``.
-
-    ``name`` must be one of the supported dataset (see variable
-    ``density_names`` of this module).
-
-    Option ``load_to_memory`` determines whether the dataset should
-    be loaded into memory or always read from its files.
-
-    If environment variable MLPYTHON_DATASET_REPO has been set to a
-    valid directory path, this function will look into its appropriate
-    subdirectory to find the dataset. Alternatively the subdirectory path
-    can be given by the user through option ``dataset_dir``.
-    """
-
-    if name not in density_names:
-        raise ValueError('dataset '+name+' unknown for density learning')
-    
-    exec 'import mlpython.datasets.'+name+' as mldataset'
-
-    if dataset_dir is None:
-        # Try to find dataset in MLPYTHON_DATASET_REPO
-        import os
-        repo = os.environ.get('MLPYTHON_DATASET_REPO')
-        if repo is None:
-            raise ValueError('environment variable MLPYTHON_DATASET_REPO is not defined')
-        dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + name
-
-    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory,**kw)
-
-    train_data, train_metadata = all_data['train']
-    valid_data, valid_metadata = all_data['valid']
-    test_data, test_metadata = all_data['test']
-
-    import mlpython.mlproblems.generic as mlpb
-    if name == 'binarized_mnist' or name == 'nips': 
-        trainset = mlpb.MLProblem(train_data,train_metadata)
-    else:
-        trainset = mlpb.SubsetFieldsProblem(train_data,train_metadata)
-    validset = trainset.apply_on(valid_data,valid_metadata)
-    testset = trainset.apply_on(test_data,test_metadata)
-
-    return trainset,validset,testset
 
 def get_classification_problem(name,dataset_dir=None,load_to_memory=True,**kw):
     """
@@ -206,6 +167,93 @@ def get_classification_problem(name,dataset_dir=None,load_to_memory=True,**kw):
 
     import mlpython.mlproblems.classification as mlpb
     trainset = mlpb.ClassificationProblem(train_data,train_metadata)
+    validset = trainset.apply_on(valid_data,valid_metadata)
+    testset = trainset.apply_on(test_data,test_metadata)
+
+    return trainset,validset,testset
+
+def get_regression_problem(name,dataset_dir=None,load_to_memory=True,**kw):
+    """
+    Creates train/valid/test regression MLProblems from dataset ``name``.
+
+    ``name`` must be one of the supported dataset (see variable
+    ``regression_names`` of this module).
+
+    Option ``load_to_memory`` determines whether the dataset should
+    be loaded into memory or always read from its files.
+
+    If environment variable MLPYTHON_DATASET_REPO has been set to a
+    valid directory path, this function will look into its appropriate
+    subdirectory to find the dataset. Alternatively the subdirectory path
+    can be given by the user through option ``dataset_dir``.
+    """
+
+    if name not in regression_names:
+        raise ValueError('dataset '+name+' unknown for regression learning')
+    
+    exec 'import mlpython.datasets.'+name+' as mldataset'
+
+    if dataset_dir is None:
+        # Try to find dataset in MLPYTHON_DATASET_REPO
+        import os
+        repo = os.environ.get('MLPYTHON_DATASET_REPO')
+        if repo is None:
+            raise ValueError('environment variable MLPYTHON_DATASET_REPO is not defined')
+        dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + name
+
+    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory,**kw)
+
+    train_data, train_metadata = all_data['train']
+    valid_data, valid_metadata = all_data['valid']
+    test_data, test_metadata = all_data['test']
+
+    import mlpython.mlproblems.generic as mlpb
+    trainset = mlpb.MLProblem(train_data,train_metadata)
+    validset = trainset.apply_on(valid_data,valid_metadata)
+    testset = trainset.apply_on(test_data,test_metadata)
+
+    return trainset,validset,testset
+
+def get_distribution_problem(name,dataset_dir=None,load_to_memory=True,**kw):
+    """
+    Creates train/valid/test distribution estimation MLProblems from dataset ``name``.
+
+    ``name`` must be one of the supported dataset (see variable
+    ``distribution_names`` of this module).
+
+    Option ``load_to_memory`` determines whether the dataset should
+    be loaded into memory or always read from its files.
+
+    If environment variable MLPYTHON_DATASET_REPO has been set to a
+    valid directory path, this function will look into its appropriate
+    subdirectory to find the dataset. Alternatively the subdirectory path
+    can be given by the user through option ``dataset_dir``.
+    """
+
+    if name not in distribution_names:
+        raise ValueError('dataset '+name+' unknown for distribution learning')
+    
+    exec 'import mlpython.datasets.'+name+' as mldataset'
+
+    if dataset_dir is None:
+        # Try to find dataset in MLPYTHON_DATASET_REPO
+        import os
+        repo = os.environ.get('MLPYTHON_DATASET_REPO')
+        if repo is None:
+            raise ValueError('environment variable MLPYTHON_DATASET_REPO is not defined')
+        dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + name
+
+    all_data = mldataset.load(dataset_dir,load_to_memory=load_to_memory,**kw)
+
+    train_data, train_metadata = all_data['train']
+    valid_data, valid_metadata = all_data['valid']
+    test_data, test_metadata = all_data['test']
+
+    import mlpython.mlproblems.generic as mlpb
+    if name == 'binarized_mnist' or name == 'nips': 
+        trainset = mlpb.MLProblem(train_data,train_metadata)
+    else:
+        trainset = mlpb.SubsetFieldsProblem(train_data,train_metadata)
     validset = trainset.apply_on(valid_data,valid_metadata)
     testset = trainset.apply_on(test_data,test_metadata)
 

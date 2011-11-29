@@ -255,6 +255,6 @@ class MultilabelCRF(Learner):
         costs = []
         for example,output in zip(dataset,outputs):
             dummy,target = example
-            costs += [ (target - output)**2 ]
+            costs += [ np.mean((target - output)**2,axis=0) ]
 
         return outputs,costs
