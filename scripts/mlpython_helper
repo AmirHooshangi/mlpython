@@ -90,6 +90,10 @@ def ShowDatasets():
     print '\nTASK = classification'
     for item in datasets_store.classification_names:
         print '        -' + item
+
+    print '\nTASK = regression'
+    for item in datasets_store.regression_names:
+        print '        -' + item
         
     print '\nTASK = multilabel'
     for item in datasets_store.multilabel_names:
@@ -99,10 +103,6 @@ def ShowDatasets():
     for item in datasets_store.multiregression_names:
         print '        -' + item
         
-    print '\nTASK = regression'
-    for item in datasets_store.regression_names:
-        print '        -' + item
-
 
 def ShowLearners():
     filePath = mlpython.__path__[0] + "/learners"
