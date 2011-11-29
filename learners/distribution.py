@@ -25,7 +25,7 @@
 # or implied, of Hugo Larochelle.
 
 """
-The ``learners.distribution`` module contains Learners meant for distribution or
+The ``learners.distribution`` module contains Learners meant for density or
 distribution estimation problems.  The MLProblems for these Learners
 should be iterators over inputs.
 
@@ -43,7 +43,7 @@ import mlpython.mlproblems.generic as mlpb
 import mlpython.mathutils.nonlinear as mlnonlin
 import mlpython.mathutils.linalg as mllin
 
-class Bagdistribution(Learner):
+class BagDistribution(Learner):
     """
     A distribution estimation learner where each example is a bag of inputs.
 

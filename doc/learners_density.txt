@@ -1,8 +1,0 @@
-.. _learners_density:
-
-Density Learners
-================
-
-.. automodule:: learners.density
-   :members:
-

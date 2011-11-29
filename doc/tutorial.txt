@@ -503,7 +503,7 @@ variable).
   ``create_experiment_script`` takes several arguments from which the
   resulted script will be generated with: ::
 
-   Usage: create_experiment_script TASK=task DATASET=dataset MODULE=mlpython.module LEARNER=Learner RESULTS=result_file [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
+   Usage: create_experiment_script TASK=task DATASET=dataset MODULE=mlpython.module LEARNER=Learner RESULTS=results_file.txt [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
 
   The options 'option1' and 'option2' here are the Learner's options
   that will be set when you call the generated experiement script (e.g.
@@ -515,32 +515,32 @@ variable).
 
   Here is an example: ::
 
-   create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS=result_file.txt n_stages learning_rate > train_nnet.py
+   create_experiment_script TASK=classification DATASET=dna MODULE=mlpython.learners.classification LEARNER=NNet RESULTS=results_file.txt n_stages learning_rate > train_nnet.py
    python train_nnet.py 50 0.001
 
   Now with a dataset mlpython doesn't support: ::
 
-   create_experiment_script TASK=classification TRAIN=train_file.txt VALID=valid_file.txt TEST=test_file.txt MODULE=mlpython.learners.classification LEARNER=NNet RESULTS=results.txt n_stages learning_rate > train_custom_nnet.py
+   create_experiment_script TASK=classification TRAIN=train_file.libsvm VALID=valid_file.libsvm TEST=test_file.libsvm MODULE=mlpython.learners.classification LEARNER=NNet RESULTS=results_file.txt n_stages learning_rate > train_custom_nnet.py
    python train_custom_nnet.py 50 0.001
 
   Please note that, for string options, the quotes must be preceded by
   a backslash for the script to treat it as an actual string: ::
 
-   create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS=result_file.txt min_split criterion > train_decision_tree.py
+   create_experiment_script TASK=classification DATASET=dna MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS=results_file.txt min_split criterion > train_decision_tree.py
    python train_decision_tree.py 4 \'information_gain\'
 
   There are some other options that can be added with the script. The option early stopping can be used in the experiment. To use this, the following arguments need to be added. The argument ``EARLY_STOPPING`` is the kind of early stopping, ``BEG`` is the beginning value where the early stopping start, ``END`` is the ending value, ``INCR`` is the value of the incrementation from the beginning value to the end and  ``LOOK_AHEAD`` is used by the early stopping to stop doing he's thing after the look_ahead's value is reached.
   
   Here is an example: ::
 
-   create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS=result_file EARLY_STOPPING =n_stages BEG=1 INCR=1 END=500 LOOK_AHEAD=10 seed > train_early_stopping.py
+   create_experiment_script TASK=classification DATASET=dna MODULE=mlpython.learners.classification LEARNER=NNet RESULTS=results_file.txt EARLY_STOPPING =n_stages BEG=1 INCR=1 END=500 LOOK_AHEAD=10 seed > train_early_stopping.py
    python train_early_stopping.py 1234
 
   The K-Fold method is also available to be used in the experiement. The only argument to add in the command line is ``KFOLD`` and it is the number of splits the method will do before learning. The exemple bellow show how to write the command line for K-Fold. The number 5 is for the splits and the number 2 means to do the experiement on 'k' of value 2. 
 
   ::
 
-   create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS=results.txt KFOLD=5 > train_fold.py
+   create_experiment_script TASK=classification DATASET=dna MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS=results_file.txt KFOLD=5 > train_fold.py
    python train_fold.py 2 
 
 * ``mlpython_helper``: This script shows all datasets and learners
@@ -551,7 +551,7 @@ variable).
 
   Here is the example where you want to know all the available datasets from mlptyhon: ::
 
-   python mlpython_helper -datasets
+   $mlpython_helper -datasets
    TASK = distribution
           -heart
           -dna
@@ -597,19 +597,22 @@ variable).
 
   In this example, we just added then name of a given dataset to see its doc string::
 
-   python mlpython_helper -datasets heart
-   Module ``datasets.heart`` gives access to the Heart (SPECT) dataset.
+   $mlpython_helper -datasets -download dna
 
-   The Heart dataset is obtained here:
-   http://archive.ics.uci.edu/ml/machine-learning-databases/spect.
+   Module ``datasets.dna`` gives access to the DNA dataset.
 
-  To download a specific dataset, use this command line which ``heart`` is the dataset: ::
+   | **Reference:** 
+   | Tractable Multivariate Binary Density Estimation and the Restricted Boltzmann Forest
+   | Larochelle, Bengio and Turian
+   | http://www.cs.toronto.edu/~larocheh/publications/NECO-10-09-1100R2-PDF.pdf
 
-   python mlpython_helper -datasets -download heart
+  To download a specific dataset, use this command line which ``dna`` is the dataset: ::
+
+   mlpython_helper -datasets -download dna
 
   The following command show all the learners you can use in mlpython: ::
 
-   python mlpython_helper -learners
+   $mlpython_helper -learners
    MODULE: mlpython.learners.multilabel
               -MultilabelCRF
    MODULE: mlpython.learners.features
@@ -643,7 +646,8 @@ variable).
 
   Here is the command line for a specified learner: ::
 
-   python mlpython_helper -learners BayesClassifier
+   $mlpython_helper -learners BayesClassifier
+
    MODULE: mlpython.learners.classification
    Docstring: BayesClassifier
 
@@ -696,9 +700,9 @@ variable).
   run the script ``train_nnet.py`` with many different settings of
   hyper-parameters, to perform model selection: ::
 
-   python launch_jobs train localhost:4 'python train_nnet.py {5,10,15} {0.01,0.001,0.0001}'   
+   launch_jobs train localhost:4 'python train_nnet.py {5,10,15} {0.1,0.01}'   
 
-  All results will be appended in file ``results.txt``, which was
+  All results will be appended in file ``results_file.txt``, which was
   specified when ``create_experiment_script`` was called.
 
 * ``print_ascii_table``: This script takes a text file in which each
@@ -712,24 +716,21 @@ variable).
 
    Usage: print_ascii_table [-sort_column int [-header int]] file
 
-  Continuing our previous example, we can look at the results in ``results.txt``
+  Continuing our previous example, we can look at the results in ``results_file.txt``
   by running: ::
 
-   print_ascii_table results.txt
+   print_ascii_table -sort_column 4 results_file.txt
 
   which will output something like this: ::
 
-         #1             #2               #3              #4               #5               #6              #7               #8
-   n_stages  learning_rate           train1          valid1            test1           train2          valid2            test2
-          5           0.01  0.0571428571429            0.07  0.0843170320405   0.266068273165  0.302398354453   0.310701156217
-          5          0.001   0.471428571429  0.481666666667   0.491568296796    1.02256090643   1.03109099021    1.03379371721
-          5         0.0001   0.471428571429  0.481666666667   0.491568296796    1.01837133973   1.02630593227    1.03393762605
-         10           0.01            0.025            0.05  0.0682967959528   0.107709905187  0.167955635734   0.183754376553
-         10          0.001   0.471428571429  0.481666666667   0.491568296796    1.01866334655   1.02733711282    1.03028394838
-         10         0.0001   0.471428571429  0.481666666667   0.491568296796    1.01817630479   1.02613414201    1.03378498393
-         15           0.01            0.015           0.055  0.0623946037099  0.0725064139118    0.1623502906   0.176613253765
-         15          0.001   0.471428571429  0.481666666667   0.491568296796    1.00739664059   1.01643011792     1.0198808477
-         15         0.0001   0.471428571429  0.481666666667   0.491568296796    1.01798637288   1.02595917045    1.03361986381
+         #1             #2               #3               #4               #5                #6              #7               #8
+   n_stages  learning_rate           train1           valid1            test1            train2          valid2            test2
+         10           0.01            0.025             0.05  0.0682967959528    0.107709905187  0.167955635734   0.183754376553
+         15           0.01            0.015            0.055  0.0623946037099   0.0725064139118    0.1623502906   0.176613253765
+          5            0.1  0.0114285714286             0.06   0.066610455312   0.0443683558712   0.21432287231   0.213970324331
+         15            0.1              0.0  0.0633333333333   0.066610455312  0.00260086090047  0.300671979265   0.310530526339
+         10            0.1              0.0            0.065   0.066610455312  0.00641540222754  0.276963867247   0.280530205896
+          5           0.01  0.0571428571429             0.07  0.0843170320405    0.266068273165  0.302398354453   0.310701156217
 
 
 Before you leave

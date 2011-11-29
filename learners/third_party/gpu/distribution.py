@@ -26,7 +26,7 @@
 
 """
 The ``learners.third_party.gpu.classification`` module contains 
-distribution or distribution estimation algorithms that uses a GPU.
+density or distribution estimation algorithms that uses a GPU.
 
 * RestrictedBoltzmannMachine:      A Restricted Boltzmann Machine (RBM) distribution estimator, on the GPU.
 

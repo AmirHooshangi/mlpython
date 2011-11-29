@@ -25,7 +25,7 @@
 # or implied, of Guillaume Roy-Fontaine and David Brouillard.
 
 """
-Module ``datasets.cdata`` gives access to the cadata dataset.
+Module ``datasets.cdata`` gives access to the CAData (California housing prices) dataset.
 
 The cadata dataset is obtained here: http://www.csie.ntu.edu.tw/%7Ecjlin/libsvmtools/datasets/regression.html#cadata.
 
@@ -37,7 +37,7 @@ import os
 
 def load(dir_path,load_to_memory=False):
     """
-    Loads the cadata dataset.
+    Loads the CAData (California housing prices) dataset.
 
     The data is given by a dictionary mapping from strings
     ``'train'``, ``'valid'`` and ``'test'`` to the associated pair of data and metadata.

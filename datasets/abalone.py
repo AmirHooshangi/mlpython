@@ -112,6 +112,6 @@ def obtain(dir_path):
     test_file.close()
     
     # Delete Temp file
-    os.remove(os.path.join(dir_path,'housing_temp.libsvm'))
+    os.remove(os.path.join(dir_path,'abalone_temp.libsvm'))
     
     print 'Done'
