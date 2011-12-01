@@ -116,5 +116,10 @@ you can use it:
    cd $HOME/python/mlpython
    make
 
+* MLPython also comes with scripts that facilitate running certain
+  machine learning experiments and consult their results. They are
+  located in the subdirectory ``mlpython/scripts/`` and we suggest you
+  add the full path to your PATH environment variable.
+
 You should now be able to use MLPython! 
 
