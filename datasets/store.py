@@ -61,8 +61,16 @@ classification_names = set(['adult',
                             'newsgroups',
                             'ocr_letters',
                             'rcv1',
-                            'web'])
-
+                            'web',
+                            'mnist_basic',
+                            'mnist_background_images',
+                            'mnist_background_random',
+                            'mnist_rotated',
+                            'mnist_rotated_background_images',
+                            'rectangles',
+                            'rectangles_images',
+                            'convex'])
+                            
 regression_names = set(['abalone',
                         'cadata',
                         'housing'])

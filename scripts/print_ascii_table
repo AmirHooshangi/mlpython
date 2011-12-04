@@ -73,6 +73,7 @@ for index, item in enumerate(arguments):
             sort_column_number = int(arguments[index + 1])
             
             # Check for argument -header
+            number_of_header_to_skip = 1    # 1 by default, even if -header is not declared
             for index, item in enumerate(arguments):
                 if item == '-header':
                     if representsInt(arguments[index + 1]) == True:
@@ -107,13 +108,12 @@ if sort_column == True:
         lines_tuple.append(line[:-1].split('\t'))
 
     # Remove a number of header line(s) and keep them to add them later
-    if header == True:
-        ctr = 0
-        headerLines = []
-        for n in range(0, number_of_header_to_skip):
-            headerLines.append(lines[ctr])
-            lines_tuple.pop(0)
-            ctr = ctr + 1
+    ctr = 0
+    headerLines = []
+    for n in range(0, number_of_header_to_skip):
+        headerLines.append(lines[ctr])
+        lines_tuple.pop(0)
+        ctr = ctr + 1
             
     # Convert tuple item to float or int so we can sort on them
     for index, line in enumerate(lines_tuple):
@@ -131,10 +131,7 @@ if sort_column == True:
         sys.exit()
         
     # Add the header line to lines or else clear it
-    if header == True:
-        lines = headerLines
-    else:
-        lines = []
+    lines = headerLines
 
     # Addend sorted items in lines
     for line in lines_tuple:
