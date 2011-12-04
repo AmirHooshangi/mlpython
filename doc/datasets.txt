@@ -18,6 +18,12 @@ Dataset store
 .. automodule:: datasets.newsgroups
    :members:
 
+Abalone
+-------------
+
+.. automodule:: datasets.abalone
+   :members:
+
 Adult
 -------------
 
@@ -36,6 +42,12 @@ Binarized MNIST
 .. automodule:: datasets.binarized_mnist
    :members:
 
+Cadata
+-----------------
+
+.. automodule:: datasets.cadata
+   :members:
+
 CIFAR-10
 -----------------
 
@@ -46,6 +58,12 @@ Connect-4
 -----------------
 
 .. automodule:: datasets.connect4
+   :members:
+
+Convex
+-----------------
+
+.. automodule:: datasets.convex
    :members:
 
 Corel5k
@@ -76,6 +94,12 @@ Heart
 -------------------------------------------
 
 .. automodule:: datasets.heart
+   :members:
+
+Housing
+-------------------------------------------
+
+.. automodule:: datasets.housing
    :members:
 
 Labeled Faces in the Wild (face completion)
@@ -126,6 +150,36 @@ MNIST
 .. automodule:: datasets.mnist
    :members:
 
+Mnist_basic
+-------------
+
+.. automodule:: datasets.mnist_basic
+   :members:
+
+Mnist_background_images
+-------------
+
+.. automodule:: datasets.mnist_background_images
+   :members:
+
+Mnist_background_random
+-------------
+
+.. automodule:: datasets.mnist_background_random
+   :members:
+
+Mnist_rotated
+-------------
+
+.. automodule:: datasets.mnist_rotated
+   :members:
+
+Mnist_rotated_background_images
+-------------
+
+.. automodule:: datasets.mnist_rotated_background_images
+   :members:
+
 MTurk
 -----------------
 
@@ -154,6 +208,18 @@ OCR letters
 -------------------
 
 .. automodule:: datasets.ocr_letters
+   :members:
+
+Rectangles
+-------------------
+
+.. automodule:: datasets.rectangles
+   :members:
+
+Rectangles_images
+-------------------
+
+.. automodule:: datasets.rectangles_images
    :members:
 
 SARCOS

@@ -54,22 +54,22 @@ It also defines the following functions:
 
 classification_names = set(['adult',
                             'connect4',
+                            'convex'
                             'dna',
                             'heart',
                             'mnist',
-                            'mushrooms',
-                            'newsgroups',
-                            'ocr_letters',
-                            'rcv1',
-                            'web',
                             'mnist_basic',
                             'mnist_background_images',
                             'mnist_background_random',
                             'mnist_rotated',
                             'mnist_rotated_background_images',
+                            'mushrooms',
+                            'newsgroups',
+                            'ocr_letters',
+                            'rcv1',
                             'rectangles',
                             'rectangles_images',
-                            'convex'])
+                            'web'])
                             
 regression_names = set(['abalone',
                         'cadata',

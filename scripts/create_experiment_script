@@ -71,6 +71,7 @@ if (len(sys.argv) >= 6):
         requiredParam += 1
         datasetFromFile = False
     else:
+        dict_Tasks = {'distribution','classification','regression','multilabel','multiregression'}
         datasetFromFile = True
         if 'TRAIN' in dict_Arguments:
             requiredParam += 1
@@ -82,8 +83,8 @@ if (len(sys.argv) >= 6):
             raiseRequiredError = 1
         if 'TEST' in dict_Arguments:
             requiredParam += 1
-            if dict_Arguments['TASK'] == 'ranking':
-                raise ValueError('The task \'ranking\' is not implemented with the TRAIN, VALID, TEST method.')
+            if not dict_Arguments['TASK'] in dict_Tasks:
+                raise ValueError('The task \'' + dict_Arguments['TASK'] + '\' is not implemented with the TRAIN, VALID, TEST method.')
         else:
             raiseRequiredError = 1
     if raiseRequiredError == 1:
@@ -189,18 +190,27 @@ if (len(sys.argv) >= 6):
         result += 'str_ParamOption = ' + str_ParamOption + '\n'
         result += 'str_ParamOptionValue = ' + str_ParamOptionValue + '\n'
         
+        result += 'try:\n'
         if earlyStoppingParam == 4: # Early_Stopping
-            result += Template('objectString = \'myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG},\' + str_ParamOption + \')\'\n').safe_substitute(dict_Arguments)
+            result += Template('    objectString = \'myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG},\' + str_ParamOption + \')\'\n').safe_substitute(dict_Arguments)
         else:
-            result += Template('objectString = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n').safe_substitute(dict_Arguments)
-        result += 'code = compile(objectString, \'<string>\', \'exec\')\n'
-        result += 'exec code\n'
+            result += Template('    objectString = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n').safe_substitute(dict_Arguments)
+        result += '    code = compile(objectString, \'<string>\', \'exec\')\n'
+        result += '    exec code\n'
+        result += 'except:\n'
+        result += Template('    print "Error while instantiating ${LEARNER}"\n').safe_substitute(dict_Arguments)
+        result += '    print sys.exc_info()[0]\n'
     else:
         result += 'str_ParamOptionValue = ""\n'
+        result += 'try:\n'
         if earlyStoppingParam == 4: # Early_Stopping
-            result += Template('myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG})\n\n').safe_substitute(dict_Arguments)
+            result += Template('    myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG})\n\n').safe_substitute(dict_Arguments)
         else:
-            result += Template('myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
+            result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
+        result += 'except:\n'
+        result += Template('    print "Error while instantiating ${LEARNER}"\n').safe_substitute(dict_Arguments)
+        result += '    print sys.exc_info()[0]\n'
+        result += '    sys.exit()\n'
     
     
     if datasetFromFile == True:
@@ -398,6 +408,10 @@ if (len(sys.argv) >= 6):
     print result # Print result in a file (' > ' must be used)
 else:
     usage_msg = """Usage: create_experiment_script TASK=task DATASET=dataset MODULE=mlpython.module LEARNER=Learner RESULTS=results_file.txt [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
+       
+       create_experiment_script TASK=task TRAIN=train_file.libsvm VALID=valid_file.libsvm TEST=test_file.libsvm MODULE=mlpython.module LEARNER=Learner RESULTS=results_file.txt [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
+
+The usage shows two different calls for the script. You can ether use mlpython's datasets or your own \'TRAIN\', \'VALID\' and \'TEST\' files if they are in libsvm format.
 
 The options \'option1\' and \'option2\' here are Learner's options that will be set when you call your script. For example: python scrypt.py option1_value option2_value
 

@@ -38,36 +38,46 @@ to obtain MLProblems from those datasets.
 
 The modules currently included are:
 
-* ``datasets.store``:                    provides functions for obtaining MLProblems from the supported datasets.
-* ``datasets.adult``:                    Adult dataset module.
-* ``datasets.bibtex``:                   Bibtex dataset module.
-* ``datasets.binarized_mnist``:          binarized version of MNIST module.
-* ``datasets.cifar10``:                  CIFAR-10 dataset module.
-* ``datasets.connect4``:                 Connect-4 dataset module.
-* ``datasets.corel5k``:                  Corel5k dataset module.
-* ``datasets.corrupted_mnist``:          Corrupted MNIST dataset module.
-* ``datasets.corrupted_ocr_letters``:    Corrupted OCR letters dataset module.
-* ``datasets.dna``:                      DNA dataset module.
-* ``datasets.face_completion_lfw``:      Labeled Faces in the Wild, face completion dataset module.
-* ``datasets.heart``:                    Heart dataset module.
-* ``datasets.letor_mq2007``:             LETOR 4.0 MQ2007 dataset module.
-* ``datasets.letor_mq2008``:             LETOR 4.0 MQ2008 dataset module.
-* ``datasets.majmin``:                   MajMin dataset module.
-* ``datasets.mediamill``:                Mediamill dataset module.
-* ``datasets.medical``:                  Medical dataset module.
-* ``datasets.mnist``:                    MNIST dataset module.
-* ``datasets.mturk``:                    MTurk dataset module.
-* ``datasets.mushrooms``:                Mushrooms dataset module.
-* ``datasets.newsgroups``:               20-newsgroup dataset module.
-* ``datasets.nips``:                     NIPS dataset module.
-* ``datasets.occluded_faces_lfw``:       Labeled Faces in the Wild, occluded faces dataset module.
-* ``datasets.occluded_mnist``:           Occluded MNIST dataset module.
-* ``datasets.ocr_letters``:              OCR letters dataset module.
-* ``datasets.rcv1``:                     RCV1 dataset module.
-* ``datasets.sarcos``:                   SARCOS dataset module.
-* ``datasets.scene``:                    Scene dataset module.
-* ``datasets.web``:                      Web dataset module.
-* ``datasets.yahoo_ltrc1``:              Yahoo! Learning to Rank Challenge, Set 1 dataset module.
-* ``datasets.yahoo_ltrc2``:              Yahoo! Learning to Rank Challenge, Set 2 dataset module.
-* ``datasets.yeast``:                    Yeast dataset module.
+* ``datasets.store``:                            provides functions for obtaining MLProblems from the supported datasets.
+* ``datasets.abalone``:                          Abalone dataset module.
+* ``datasets.adult``:                            Adult dataset module.
+* ``datasets.bibtex``:                           Bibtex dataset module.
+* ``datasets.binarized_mnist``:                  binarized version of MNIST module.
+* ``datasets.cadata``:                           Cadata dataset module.
+* ``datasets.cifar10``:                          CIFAR-10 dataset module.
+* ``datasets.connect4``:                         Connect-4 dataset module.
+* ``datasets.corel5k``:                          Corel5k dataset module.
+* ``datasets.corrupted_mnist``:                  Corrupted MNIST dataset module.
+* ``datasets.corrupted_ocr_letters``:            Corrupted OCR letters dataset module.
+* ``datasets.dna``:                              DNA dataset module.
+* ``datasets.face_completion_lfw``:              Labeled Faces in the Wild, face completion dataset module.
+* ``datasets.housing``:                          Housing dataset module.
+* ``datasets.heart``:                            Heart dataset module.
+* ``datasets.letor_mq2007``:                     LETOR 4.0 MQ2007 dataset module.
+* ``datasets.letor_mq2008``:                     LETOR 4.0 MQ2008 dataset module.
+* ``datasets.majmin``:                           MajMin dataset module.
+* ``datasets.mediamill``:                        Mediamill dataset module.
+* ``datasets.medical``:                          Medical dataset module.
+* ``datasets.mnist``:                            MNIST dataset module.
+* ``datasets.mnist_basic``:                      Mnist_basic dataset module.
+* ``datasets.mnist_background_images``:          Mnist_background_images dataset module.
+* ``datasets.mnist_background_random``:          Mnist_background_random dataset module.
+* ``datasets.mnist_rotated``:                    Mnist_rotated dataset module.
+* ``datasets.mnist_rotated_background_images``:  Mnist_rotated_background_images dataset module.
+* ``datasets.mturk``:                            MTurk dataset module.
+* ``datasets.mushrooms``:                        Mushrooms dataset module.
+* ``datasets.newsgroups``:                       20-newsgroup dataset module.
+* ``datasets.nips``:                             NIPS dataset module.
+* ``datasets.occluded_faces_lfw``:               Labeled Faces in the Wild, occluded faces dataset module.
+* ``datasets.occluded_mnist``:                   Occluded MNIST dataset module.
+* ``datasets.ocr_letters``:                      OCR letters dataset module.
+* ``datasets.rcv1``:                             RCV1 dataset module.
+* ``datasets.rectangles``:                       Rectangles dataset module.
+* ``datasets.rectangles_images``:                Rectangles_images dataset module.
+* ``datasets.sarcos``:                           SARCOS dataset module.
+* ``datasets.scene``:                            Scene dataset module.
+* ``datasets.web``:                              Web dataset module.
+* ``datasets.yahoo_ltrc1``:                      Yahoo! Learning to Rank Challenge, Set 1 dataset module.
+* ``datasets.yahoo_ltrc2``:                      Yahoo! Learning to Rank Challenge, Set 2 dataset module.
+* ``datasets.yeast``:                            Yeast dataset module.
 """

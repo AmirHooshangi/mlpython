@@ -505,6 +505,9 @@ There are some useful scripts that come with MLPython.
   resulted script will be generated with: ::
 
    Usage: create_experiment_script TASK=task DATASET=dataset MODULE=mlpython.module LEARNER=Learner RESULTS=results_file.txt [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
+          create_experiment_script TASK=task TRAIN=train_file.libsvm VALID=valid_file.libsvm TEST=test_file.libsvm MODULE=mlpython.module LEARNER=Learner RESULTS=results_file.txt [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
+
+  The usage shows two different calls for the script. You can ether use mlpython's datasets or your own ``TRAIN``, ``VALID`` and ``TEST`` files if they are in libsvm format.
 
   The arguments ``option1`` and ``option2`` are the Learner's hyper-parameters
   that will be set when you call the generated experiment script (e.g.

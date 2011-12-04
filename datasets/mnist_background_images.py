@@ -25,7 +25,7 @@
 # or implied, of Guillaume Roy-Fontaine and David Brouillard.
 
 """
-Module ``datasets.mnist_background_images`` gives access to the mnist_background_images dataset.
+Module ``datasets.mnist_background_images`` gives access to the Mnist_background_images dataset.
 
 | **Reference:** 
 | An Empirical Evaluation of Deep Architectures on Problems with Many Factors of Variation
@@ -40,7 +40,7 @@ import os
 
 def load(dir_path,load_to_memory=False):
     """
-    Loads the mnist_background_images dataset.
+    Loads the Mnist_background_images dataset.
 
     The data is given by a dictionary mapping from strings
     ``'train'``, ``'valid'`` and ``'test'`` to the associated pair of data and metadata.
