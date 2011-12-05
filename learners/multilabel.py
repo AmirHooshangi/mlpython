@@ -48,24 +48,25 @@ class MultilabelCRF(Learner):
     Option ``n_stages`` determines the number of iterations
     over the training set when ``train()``is called. 
 
-    Option ``lr`` is the learning rate.
+    Option ``lr`` is the learning rate (default=0.001).
 
     Option ``approximate_inference`` is a string describing the
     approximate inference method to use at test time. If equal to
-    ``'mean_field'``, will use mean-field inference. If equal to
+    ``'mean_field'`` (default), will use mean-field inference. If equal to
     ``loopy_belief_propagation``, will use loopy belief propagation.
     This is essentially the number of times messages are being passed
     across the pairwise connection matrix between the labels. If
     is set to 0, the model corresponds to multiple logistic regressors.
 
     Option ``n_inference_iterations`` is the number of iterations for
-    approximate inference.
+    approximate inference (default=5).
 
     Option ``damping_factor`` is the damping factor to be used by
-    loopy belief propagation.
+    loopy belief propagation (default=0).
 
     Option ``binary_outputs`` determines whether the predicted outputs
-    (target marginals) should be binarized using a threshold (0.5).
+    (target marginals) should be binarized using a threshold at 0.5
+    (default=True).
 
     Option ``seed`` is the number seed of the internal random number
     generator (default=1234).
@@ -77,7 +78,7 @@ class MultilabelCRF(Learner):
 
     """
     
-    def __init__(self, n_stages, lr, approximate_inference='mean_field',
+    def __init__(self, n_stages, lr=0.001, approximate_inference='mean_field',
                  n_inference_iterations=5, damping_factor=0, binary_outputs=True,
                  seed=1234):
     
@@ -255,6 +256,6 @@ class MultilabelCRF(Learner):
         costs = []
         for example,output in zip(dataset,outputs):
             dummy,target = example
-            costs += [ (target - output)**2 ]
+            costs += [ np.mean((target - output)**2,axis=0) ]
 
         return outputs,costs

@@ -28,7 +28,7 @@
 The ``learners.third_party.gpu.classification`` module contains 
 density or distribution estimation algorithms that uses a GPU.
 
-* RestrictedBoltzmannMachine:      A Restricted Boltzmann Machine (RBM) density estimator, on the GPU.
+* RestrictedBoltzmannMachine:      A Restricted Boltzmann Machine (RBM) distribution estimator, on the GPU.
 
 """
 
@@ -46,7 +46,7 @@ except OSError:
 
 class RestrictedBoltzmannMachine(Learner):
     """
-    A Restricted Boltzmann Machine (RBM) density estimator, on the GPU.
+    A Restricted Boltzmann Machine (RBM) distribution estimator, on the GPU.
 
     Given an input, the RBM will assign it a score,
     corresponding to its negative free-energy. This score 

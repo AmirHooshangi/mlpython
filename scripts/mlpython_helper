@@ -83,26 +83,29 @@ def DownloadDataset(args):
 def ShowDatasets():
     import mlpython.datasets.store as datasets_store
 
-    print 'TASK = density'
-    for item in datasets_store.density_names:
+    print 'TASK = distribution'
+    for item in sorted(list(datasets_store.distribution_names)):
         print '        -' + item
 
     print '\nTASK = classification'
-    for item in datasets_store.classification_names:
+    for item in sorted(list(datasets_store.classification_names)):
+        print '        -' + item
+
+    print '\nTASK = regression'
+    for item in sorted(list(datasets_store.regression_names)):
         print '        -' + item
         
     print '\nTASK = multilabel'
-    for item in datasets_store.multilabel_names:
+    for item in sorted(list(datasets_store.multilabel_names)):
         print '        -' + item
         
     print '\nTASK = multiregression'
-    for item in datasets_store.multiregression_names:
+    for item in sorted(list(datasets_store.multiregression_names)):
         print '        -' + item
 
     print '\nTASK = ranking'
-    for item in datasets_store.ranking_names:
+    for item in sorted(list(datasets_store.ranking_names)):
         print '        -' + item
-
 
 def ShowLearners():
     filePath = mlpython.__path__[0] + "/learners"

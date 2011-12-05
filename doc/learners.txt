@@ -13,7 +13,7 @@ Follow the links below to learn more about these modules and subpackages:
 
    learners_generic
    learners_classification
-   learners_density
+   learners_distribution
    learners_features
    learners_ranking
    learners_sparse

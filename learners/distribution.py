@@ -25,15 +25,15 @@
 # or implied, of Hugo Larochelle.
 
 """
-The ``learners.density`` module contains Learners meant for density or
+The ``learners.distribution`` module contains Learners meant for density or
 distribution estimation problems.  The MLProblems for these Learners
 should be iterators over inputs.
 
 The currently implemented algorithms are:
 
-* BagDensity: a density estimation learner where each example is a bag of inputs.
+* Bagdistribution: a distribution estimation learner where each example is a bag of inputs.
 * NADE:       the Neural Autoregressive Distribution Estimator (NADE) for multivariate binary distribution estimation
-* FVSBN:      a fully visible Sigmoid Belief Network (FVSBN) for binary density estimation
+* FVSBN:      a fully visible Sigmoid Belief Network (FVSBN) for binary distribution estimation
 
 """
 
@@ -43,18 +43,18 @@ import mlpython.mlproblems.generic as mlpb
 import mlpython.mathutils.nonlinear as mlnonlin
 import mlpython.mathutils.linalg as mllin
 
-class BagDensity(Learner):
+class BagDistribution(Learner):
     """
-    A density estimation learner where each example is a bag of inputs.
+    A distribution estimation learner where each example is a bag of inputs.
 
-    Given a density learner (given by the user), this learner
+    Given a distribution learner (given by the user), this learner
     will train it on all inputs in all bags. It is
-    assumed that the density learner outputs its estimate
-    of the log-density (when calling ``use(...)``).
+    assumed that the distribution learner outputs its estimate
+    of the log-distribution (when calling ``use(...)``).
 
     """
     def __init__(   self,
-                    estimator=None,# The density learner to be trained
+                    estimator=None,# The distribution learner to be trained
                     ):
         self.stage = 0
         self.estimator = estimator
@@ -65,8 +65,8 @@ class BagDensity(Learner):
         Each call to train increments ``self.stage`` by 1.
         """
 
-        self.density_trainset = mlpb.MergedProblem(data=trainset,metadata=trainset.metadata)
-        self.estimator.train(self.density_trainset)
+        self.distribution_trainset = mlpb.MergedProblem(data=trainset,metadata=trainset.metadata)
+        self.estimator.train(self.distribution_trainset)
         self.stage += 1
 
     def forget(self):
@@ -75,7 +75,7 @@ class BagDensity(Learner):
 
     def use(self,dataset):
         """
-        Outputs the sum of the density learning outputs for 
+        Outputs the sum of the distribution learning outputs for 
         all inputs in each bag (example).
         """
         outputs = np.zeros((len(dataset),1))
@@ -360,7 +360,7 @@ class NADE(OnlineLearner):
 
 class FVSBN(OnlineLearner):
    """
-   A fully visible Sigmoid Belief Network (FVSBN) for binary density estimation
+   A fully visible Sigmoid Belief Network (FVSBN) for binary distribution estimation
 
    The options are:
 

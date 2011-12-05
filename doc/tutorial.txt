@@ -21,7 +21,7 @@ dataset with name ``dataset_name``, simply do the following: ::
    dataset_store.download(dataset_name)
 
 Then, ``mlpython.datasets.store`` provides several functions that will
-create a specific machine learning problem (classification, density
+create a specific machine learning problem (classification, distribution
 estimation, etc.)  from a downloaded dataset. These functions all
 return a training, validation and test split. Here are a few examples
 of using such functions (see the :ref:`datasets` library documentation 
@@ -30,8 +30,11 @@ for more such functions): ::
    # Generate a classification problem
    trainset,validset,testset = dataset_store.get_classification_problem(dataset_name)
    
-   # Generate a density estimation problem
-   trainset,validset,testset = dataset_store.get_density_problem(dataset_name)
+   # Generate a regression problem
+   trainset,validset,testset = dataset_store.get_regression_problem(dataset_name)
+   
+   # Generate a distribution estimation problem
+   trainset,validset,testset = dataset_store.get_distribution_problem(dataset_name)
 
    # Generate a multilabel classification problem
    trainset,validset,testset = dataset_store.get_multilabel_problem(dataset_name)
@@ -279,7 +282,7 @@ Learners all have four basic methods:
 * ``test(self, dataset)``:    Computes and returns the outputs of the Learner as well as the cost of those outputs for MLProblem ``dataset``. The method should return a pair of two iterators, the first being over the outputs and the second over the costs.
   
 Learner objects are separated in different module, for different types
-of problems (classification, density estimation, etc.). See the
+of problems (classification, distribution estimation, etc.). See the
 :ref:`learners` library documentation for more information.
 
 My first experiments
@@ -492,9 +495,7 @@ mlpython/learners/third_party/libsvm/).
 Useful scripts
 ----------------
 
-There are some useful scripts that come with MLPython (you might want
-to consider adding the path to those script to your PATH environment
-variable).
+There are some useful scripts that come with MLPython.
 
 * ``create_experiment_script``: This script prints in the standard output
   an experiment script in Python. You can redirect this output into a file
@@ -503,51 +504,106 @@ variable).
   ``create_experiment_script`` takes several arguments from which the
   resulted script will be generated with: ::
 
-   Usage: create_experiment_script TASK=task DATASET=dataset MODULE=mlpython.module LEARNER=Learner RESULTS_FILE=result_file [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
+   Usage: create_experiment_script TASK=task DATASET=dataset MODULE=mlpython.module LEARNER=Learner RESULTS=results_file.txt [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
+   	  or
+          create_experiment_script TASK=task TRAIN=train_file.libsvm VALID=valid_file.libsvm TEST=test_file.libsvm MODULE=mlpython.module LEARNER=Learner RESULTS=results_file.txt [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
 
-  The options 'option1' and 'option2' here are the Learner's options
-  that will be set when you call the generated experiement script (e.g.
+  The usage shows two different calls for the script. You can either
+  use MLPython's datasets or your own ``TRAIN``, ``VALID`` and
+  ``TEST`` files in libsvm format.
+
+  The arguments ``option1`` and ``option2`` are the Learner's hyper-parameters
+  that will be set when you call the generated experiment script (e.g.
   ``python scrypt.py option1_value option2_value``).
 
-  The ``TASK`` argument is the task that will be used in the
-  experiment (e.g. ``density``, ``classification``, ``multilabel``,
-  etc.). The ``DATASET`` argument is the name of the data the script will work with. The ``MODULE`` argument is the path of the mlpython's module that will be used. The ``LEARNER`` argument is the name of the learner that will be used in the learning process of the script. Finally, the ``RESULTS_FILE`` is the name of the file where the output is write when the generated script is launched.
+  The ``TASK`` argument is the task solved by the machine learning
+  experiment (e.g. ``distribution``, ``regression``, ``classification``,
+  ``multilabel``, etc.). 
+
+  The ``DATASET`` argument is the name of the
+  dataset the script will run on. More specifically, it is the name of
+  the MLPython dataset module (see :ref:`datasets` for a list).
+
+  The ``MODULE`` argument is the package (or module) containing the
+  machine learning algorithm (i.e. Learner) to be run. Normally, it
+  will be in MLPython (.e.g ``mlpython.learners.classification``) but
+  it could be you own personal package. The important is that
+  importing this package doesn't fail and that it contains the
+  desired Learner.
+
+  The ``LEARNER`` argument is the name of the Learner
+  that will be trained by the script. It is the name of a class
+  that inherits from MLPython's Learner class (see :ref:`learners`
+  for a list).
+
+  The ``RESULTS`` argument is the file path in which the generated script
+  will write its results. Each execution of the generated script will append
+  a result line to that file. 
 
   Here is an example: ::
 
-     create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS_FILE=result_file.txt n_stages learning_rate > train_nnet.py
-     python train_nnet.py 50 0.001
+   create_experiment_script TASK=classification DATASET=dna MODULE=mlpython.learners.classification LEARNER=NNet RESULTS=results_file.txt n_stages learning_rate > train_nnet.py
+   python train_nnet.py 50 0.001
 
-  Please note that, for string options, the quotes must be preceded by
+  If you have your own dataset split into train, validation and test
+  files, you can replace the argument ``DATASET`` by ``TRAIN``,
+  ``VALID`` and ``TEST``. The expected file format is the libsvm file format (datasets
+  in this format can be downloaded `here <http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/>`_)
+
+  Here's an example of usage: ::
+
+   create_experiment_script TASK=classification TRAIN=train_file.libsvm VALID=valid_file.libsvm TEST=test_file.libsvm MODULE=mlpython.learners.classification LEARNER=NNet RESULTS=results_file.txt n_stages learning_rate > train_custom_nnet.py
+   python train_custom_nnet.py 50 0.001
+
+  It should be noted that, for string option values, quotes must be preceded by
   a backslash for the script to treat it as an actual string: ::
 
-     create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file.txt min_split criterion > train_decision_tree.py
-     python train_decision_tree.py 4 \'information_gain\'
+   create_experiment_script TASK=classification DATASET=dna MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS=results_file.txt min_split criterion > train_decision_tree.py
+   python train_decision_tree.py 4 \'information_gain\'
 
-  There are some other options that can be added with the script. The option early stopping can be used in the experiment. To use this, the following arguments need to be added. The argument ``EARLY_STOPPING`` is the kind of early stopping, ``BEG`` is the beginning value where the early stopping start, ``END`` is the ending value, ``INCR`` is the value of the incrementation from the beginning value to the end and  ``LOOK_AHEAD`` is used by the early stopping to stop doing he's thing after the look_ahead's value is reached.
+  The generated script will train once the Learner on the training
+  set, compute training, validation and test set errors and append the
+  results to the results file, along with the values of the hyper-parameters.
+  
+  Early stopping can also be used to set the value of one
+  hyper-parameter.  Argument ``EARLY_STOPPING`` determines which
+  hyper-parameter is set this way.  ``BEG`` is the starting value of
+  that hyper-parameter, ``END`` is the last value, ``INCR`` is the
+  increment and ``LOOK_AHEAD`` is maximum number of consecutive
+  iterations during which the validation set error is allowed to not
+  improve without stopping. For Learner's with more than one cost,
+  argument ``EARLY_STOPPING_COST_ID`` can be used to specify which
+  cost (default=0).
   
   Here is an example: ::
 
-   create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS_FILE=result_file EARLY_STOPPING =n_stages BEG=1 INCR=1 END=500 LOOK_AHEAD=10 seed > train_early_stopping.py
+   create_experiment_script TASK=classification DATASET=dna MODULE=mlpython.learners.classification LEARNER=NNet RESULTS=results_file.txt EARLY_STOPPING =n_stages BEG=1 INCR=1 END=500 LOOK_AHEAD=10 seed > train_early_stopping.py
    python train_early_stopping.py 1234
 
-  The K-Fold method is also available to be used in the experiement. The only argument to add in the command line is ``KFOLD`` and it is the number of splits the method will do before learning. The exemple bellow show how to write the command line for K-Fold. The number 5 is for the splits and the number 2 means to do the experiement on 'k' of value 2. 
+  Finally, a k-fold cross-validation script can be generated using the
+  argument ``KFOLD``. Simply set it to the desired number of folds.
+  Then, the generated script will require that the fold index be
+  specified first, before the hyper-parameers values. When run, this
+  script will write its results in a specific file for that fold
+  (essentially, it's the specified results file in which the fold
+  index has been inserted, right before the file extension).
 
-  ::
+  Here is an example: ::
 
-   create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file KFOLD=5 > train_fold.py
-   python train_fold.py 2 
+   create_experiment_script TASK=classification DATASET=dna MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS=results_file.txt KFOLD=5 min_split > train_fold.py
+   python train_fold.py 2 10
 
 * ``mlpython_helper``: This script shows all datasets and learners
-  that MLPython supports. It also gives the information specific to a
+  that MLPython supports. It can also give information specific to a
   given dataset or learner. Hence, it is particularly useful for
-  finding the information you need to provide to the
-  ``create_experiment_script`` script. If you want to use any of these datasets, the script can download it with a command line (do not consider these lists, they are often changed). 
+  finding the information needed by the ``create_experiment_script``
+  script. 
 
-  Here is the example where you want to know all the available datasets from mlptyhon: ::
+  To know all the available datasets in MLPtyhon, use argument
+  ``-datasets`` as follows: ::
 
-   python mlpython_helper -datasets
-   TASK = density
+   $ mlpython_helper -datasets
+   TASK = distribution
           -heart
           -dna
           -web
@@ -590,28 +646,35 @@ variable).
           -sarcos
           -occluded_faces_lfw
 
-  In this example, we just added then name of a given dataset to see its doc string::
+  (the list above is probably not up-to-date and is constantly growing)
 
-   python mlpython_helper -datasets heart
-   Module ``datasets.heart`` gives access to the Heart (SPECT) dataset.
+  The know more about a specific dataset, simply specify its name in the command line, as follows: ::
 
-   The Heart dataset is obtained here:
-   http://archive.ics.uci.edu/ml/machine-learning-databases/spect.
+   $ mlpython_helper -datasets -download dna
 
-  To download a specific dataset, use this command line: ::
+   Module ``datasets.dna`` gives access to the DNA dataset.
 
-   *OUTPUT DU HELPER*
+   | **Reference:** 
+   | Tractable Multivariate Binary Density Estimation and the Restricted Boltzmann Forest
+   | Larochelle, Bengio and Turian
+   | http://www.cs.toronto.edu/~larocheh/publications/NECO-10-09-1100R2-PDF.pdf
 
-  The following command show all the learners you can use in mlpython: ::
+  Of course, to use any of the datasets supported by MLPython, it must
+  first have been downloaded, and ``mlpython_helper`` can be used for
+  that.  Simpy add the argument ``-download`` to the command, as follows: ::
 
-   python mlpython_helper -learners
+   mlpython_helper -datasets -download dna
+
+  To know which Learners are available in MLPython, use argument ``-learners`` alone instead, as follows: ::
+
+   $ mlpython_helper -learners
    MODULE: mlpython.learners.multilabel
               -MultilabelCRF
    MODULE: mlpython.learners.features
               -RBM
               -PCA
-   MODULE: mlpython.learners.density
-              -BagDensity
+   MODULE: mlpython.learners.distribution
+              -Bagdistribution
               -NADE
               -FVSBN
    MODULE: mlpython.learners.generic
@@ -627,7 +690,7 @@ variable).
               -SparseLinearDynamicalSystem
    MODULE: mlpython.learners.third_party.libsvm.classification
               -SVMClassifier
-   MODULE: mlpython.learners.third_party.gpu.density
+   MODULE: mlpython.learners.third_party.gpu.distribution
               -RestrictedBoltzmannMachine
    MODULE: mlpython.learners.third_party.gpu.classification 
               -ClassificationRestrictedBoltzmannMachine
@@ -636,15 +699,17 @@ variable).
    MODULE: mlpython.learners.sparse.classification
               -MultinomialNaiveBayesClassifier
 
-  Here is the command line for a specified learner: ::
+  Then, to get the information specific to some Learner class, add the
+  Learner class name to the command line, as follows: ::
 
-   python mlpython_helper -learners BayesClassifier
+   $ mlpython_helper -learners BayesClassifier
+
    MODULE: mlpython.learners.classification
    Docstring: BayesClassifier
 
-      Bayes classifier from density estimators
+      Bayes classifier from distribution estimators
 
-      Given one density learner per class (option ``estimators``), this
+      Given one distribution learner per class (option ``estimators``), this
       learner will train each one on a separate class and classify
       examples using Bayes' rule.
 
@@ -652,26 +717,32 @@ variable).
 
       * ``'targets'``
 
-* ``launch_jobs`` is a script that will launch jobs on different
-  machines. The usage of this script is ::
+  Note that several Learners might have the same class name (for
+  instance there might be a different ``RandomForest`` Learner in a
+  classification and a regression package).
+
+* ``launch_jobs``: This script can be used to launch several jobs in
+  parallel on a set of machines. The usage of this script is: ::
 
    Usage: launch_jobs batch_name machines job_desc'
    
-  The ``batch_name`` is the name designating the jobs batch. The
-  ``machines`` is a string determining on which machines to launch
-  jobs, and maximum number of jobs to run on each. It should have the
-  following format: ::
+  The ``batch_name`` argument is the name designating the batch of
+  jobs.  The ``machines`` argument is a string determining both the
+  machines on which to launch jobs and maximum number of jobs to run
+  on each. It should have the following format: ::
 
     machine1:maxjobs1,machine2:maxjobs2,...
 
-  You need to be able to connect to those machines via ssh (without
-  having to enter a password), and your home directory should be
-  accessible on those machines. 
+  This script assumes that you can connect to those machines via ssh
+  (without having to enter a password) and that the current directory
+  is also mounted on those machines.
 
   If the machine name is "localhost", then the jobs will be launched
-  locally on this machine. The ``job_desc`` is a string describing
-  the jobs to launch. It should describe what command to run and how
-  to vary the options of the command could be. For instance, if
+  locally on the machine. 
+
+  Finally, the ``job_desc`` argument is a string describing the jobs
+  to launch. It should describe what command to run and which argument
+  (i.e. hyper-parameters) for that script to try. For instance, if
   "job_desc" was 'program {val1,val2} {val3,val4}', then the following
   jobs would be launched: ::
 
@@ -680,47 +751,66 @@ variable).
     program val2 val3
     program val2 val4
 
-  If the total number of jobs is greater than the total maximum of
+  If the total number of jobs is greater than the total maximum number of
   jobs allowed by ``machines``, then the remaining jobs will be launched
-  as soon as previous ones finish.
+  as soon as earlier ones finish.
 
-  The output from each of those commands would be put in seperate files
-  of a directory with name ``batch_name``. 
+  The standard output from each of those commands will be put in seperate files
+  in a directory named ``batch_name``. 
 
   Going back to our previous example, ``launch_jobs`` could be used to
   run the script ``train_nnet.py`` with many different settings of
   hyper-parameters, to perform model selection: ::
 
-   launch_jobs test localhost:4 "python train_nnet.py {5,25,50} {0.01,0.001,0.0001}"   
+   launch_jobs train localhost:4 'python train_nnet.py {5,10,15} {0.1,0.01}'   
 
-  All results will be appended in file ``result_file.txt``, which was
+  All results will be appended in file ``results_file.txt``, which was
   specified when ``create_experiment_script`` was called.
 
 * ``print_ascii_table``: This script takes a text file in which each
-  row provides details for a single experiment (values of
-  hyper-parameters, results on training/validation/test sets), and
+  line provides details for a single experiment (values of
+  hyper-parameters, results on training/validation/test sets) and
   prints it out with nicely aligned columns, to facilitate
   viewing. Each row should be segmented into columns, separated by the
-  tab character '\\t'. The experiment scripts generated by ``create_experiment_script``
-  use this format to create their results file.
+  tab character '\\t'. The script also assumes that the first line of
+  the text file is a header file. The experiment scripts generated by
+  ``create_experiment_script`` use this format to create their results
+  file.
 
-  Continuing our previous example, we can look at the results in ``result_file.txt``
+  Argument ``-sort_column`` also allows to sort the lines of the
+  results file based on the numerical value of a given column. By
+  default, ``print_ascii_table`` will ignore the first line (the
+  header line) when sorting. However, for a text file with a different
+  number of header lines (or none), it is possible to specify the
+  number of header lines with the ``-header`` argument. 
+
+  Here is the usage information for this script: ::
+
+   Usage: print_ascii_table [-sort_column int [-header int]] file
+
+  Continuing our previous example, we can look at the results in ``results_file.txt``
   by running: ::
 
-   print_ascii_table result_file.txt
+   print_ascii_table -sort_column 4 results_file.txt
 
   which will output something like this: ::
 
-          #1                  #2      #3              #4               #5
-   min_split           criterion  train1          valid1            test1
-           4  'information_gain'    0.06             0.3   0.310160427807
-           1  'information_gain'    0.04             0.3   0.310160427807
-           1           'z1_loss'    0.48  0.533333333333   0.919786096257
-           4           'z1_loss'    0.48  0.533333333333   0.919786096257
-          20  'information_gain'    0.18  0.266666666667   0.272727272727
-          20           'z1_loss'    0.48  0.533333333333   0.919786096257
-         100  'information_gain'    0.48  0.533333333333   0.919786096257
-         100           'z1_loss'    0.48  0.533333333333   0.919786096257
+         #1             #2               #3               #4               #5                #6              #7               #8
+   n_stages  learning_rate           train1           valid1            test1            train2          valid2            test2
+         10           0.01            0.025             0.05  0.0682967959528    0.107709905187  0.167955635734   0.183754376553
+         15           0.01            0.015            0.055  0.0623946037099   0.0725064139118    0.1623502906   0.176613253765
+          5            0.1  0.0114285714286             0.06   0.066610455312   0.0443683558712   0.21432287231   0.213970324331
+         15            0.1              0.0  0.0633333333333   0.066610455312  0.00260086090047  0.300671979265   0.310530526339
+         10            0.1              0.0            0.065   0.066610455312  0.00641540222754  0.276963867247   0.280530205896
+          5           0.01  0.0571428571429             0.07  0.0843170320405    0.266068273165  0.302398354453   0.310701156217
+
+  Because ``NNet`` outputs two errors (the classification error and
+  the class negative log-likelihood), the results file contains two
+  sets of columns: ``train1``, ``valid1`` and ``test1`` for the
+  average classification errors on the training, validation and test
+  sets, and similarly ``train2``, ``valid2`` and ``test2`` for the
+  average class negative log-likelihood on the same sets.
+   
 
 Before you leave
 ----------------

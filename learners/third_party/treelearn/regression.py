@@ -72,6 +72,8 @@ class RandomForest(Learner):
     default (None) behavior is to consider all midpoints between unique input
     values.
 
+    Option ``seed`` is the seed of the random number generator.
+
     **Required metadata:**
 
     * ``'input_size'``
@@ -83,7 +85,8 @@ class RandomForest(Learner):
                  n_features_per_node = None, 
                  min_leaf_size = 1, 
                  max_height = 100, 
-                 max_thresholds = None):
+                 max_thresholds = None,
+                 seed = 1234):
         self.n_trees = n_trees
         self.additive = additive
         self.sample_percent = sample_percent
@@ -91,6 +94,11 @@ class RandomForest(Learner):
         self.min_leaf_size = min_leaf_size
         self.max_height = max_height
         self.max_thresholds = max_thresholds
+        self.seed = seed
+
+        import random
+        random.seed(self.seed)
+        np.random.seed(self.seed)
 
     def train(self,trainset):
         """
@@ -133,6 +141,9 @@ class RandomForest(Learner):
 
     def forget(self):
         self.forest = None
+        import random
+        random.seed(self.seed)
+        np.random.seed(self.seed)
 
     def test(self,dataset):
         """

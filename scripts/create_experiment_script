@@ -63,7 +63,7 @@ if (len(sys.argv) >= 6):
         requiredParam += 1
     else:
         raiseRequiredError = 1
-    if 'RESULTS_FILE' in dict_Arguments:
+    if 'RESULTS' in dict_Arguments:
         requiredParam += 1
     else:
         raiseRequiredError = 1
@@ -71,24 +71,27 @@ if (len(sys.argv) >= 6):
         requiredParam += 1
         datasetFromFile = False
     else:
+        dict_Tasks = {'distribution','classification','regression','multilabel','multiregression'}
         datasetFromFile = True
-        if 'TRAIN_FILE' in dict_Arguments:
+        if 'TRAIN' in dict_Arguments:
             requiredParam += 1
         else:
             raiseRequiredError = 1
-        if 'VALID_FILE' in dict_Arguments:
+        if 'VALID' in dict_Arguments:
             requiredParam += 1
         else:
             raiseRequiredError = 1
-        if 'TEST_FILE' in dict_Arguments:
+        if 'TEST' in dict_Arguments:
             requiredParam += 1
+            if not dict_Arguments['TASK'] in dict_Tasks:
+                raise ValueError('The task \'' + dict_Arguments['TASK'] + '\' is not implemented with the TRAIN, VALID, TEST method.')
         else:
             raiseRequiredError = 1
     if raiseRequiredError == 1:
         if datasetFromFile == False:
-            raise ValueError('There should be at least 5 parameters required. \'TASK\', \'DATASET\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\'')
+            raise ValueError('There should be at least 5 parameters required. \'TASK\', \'DATASET\', \'MODULE\', \'LEARNER\' and \'RESULTS\'')
         else:
-            raise ValueError('There should be at least 7 parameters required. \'TASK\', \'TRAIN_FILE\', \'VALID_FILE\', \'TEST_FILE\', \'MODULE\', \'LEARNER\' and \'RESULTS_FILE\'')        
+            raise ValueError('There should be at least 7 parameters required. \'TASK\', \'TRAIN\', \'VALID\', \'TEST\', \'MODULE\', \'LEARNER\' and \'RESULTS\'')        
       
     # Verify if the param 'EARLY_STOPPING is provided
     earlyStoppingParam = 0
@@ -187,59 +190,125 @@ if (len(sys.argv) >= 6):
         result += 'str_ParamOption = ' + str_ParamOption + '\n'
         result += 'str_ParamOptionValue = ' + str_ParamOptionValue + '\n'
         
+        result += 'try:\n'
         if earlyStoppingParam == 4: # Early_Stopping
-            result += Template('objectString = \'myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG},\' + str_ParamOption + \')\'\n').safe_substitute(dict_Arguments)
+            result += Template('    objectString = \'myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG},\' + str_ParamOption + \')\'\n').safe_substitute(dict_Arguments)
         else:
-            result += Template('objectString = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n').safe_substitute(dict_Arguments)
-        result += 'code = compile(objectString, \'<string>\', \'exec\')\n'
-        result += 'exec code\n'
+            result += Template('    objectString = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n').safe_substitute(dict_Arguments)
+        result += '    code = compile(objectString, \'<string>\', \'exec\')\n'
+        result += '    exec code\n'
+        result += 'except Exception as inst:\n'
+        result += Template('    print "Error while instantiating ${LEARNER} (required hyper-parameters are probably missing)"\n').safe_substitute(dict_Arguments)
+        result += '    print inst\n'
     else:
         result += 'str_ParamOptionValue = ""\n'
+        result += 'try:\n'
         if earlyStoppingParam == 4: # Early_Stopping
-            result += Template('myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG})\n\n').safe_substitute(dict_Arguments)
+            result += Template('    myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG})\n\n').safe_substitute(dict_Arguments)
         else:
-            result += Template('myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
+            result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
+        result += 'except Exception as inst:\n'
+        result += Template('    print "Error while instantiating ${LEARNER} (required hyper-parameters are probably missing)"\n').safe_substitute(dict_Arguments)
+        result += '    print inst\n'
+        result += '    sys.exit()\n'
     
     
     if datasetFromFile == True:
         result += "\n"
         result += "import mlpython.misc.io as mlpython_io\n"
         if dict_Arguments['TASK'] == 'classification': # Classification
-            result += "print \"Loading train data from " + dict_Arguments['TRAIN_FILE'] + "\"\n"
-            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN_FILE'] + "')\n"
-            result += "print \"Loading test data from " + dict_Arguments['TEST_FILE'] + "\"\n"
-            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST_FILE'] + "')\n"
-            result += "print \"Loading valid data from " + dict_Arguments['VALID_FILE'] + "\"\n"
-            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID_FILE'] + "')\n\n"
+            result += "print \"Loading train data from " + dict_Arguments['TRAIN'] + "\"\n"
+            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN'] + "')\n"
+            result += "input_size = trainData[1]['input_size']\n"
+            result += "print \"Loading test data from " + dict_Arguments['TEST'] + "\"\n"
+            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST'] + "',input_size=input_size)\n"
+            result += "print \"Loading valid data from " + dict_Arguments['VALID'] + "\"\n"
+            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID'] + "',input_size=input_size)\n\n"
             result += "import mlpython.mlproblems.classification as classificationProblem\n"
             result += "trainset = classificationProblem.ClassificationProblem(trainData[0], trainData[1])\n"
-            result += "validset = classificationProblem.ClassificationProblem(validData[0], validData[1])\n"
-            result += "testset = classificationProblem.ClassificationProblem(testData[0], testData[1])\n\n"
-        elif dict_Arguments['TASK'] == 'density': # Density
-            result += "print \"Loading train data from " + dict_Arguments['TRAIN_FILE'] + "\"\n"
-            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN_FILE'] + "')\n"
-            result += "print \"Loading test data from " + dict_Arguments['TEST_FILE'] + "\"\n"
-            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST_FILE'] + "')\n"
-            result += "print \"Loading valid data from " + dict_Arguments['VALID_FILE'] + "\"\n"
-            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID_FILE'] + "')\n\n"
-            result += "import mlpython.mlproblems.generic as densityProblem\n"
-            result += "trainset = densityProblem.SubsetFieldsProblem(trainData[0], trainData[1])\n"
-            result += "validset = densityProblem.SubsetFieldsProblem(validData[0], validData[1])\n"
-            result += "testset = densityProblem.SubsetFieldsProblem(testData[0], testData[1])\n\n"               
+            result += "validset = trainset.apply_on(validData[0], validData[1])\n"
+            result += "testset = trainset.apply_on(testData[0], testData[1])\n\n"
+        elif dict_Arguments['TASK'] == 'distribution': # distribution
+            result += "print \"Loading train data from " + dict_Arguments['TRAIN'] + "\"\n"
+            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN'] + "')\n"
+            result += "input_size = trainData[1]['input_size']\n"
+            result += "print \"Loading test data from " + dict_Arguments['TEST'] + "\"\n"
+            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST'] + "',input_size=input_size)\n"
+            result += "print \"Loading valid data from " + dict_Arguments['VALID'] + "\"\n"
+            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID'] + "',input_size=input_size)\n\n"
+            result += "import mlpython.mlproblems.generic as distributionProblem\n"
+            result += "trainset = distributionProblem.SubsetFieldsProblem(trainData[0], trainData[1])\n"
+            result += "validset = trainset.apply_on(validData[0], validData[1])\n"
+            result += "testset = trainset.apply_on(testData[0], testData[1])\n\n"               
         elif dict_Arguments['TASK'] == 'regression': # Regression
-            result += "print \"Loading train data from " + dict_Arguments['TRAIN_FILE'] + "\"\n"
-            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN_FILE'] + "', convert_target=float)\n"
-            result += "print \"Loading test data from " + dict_Arguments['TEST_FILE'] + "\"\n"
-            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST_FILE'] + "', convert_target=float)\n"
-            result += "print \"Loading valid data from " + dict_Arguments['VALID_FILE'] + "\"\n"
-            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID_FILE'] + "', convert_target=float)\n\n"
+            result += "print \"Loading train data from " + dict_Arguments['TRAIN'] + "\"\n"
+            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN'] + "', convert_target=float, compute_targets_metadata=False)\n"
+            result += "input_size = trainData[1]['input_size']\n"
+            result += "print \"Loading test data from " + dict_Arguments['TEST'] + "\"\n"
+            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST'] + "', convert_target=float,input_size=input_size,compute_targets_metadata=False)\n"
+            result += "print \"Loading valid data from " + dict_Arguments['VALID'] + "\"\n"
+            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID'] + "', convert_target=float,input_size=input_size,compute_targets_metadata=False)\n\n"
             result += "import mlpython.mlproblems.generic as regressionProblem    \n"
             result += "trainset = regressionProblem.MLProblem(trainData[0], trainData[1])\n"
-            result += "validset = regressionProblem.MLProblem(validData[0], validData[1])\n"
-            result += "testset = regressionProblem.MLProblem(testData[0], testData[1])\n\n"   
-        elif dict_Arguments['TASK'] == 'multilabel_classification': # Multilabel_classification
-            print 'multilabel_classification mode'
-            print 'NOT YET IMPLEMENTED'
+            result += "validset = trainset.apply_on(validData[0], validData[1])\n"
+            result += "testset = trainset.apply_on(testData[0], testData[1])\n\n"   
+        elif dict_Arguments['TASK'] == 'multilabel': # Multilabel
+            # Code to get the target_size of the file
+            myfile = open(dict_Arguments['TRAIN'])
+            highest_target = 0
+            for line in myfile:
+                line = line.split(' ')[0].split(',')
+                temp_target = max([ int(i) for i in line ])
+                if temp_target > highest_target:
+                    highest_target = temp_target
+            myfile.close()
+            result += "target_size = " + str(highest_target + 1) + "\n"
+            result += "def convert_target(target_str):\n"
+            result += "    targets = np.zeros((target_size))\n"
+            result += "    if target_str != '':\n"
+            result += "        for l in target_str.split(','):\n"
+            result += "            id = int(l)\n"
+            result += "            targets[id] = 1\n"
+            result += "    return targets\n\n"
+            result += "print \"Loading train data from " + dict_Arguments['TRAIN'] + "\"\n"
+            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN'] + "',convert_target=convert_target,compute_targets_metadata=False)\n"
+            result += "input_size = trainData[1]['input_size']\n"
+            result += "print \"Loading test data from " + dict_Arguments['TEST'] + "\"\n"
+            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST'] + "',convert_target=convert_target,input_size=input_size,compute_targets_metadata=False)\n"
+            result += "print \"Loading valid data from " + dict_Arguments['VALID'] + "\"\n"
+            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID'] + "',convert_target=convert_target,input_size=input_size,compute_targets_metadata=False)\n\n"
+            result += "import mlpython.mlproblems.generic as multilabelProblem    \n"
+            result += "trainData[1]['target_size'] = target_size\n"
+            result += "validData[1]['target_size'] = target_size\n"
+            result += "testData[1]['target_size'] = target_size\n"
+            result += "trainset = multilabelProblem.MLProblem(trainData[0], trainData[1])\n"
+            result += "trainset.metadata['target_size'] = target_size\n"
+            result += "validset = trainset.apply_on(validData[0], validData[1])\n"
+            result += "validset.metadata['target_size'] = target_size\n"
+            result += "testset = trainset.apply_on(testData[0], testData[1])\n\n"
+            result += "testset.metadata['target_size'] = target_size\n"
+        elif dict_Arguments['TASK'] == 'multiregression': # Multiregression
+            myfile = open(dict_Arguments['TRAIN'])
+            target_size = len(myfile.readline().split(' ')[0].split(','))
+            myfile.close()
+            result += "target_size = " + str(target_size) + "\n"
+            result += "def convert_target(target_str):\n"
+            result += "    targets = np.array([ float(t) for t in target_str.split(',')])\n"
+            result += "    return targets\n\n"
+            result += "print \"Loading train data from " + dict_Arguments['TRAIN'] + "\"\n"
+            result += "trainData = mlpython_io.libsvm_load('" + dict_Arguments['TRAIN'] + "',convert_target=convert_target,compute_targets_metadata=False)\n"
+            result += "input_size = trainData[1]['input_size']\n"
+            result += "print \"Loading test data from " + dict_Arguments['TEST'] + "\"\n"
+            result += "testData = mlpython_io.libsvm_load('" + dict_Arguments['TEST'] + "',convert_target=convert_target,input_size=input_size,compute_targets_metadata=False)\n"
+            result += "print \"Loading valid data from " + dict_Arguments['VALID'] + "\"\n"
+            result += "validData = mlpython_io.libsvm_load('" + dict_Arguments['VALID'] + "',convert_target=convert_target,input_size=input_size,compute_targets_metadata=False)\n\n"
+            result += "import mlpython.mlproblems.generic as multiregressionProblem    \n"
+            result += "trainData[1]['target_size'] = target_size\n"
+            result += "validData[1]['target_size'] = target_size\n"
+            result += "testData[1]['target_size'] = target_size\n"
+            result += "trainset = multiregressionProblem.MLProblem(trainData[0], trainData[1])\n"
+            result += "validset = trainset.apply_on(validData[0], validData[1])\n"
+            result += "testset = trainset.apply_on(testData[0], testData[1])\n\n"
 
     if kfoldParam == 1:
         if datasetFromFile == False: # If dataset not from file
@@ -288,7 +357,7 @@ if (len(sys.argv) >= 6):
     else:
         result += 'model = myObject.train(trainset)\n'
         result += 'outputs_tr,costs_tr = myObject.test(trainset)\n'
-        result += 'columnCount = costs_tr.shape[1]\n'
+        result += 'columnCount = len(costs_tr.__iter__().next())\n'
         result += 'outputs_v,costs_v = myObject.test(validset)\n'
         result += 'outputs_t,costs_t = myObject.test(testset)\n\n'
         result += '# Preparing result line\n'
@@ -312,10 +381,10 @@ if (len(sys.argv) >= 6):
     result += 'str_header += \'\\n\'\n'
     # Different result_file name and content if kfold is used.
     if kfoldParam == 1:
-        result += Template('file_name, ext = os.path.splitext(\'${RESULTS_FILE}\')\n').safe_substitute(dict_Arguments)
+        result += Template('file_name, ext = os.path.splitext(\'${RESULTS}\')\n').safe_substitute(dict_Arguments)
         result += 'result_file = file_name + \'_fold_\' + sys.argv[0] + ext\n\n'
     else:
-        result += Template('result_file = \'${RESULTS_FILE}\'\n\n').safe_substitute(dict_Arguments)
+        result += Template('result_file = \'${RESULTS}\'\n\n').safe_substitute(dict_Arguments)
     result += '# Preparing result file\n'
     result += 'header_line = ""\n'
     if len(options) >= 1: # If more options was set
@@ -338,20 +407,28 @@ if (len(sys.argv) >= 6):
     
     print result # Print result in a file (' > ' must be used)
 else:
-    usage_msg = """Usage: create_experiment_script TASK=task DATASET=dataset MODULE=mlpython.module LEARNER=Learner RESULTS_FILE=result_file [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
+    usage_msg = """Usage: create_experiment_script TASK=task DATASET=dataset MODULE=mlpython.module LEARNER=Learner RESULTS=results_file.txt [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
+       or
+       create_experiment_script TASK=task TRAIN=train_file.libsvm VALID=valid_file.libsvm TEST=test_file.libsvm MODULE=mlpython.module LEARNER=Learner RESULTS=results_file.txt [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
+
+The usage shows two different calls for the script. You can either use MLPython's datasets or your own \'TRAIN\', \'VALID\' and \'TEST\' files in libsvm format.
 
 The options \'option1\' and \'option2\' here are Learner's options that will be set when you call your script. For example: python scrypt.py option1_value option2_value
 
 Example 1:
-create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file min_split criterion > script.py
-python script.py 4 \\'information_gain\\'
+create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS=results_file.txt min_split criterion > train_script.py
+python train_script.py 4 \\'information_gain\\'
 
 Example 2:
-create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS_FILE=result_file EARLY_STOPPING=n_stages BEG=1 INCR=1 END=500 LOOK_AHEAD=10 seed > script.py
-python script.py 1234
+create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.classification LEARNER=NNet RESULTS=results_file.txt EARLY_STOPPING=n_stages BEG=1 INCR=1 END=500 LOOK_AHEAD=10 seed > early_stopping_script.py
+python early_stopping_script.py 1234
 
 Example 3:
-create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS_FILE=result_file KFOLD=5 min_split criterion > script.py
-python script.py 2 4 \\'information_gain\\'
+create_experiment_script TASK=classification DATASET=heart MODULE=mlpython.learners.third_party.milk.classification LEARNER=TreeClassifier RESULTS=results_file.txt KFOLD=5 min_split criterion > kfold_script.py
+python kfold_script.py 2 4 \\'information_gain\\'
+
+Example 4:
+create_experiment_script TASK=classification TRAIN=train_file.libsvm VALID=valid_file.libsvm TEST=test_file.libsvm MODULE=mlpython.learners.classification LEARNER=NNet RESULTS=results_file.txt n_stages learning_rate > train_custom_nnet.py
+python train_custom_nnet.py 50 0.001
     """
     print usage_msg

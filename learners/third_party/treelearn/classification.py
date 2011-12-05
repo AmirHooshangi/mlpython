@@ -69,6 +69,8 @@ class RandomForest(Learner):
     default (None) behavior is to consider all midpoints between unique input
     values.
 
+    Option ``seed`` is the seed of the random number generator.
+
     **Required metadata:**
 
     * ``'input_size'``
