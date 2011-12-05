@@ -54,7 +54,7 @@ It also defines the following functions:
 
 classification_names = set(['adult',
                             'connect4',
-                            'convex'
+                            'convex',
                             'dna',
                             'heart',
                             'mnist',

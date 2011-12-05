@@ -59,11 +59,11 @@ The modules currently included are:
 * ``datasets.mediamill``:                        Mediamill dataset module.
 * ``datasets.medical``:                          Medical dataset module.
 * ``datasets.mnist``:                            MNIST dataset module.
-* ``datasets.mnist_basic``:                      Mnist_basic dataset module.
-* ``datasets.mnist_background_images``:          Mnist_background_images dataset module.
-* ``datasets.mnist_background_random``:          Mnist_background_random dataset module.
-* ``datasets.mnist_rotated``:                    Mnist_rotated dataset module.
-* ``datasets.mnist_rotated_background_images``:  Mnist_rotated_background_images dataset module.
+* ``datasets.mnist_basic``:                      MNIST basic dataset module.
+* ``datasets.mnist_background_images``:          MNIST background-images dataset module.
+* ``datasets.mnist_background_random``:          MNIST background-random dataset module.
+* ``datasets.mnist_rotated``:                    MNIST rotated dataset module.
+* ``datasets.mnist_rotated_background_images``:  MNIST rotated background-images dataset module.
 * ``datasets.mturk``:                            MTurk dataset module.
 * ``datasets.mushrooms``:                        Mushrooms dataset module.
 * ``datasets.newsgroups``:                       20-newsgroup dataset module.
@@ -73,7 +73,7 @@ The modules currently included are:
 * ``datasets.ocr_letters``:                      OCR letters dataset module.
 * ``datasets.rcv1``:                             RCV1 dataset module.
 * ``datasets.rectangles``:                       Rectangles dataset module.
-* ``datasets.rectangles_images``:                Rectangles_images dataset module.
+* ``datasets.rectangles_images``:                Rectangles images dataset module.
 * ``datasets.sarcos``:                           SARCOS dataset module.
 * ``datasets.scene``:                            Scene dataset module.
 * ``datasets.web``:                              Web dataset module.

@@ -59,10 +59,8 @@ def load(dir_path,load_to_memory=False):
         
     def load_line(line):
         tokens = line.split()
-        return (np.array([float(i) for i in tokens[:-1]]), float(tokens[-1]))
+        return (np.array([float(i) for i in tokens[:-1]]), int(float(tokens[-1])))
         
-
-
     train_file,valid_file,test_file = [os.path.join(dir_path, 'rectangles_' + ds + '.amat') for ds in ['train','valid','test']]
     # Get data
     train,valid,test = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file,test_file]]
@@ -113,11 +111,6 @@ def obtain(dir_path):
         lineList.append(line)
     fp.close()
         
-    ## Shuffle
-    #import random
-    #random.seed(25)
-    #random.shuffle(lineList)
-    
     # Create valid file and train file
     valid_file = open(valid_file_path, "w")
     train_file = open(train_file_path, "w")

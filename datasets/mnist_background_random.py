@@ -25,7 +25,7 @@
 # or implied, of Guillaume Roy-Fontaine and David Brouillard.
 
 """
-Module ``datasets.mnist_background_random`` gives access to the Mnist_background_random dataset.
+Module ``datasets.mnist_background_random`` gives access to the MNIST background-random dataset.
 
 | **Reference:** 
 | An Empirical Evaluation of Deep Architectures on Problems with Many Factors of Variation
@@ -40,7 +40,7 @@ import os
 
 def load(dir_path,load_to_memory=False):
     """
-    Loads the Mnist_background_random dataset.
+    Loads the MNIST background-random dataset.
 
     The data is given by a dictionary mapping from strings
     ``'train'``, ``'valid'`` and ``'test'`` to the associated pair of data and metadata.
@@ -113,11 +113,6 @@ def obtain(dir_path):
         lineList.append(line)
     fp.close()
         
-    ## Shuffle
-    #import random
-    #random.seed(25)
-    #random.shuffle(lineList)
-    
     # Create valid file and train file
     valid_file = open(valid_file_path, "w")
     train_file = open(train_file_path, "w")

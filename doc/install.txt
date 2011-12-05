@@ -39,7 +39,8 @@ Installing these libraries on Ubuntu is straightforward, using its advanced pack
 For Mac OS X, the simplest thing to do might be to install Python
 using the Mac OS X installer available here:
 http://www.python.org/download/ (we recommend Python 2.7 or later).
-Other Python libraries can then be installed through easy_install: ::
+Other Python libraries can then be installed through easy_install (which
+is part of `setuptools <http://pypi.python.org/pypi/setuptools>`_): ::
 
    sudo easy_install numpy
    sudo easy_install scipy
@@ -81,10 +82,10 @@ Append the subdirectory core/include to that path and add it to
 
 
 MLPython also interfaces other third-party software that are
-not absolutely required to use MLPython:
-
-* `LIBSVM <http://www.csie.ntu.edu.tw/~cjlin/libsvm/>`_: SVM classifier, see mlpython/learners/third_party/libsvm/README for instructions.
-* `t-SNE <http://http://homepage.tudelft.nl/19j49/t-SNE.html>`_: t-SNE dimensionality reduction, see mlpython/misc/third_party/tsne/README for instructions.
+not absolutely required to use MLPython. The interfaces
+can be found in subdirectories of mlpython/learners/third_party
+and mlpython/misc/third_party. Each subdirectory contains a README
+file describing how to download and install the required software.
 
 Installing MLPython
 -------------------

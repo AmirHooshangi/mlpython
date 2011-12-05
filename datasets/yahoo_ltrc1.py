@@ -61,7 +61,7 @@ def load(dir_path,load_to_memory=False,home_made_valid_split=False):
     * ``'n_queries'``
     * ``'n_pairs'``
     * ``'length'``
-
+    
     """
     
     input_size=700

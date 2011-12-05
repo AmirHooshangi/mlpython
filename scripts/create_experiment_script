@@ -197,9 +197,9 @@ if (len(sys.argv) >= 6):
             result += Template('    objectString = \'myObject = ${LEARNER}(\' + str_ParamOption + \')\'\n').safe_substitute(dict_Arguments)
         result += '    code = compile(objectString, \'<string>\', \'exec\')\n'
         result += '    exec code\n'
-        result += 'except:\n'
-        result += Template('    print "Error while instantiating ${LEARNER}"\n').safe_substitute(dict_Arguments)
-        result += '    print sys.exc_info()[0]\n'
+        result += 'except Exception as inst:\n'
+        result += Template('    print "Error while instantiating ${LEARNER} (required hyper-parameters are probably missing)"\n').safe_substitute(dict_Arguments)
+        result += '    print inst\n'
     else:
         result += 'str_ParamOptionValue = ""\n'
         result += 'try:\n'
@@ -207,9 +207,9 @@ if (len(sys.argv) >= 6):
             result += Template('    myObject = ${LEARNER}(${EARLY_STOPPING}=${BEG})\n\n').safe_substitute(dict_Arguments)
         else:
             result += Template('    myObject = ${LEARNER}()\n\n').safe_substitute(dict_Arguments)
-        result += 'except:\n'
-        result += Template('    print "Error while instantiating ${LEARNER}"\n').safe_substitute(dict_Arguments)
-        result += '    print sys.exc_info()[0]\n'
+        result += 'except Exception as inst:\n'
+        result += Template('    print "Error while instantiating ${LEARNER} (required hyper-parameters are probably missing)"\n').safe_substitute(dict_Arguments)
+        result += '    print inst\n'
         result += '    sys.exit()\n'
     
     
@@ -408,10 +408,10 @@ if (len(sys.argv) >= 6):
     print result # Print result in a file (' > ' must be used)
 else:
     usage_msg = """Usage: create_experiment_script TASK=task DATASET=dataset MODULE=mlpython.module LEARNER=Learner RESULTS=results_file.txt [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
-       
+       or
        create_experiment_script TASK=task TRAIN=train_file.libsvm VALID=valid_file.libsvm TEST=test_file.libsvm MODULE=mlpython.module LEARNER=Learner RESULTS=results_file.txt [EARLY_STOPPING=option_es BEG=1 INCR=1 END=500 LOOK_AHEAD=10 [EARLY_STOPPING_COST_ID=0] ] [KFOLD=5] [option1 option2]
 
-The usage shows two different calls for the script. You can ether use mlpython's datasets or your own \'TRAIN\', \'VALID\' and \'TEST\' files if they are in libsvm format.
+The usage shows two different calls for the script. You can either use MLPython's datasets or your own \'TRAIN\', \'VALID\' and \'TEST\' files in libsvm format.
 
 The options \'option1\' and \'option2\' here are Learner's options that will be set when you call your script. For example: python scrypt.py option1_value option2_value
 

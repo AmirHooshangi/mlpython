@@ -25,7 +25,7 @@
 # or implied, of Guillaume Roy-Fontaine and David Brouillard.
 
 """
-Module ``datasets.mnist_basic`` gives access to the Mnist_basic dataset.
+Module ``datasets.mnist_basic`` gives access to the MNIST basic dataset.
 
 | **Reference:** 
 | An Empirical Evaluation of Deep Architectures on Problems with Many Factors of Variation
@@ -40,7 +40,7 @@ import os
 
 def load(dir_path,load_to_memory=False):
     """
-    Loads the Mnist_basic dataset.
+    Loads the MNIST basic dataset.
 
     The data is given by a dictionary mapping from strings
     ``'train'``, ``'valid'`` and ``'test'`` to the associated pair of data and metadata.
@@ -116,11 +116,6 @@ def obtain(dir_path):
     for line in fp:
         lineList.append(line)
     fp.close()
-        
-    ## Shuffle
-    #import random
-    #random.seed(25)
-    #random.shuffle(lineList)
     
     # Create valid file and train file
     valid_file = open(valid_file_path, "w")

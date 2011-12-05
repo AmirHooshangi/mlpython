@@ -25,7 +25,7 @@
 # or implied, of Guillaume Roy-Fontaine and David Brouillard.
 
 """
-Module ``datasets.convex`` gives access to the Convex dataset.
+Module ``datasets.convex`` gives access to the Convex image classification dataset.
 
 | **Reference:** 
 | An Empirical Evaluation of Deep Architectures on Problems with Many Factors of Variation
@@ -59,15 +59,13 @@ def load(dir_path,load_to_memory=False):
         
     def load_line(line):
         tokens = line.split()
-        return (np.array([float(i) for i in tokens[:-1]]), float(tokens[-1]))
-        
-
+        return (np.array([float(i) for i in tokens[:-1]]), int(float(tokens[-1])))
 
     train_file,valid_file,test_file = [os.path.join(dir_path, 'convex_' + ds + '.amat') for ds in ['train','valid','test']]
     # Get data
     train,valid,test = [mlio.load_from_file(f,load_line) for f in [train_file,valid_file,test_file]]
 
-    lengths = [7000, 1000, 50000]
+    lengths = [6000, 2000, 50000]
     if load_to_memory:
         train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],[np.float64,int],l) for d,l in zip([train,valid,test],lengths)]
         
@@ -113,18 +111,13 @@ def obtain(dir_path):
         lineList.append(line)
     fp.close()
         
-    ## Shuffle
-    #import random
-    #random.seed(25)
-    #random.shuffle(lineList)
-    
     # Create valid file and train file
     valid_file = open(valid_file_path, "w")
     train_file = open(train_file_path, "w")
     
     # Write lines into valid file and train file
     for i, line in enumerate(lineList):
-        if ((i + 1) > 7000):
+        if ((i + 1) > 6000):
             valid_file.write(line)
         else:
             train_file.write(line)

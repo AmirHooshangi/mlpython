@@ -150,32 +150,32 @@ MNIST
 .. automodule:: datasets.mnist
    :members:
 
-Mnist_basic
+MNIST basic
 -------------
 
 .. automodule:: datasets.mnist_basic
    :members:
 
-Mnist_background_images
--------------
+MNIST background-images
+------------------------
 
 .. automodule:: datasets.mnist_background_images
    :members:
 
-Mnist_background_random
--------------
+MNIST background-random
+------------------------
 
 .. automodule:: datasets.mnist_background_random
    :members:
 
-Mnist_rotated
+MNIST rotated
 -------------
 
 .. automodule:: datasets.mnist_rotated
    :members:
 
-Mnist_rotated_background_images
--------------
+MNIST rotated background-images
+--------------------------------
 
 .. automodule:: datasets.mnist_rotated_background_images
    :members:
@@ -216,7 +216,7 @@ Rectangles
 .. automodule:: datasets.rectangles
    :members:
 
-Rectangles_images
+Rectangles images
 -------------------
 
 .. automodule:: datasets.rectangles_images
