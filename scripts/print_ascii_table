@@ -115,18 +115,11 @@ if sort_column == True:
         lines_tuple.pop(0)
         ctr = ctr + 1
       
-    # Convert tuple item to float or int so we can sort on them
-    for index, line in enumerate(lines_tuple):
-        if representsFloat(line[0]) == True:
-            line[0] = float(line[0])
-        elif representsInt(line[0]) == True:
-            line[0] = int(line[0])
-        
     # Sort tuples on the designated column number
     try:
-       lines_tuple = sorted(lines_tuple, key=lambda myKey: myKey[sort_column_number - 1]) 
+       lines_tuple = sorted(lines_tuple, key=lambda myKey: float(myKey[sort_column_number - 1]))
     except Exception as inst:
-        print "You must sort on an existing column."
+        print "Error: either the column for sorting is not valid or it contains non-numerical values."
         sys.exit()
         
     # Add the header line to lines or else clear it
