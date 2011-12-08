@@ -91,6 +91,8 @@ class RankingFromClassifier(Learner):
     predict the target relevance score associated to each
     document/query pairs found in the training set.
     
+    Option ``classifier`` is the classifier to train.
+
     The classifier can be used for ranking based on three
     measures, specified by option ``ranking_measure``: 
 
@@ -227,6 +229,8 @@ class RankingFromRegression(Learner):
     This learner trains a given regression learner to 
     predict the target relevance score associated to each
     document/query pairs found in the training set.
+
+    Option ``regression`` is the regression model to train.
 
     Option ``merge_document_and_query`` should be a 
     callable function that takes two arguments (the 
