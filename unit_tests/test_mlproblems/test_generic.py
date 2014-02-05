@@ -47,11 +47,42 @@ class TestMLProblem:
     def test_len(self):
         data = np.arange(30).reshape((10,3))
         metadata = {'input_size':3}
-        self.mlpb = MLProblem(data,metadata)
-        assert len(self.mlpb) == 10
+        mlpb = MLProblem(data,metadata)
+        assert len(mlpb) == 10
 
     def test_len_metadata(self):
         data = np.arange(30).reshape((10,3))
         metadata = {'input_size':3, 'length':9}
-        self.mlpb = MLProblem(data,metadata)
-        assert len(self.mlpb) == 9
+        mlpb = MLProblem(data,metadata)
+        assert len(mlpb) == 9
+
+    def test_iter(self):
+        data = np.arange(30).reshape((10,3))
+        mlpb = MLProblem(data)
+        line = 0.
+        for example in mlpb:
+            array = np.array([line, line+1, line+2])
+            assert np.array_equal(array, example)
+            line += 3
+
+    def test_peak(self):
+        data = np.arange(20).reshape((4,5))
+        mlpb = MLProblem(data)
+        peakLine = np.array([0,1,2,3,4])
+        assert np.array_equal(peakLine, mlpb.peak())
+
+    def test_apply_on(self):
+        data = np.arange(30).reshape((10,3))
+        metadata = {'input_size':3, 'length':9}
+        mlpb = MLProblem(data,metadata)
+
+        new_data = np.arange(20).reshape((4,5))
+        new_metadata = {'input_size':5, 'length':4}
+        mlpb2 = MLProblem(new_data, new_metadata)
+
+        assert len(mlpb2) == 4
+        assert len(mlpb) == 9
+
+        mlpb3 = mlpb.apply_on(mlpb2)
+        assert len(mlpb3) == 4
+        assert mlpb3.metadata['input_size'] == 5
