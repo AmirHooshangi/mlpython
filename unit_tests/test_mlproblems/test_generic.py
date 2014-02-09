@@ -43,7 +43,6 @@ import numpy as np
 
 class TestMLProblem:
 
-
     def test_len(self):
         data = np.arange(30).reshape((10,3))
         metadata = {'input_size':3}
@@ -89,6 +88,9 @@ class TestMLProblem:
         assert len(mlpb3) == 4
         assert mlpb3.metadata['input_size'] == 5
 
+
+
+
 class TestSubsetProblem:
 
     def test_len(self):
@@ -102,7 +104,7 @@ class TestSubsetProblem:
         data = np.arange(30).reshape((10,3))
         subset = set([0,1,4])
         subpb = SubsetProblem(data,{},True, subset)
-        
+
         results = np.array((0,1,2,3,4,5,12,13,14)).reshape(3,3)
         i = 0
         for line in subpb:
@@ -130,6 +132,9 @@ class TestSubsetProblem:
         new_data = np.arange(10).reshape((5,2))
         fullSized = child.apply_on(new_data)
         assert len(fullSized) == 5
+
+
+
 
 class TestSubsetFieldsProblem:
 
@@ -165,6 +170,9 @@ class TestSubsetFieldsProblem:
         for line in newProblem:
             assert np.array_equal(line, results[i])
             i+=1
+
+
+
 
 class TestMergedProblem:
 
@@ -212,3 +220,137 @@ class TestMergedProblem:
         for line in mergedpb:
             assert np.array_equal(line,results[i])
             i+=1
+
+
+
+
+class TestPreprocessedProblem:
+
+    def foisN(self, nombre, metadata):
+        return metadata['scalar'] * nombre
+
+    def test_iter(self):
+        data = np.arange(30).reshape((10,3))
+        metadata = {'scalar': 4}
+        pppb = PreprocessedProblem(data,metadata, True, self.foisN)
+
+        results = 4 * data
+        i=0
+        for line in pppb:
+            assert np.array_equal(line, results[i])
+            i+=1
+
+    def test_apply_on(self):
+        data = np.arange(30).reshape((10,3))
+        metadata = {'scalar': 4}
+        pppb = PreprocessedProblem(data,metadata, True, self.foisN)
+
+        new_data = np.arange(40).reshape((5,8))
+        new_metadata = {'scalar': 8}
+
+        new_pppb = pppb.apply_on(new_data, new_metadata)
+
+        results = 8 * new_data
+        i=0
+        for line in new_pppb:
+            assert np.array_equal(line, results[i])
+            i+=1
+
+
+
+
+class TestMinibatchProblem:
+
+    def test_metadata(self):
+        data = np.arange(30).reshape((10,3))
+        mppb = MinibatchProblem(data,{}, True, 2)
+
+        assert 'minibatch_size' in mppb.metadata
+        assert mppb.metadata['minibatch_size'] == 2
+
+    def test_len(self):
+        data = np.arange(30).reshape((10,3))
+        mppb = MinibatchProblem(data,{}, True, 2)
+        mppb2 = MinibatchProblem(data,{}, True, 3)
+
+        assert len(mppb) == 5
+        assert len(mppb2) == 4
+
+    def test_iter_single_field(self):
+        data = np.arange(30).reshape((10,3))
+        mppb = MinibatchProblem(data,{}, True, 2)
+        mppb2 = MinibatchProblem(data,{}, True, 3)
+
+        result = np.array((27,28,29,27,28,29,27,28,29)).reshape(3,3)
+        i=0
+        for line in mppb:
+            assert len(line) == 2
+        for line in mppb2:
+            if i <3:
+                assert len(line) == 3
+            else:
+                assert np.array_equal(line, result)
+            i+=1
+
+    def test_iter_multi_fields(self):
+        data = np.arange(30).reshape((10,3))
+        mppb = MinibatchProblem(data,{}, True, 2, False)
+
+        results = np.array((18, 21, 19, 22, 20, 23)).reshape(3,2)
+        i = 0
+        for ex in mppb:
+            if i == 3:
+                j=0
+                for pair in ex:
+                    assert np.array_equal(pair, results[j])
+                    j+=1
+            i+=1
+
+    def test_apply_on_len(self):
+        data = np.arange(30).reshape((10,3))
+        mppb = MinibatchProblem(data,{}, True, 2)
+
+        new_data = np.arange(15).reshape((5,3))
+        new_mppd = mppb.apply_on(new_data)
+
+        assert len(new_mppd) == 3
+
+    def test_apply_on_iter(self):
+        data = np.arange(30).reshape((10,3))
+        mppb = MinibatchProblem(data,{}, True, 2)
+
+        new_data = np.arange(15).reshape((5,3))
+        new_mppd = mppb.apply_on(new_data)
+
+        results = np.array((0,1,2,3,4,5)).reshape(2,3)
+        assert np.array_equal(new_mppd.__iter__().next(), results)
+
+
+
+
+
+class TestSemisupervisedProblem:
+
+    def test_iter(self):
+        data = [[0,1],[2,3],[4,5],[6,7],[8,9]]
+        unlabeled = set([0,2,4])
+        sspb = SemisupervisedProblem(data,{},True,unlabeled)
+
+        id = 0
+        for line in sspb:
+            if id in unlabeled:
+                assert line[1] == None
+            else:
+                assert line[1] is not None
+            id +=1
+
+    def test_apply_on(self):
+        data = [[0,1],[2,3],[4,5],[6,7],[8,9]]
+        unlabeled = set([0,2,4])
+        sspb = SemisupervisedProblem(data,{},True,unlabeled)
+
+        new_data = [[0,1,2],[2,3,4],[4,5,6],[6,7,8],[8,9,10]]
+        sspb2 = sspb.apply_on(new_data)
+
+        for line in sspb2:
+            assert None not in line
