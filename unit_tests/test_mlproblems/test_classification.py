@@ -101,14 +101,4 @@ class TestClassSubsetProblem:
 
 		assert len(cspb) == 20
 
-	"""def test_len(self):
-		data = [[0,'a'],[2,'c'],[4,'a'],[6,'g'],[8,'i']]
-		class_to_id = {'a':0,'c':1,'e':2,'g':3,'i':4}
-		metadata = {'class_to_id':class_to_id}
-
-		cspb = ClassSubsetProblem(data, metadata, False, ['a'])
-
-		print len(cspb)
-		print cspb.metadata['class_to_id']
-		print cspb.metadata['targets']
-		#assert len(cspb) == 2"""
+	
