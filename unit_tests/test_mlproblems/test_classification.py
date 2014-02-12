@@ -42,10 +42,12 @@ class TestClassificationProblem:
 
 	@raises(KeyError)
 	def test_missing_metadata(self):
+		"""Classification problem needs 'targets' metadata"""
 		data = np.arange(10).reshape(5,2)
 		cpb = ClassificationProblem(data)
 
 	def test_class_to_id(self):
+		"""Classification problem creates 'class_to_id' metadata"""
 		metadata = {'targets': ['yes','no']}
 		data = np.arange(10).reshape(5,2)
 		cpb = ClassificationProblem(data, metadata)
@@ -55,6 +57,7 @@ class TestClassificationProblem:
 
 	@raises(AttributeError)
 	def test_iter_missing_metedata(self):
+		"""Classification problem needs 'class_to_id' metadata"""
 		data = np.arange(10).reshape(5,2)
 		cpb = ClassificationProblem(data,{},False)
 
@@ -63,6 +66,7 @@ class TestClassificationProblem:
 			assert False
 
 	def test_iter(self):
+		"""Classification problem iteration"""
 		metadata = {'targets': ['a','c','e','g','i']}
 		data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
 		cpb = ClassificationProblem(data, metadata)
@@ -76,6 +80,7 @@ class TestClassificationProblem:
 			id+=1
 
 	def test_apply_on(self):
+		"""Classification problem apply_on passes 'class_to_id' metadata to the new problem"""
 		metadata = {'targets': ['a','c','e','g','i']}
 		data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
 		cpb = ClassificationProblem(data, metadata)
@@ -91,8 +96,7 @@ class TestClassificationProblem:
 class TestClassSubsetProblem:
 
 	def test_len_meta(self):
-		"""Make sure that class_subset_length metadata is used by default
-		No one should ever lie this way about the length of the data"""
+		"""Classification subset problem uses 'class_subset_length' as data length"""
 		data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
 		class_to_id = {'a':0,'c':1,'e':2,'g':3,'i':4}
 		metadata = {'class_to_id':class_to_id, 'class_subset_length':20}
