@@ -44,12 +44,14 @@ import numpy as np
 class TestMLProblem:
 
     def test_len(self):
+        """MLProblem length is data length"""
         data = np.arange(30).reshape((10,3))
         metadata = {'input_size':3}
         mlpb = MLProblem(data,metadata)
         assert len(mlpb) == 10
 
     def test_len_metadata(self):
+        """MLProblem length is given length"""
         data = np.arange(30).reshape((10,3))
         metadata = {'input_size':3, 'length':9}
         mlpb = MLProblem(data,metadata)
@@ -58,6 +60,7 @@ class TestMLProblem:
         #Given length should always be the real length.
 
     def test_iter(self):
+        """MLProblem iteration"""
         data = np.arange(30).reshape((10,3))
         mlpb = MLProblem(data)
         line = 0.
@@ -67,12 +70,14 @@ class TestMLProblem:
             line += 3
 
     def test_peak(self):
+        """MLProblem peak returns the first data"""
         data = np.arange(20).reshape((4,5))
         mlpb = MLProblem(data)
         peakLine = np.array([0,1,2,3,4])
         assert np.array_equal(peakLine, mlpb.peak())
 
     def test_apply_on(self):
+        """MLProblem apply_on doesn't pass metadata"""
         data = np.arange(30).reshape((10,3))
         metadata = {'input_size':3, 'length':9}
         mlpb = MLProblem(data,metadata)
@@ -94,6 +99,7 @@ class TestMLProblem:
 class TestSubsetProblem:
 
     def test_len(self):
+        """SubestProblem length"""
         data = np.arange(30).reshape((10,3))
         subset = set([0,1,5])
         subpb = SubsetProblem(data,{},True, subset)
@@ -101,6 +107,7 @@ class TestSubsetProblem:
         assert len(subpb) == 3
 
     def test_iter(self):
+        """SubsetProblem iteration"""
         data = np.arange(30).reshape((10,3))
         subset = set([0,1,4])
         subpb = SubsetProblem(data,{},True, subset)
@@ -112,6 +119,7 @@ class TestSubsetProblem:
             i+=1
 
     def test_apply_on(self):
+        """SubsetProblem apply_on"""
         data = np.arange(30).reshape((10,3))
         subset = set([0,1,4])
         subpb = SubsetProblem(data,{},True, subset)
@@ -121,6 +129,7 @@ class TestSubsetProblem:
         assert len(fullSized) == 5
 
     def test_apply_on_parents(self):
+        """SubsetProblem apply_on in chain"""
         data = np.arange(30).reshape((10,3))
         subset = set([0,1,4])
         mlpb = MLProblem(data)
@@ -139,6 +148,7 @@ class TestSubsetProblem:
 class TestSubsetFieldsProblem:
 
     def test_len(self):
+        """SubsetFieldsProblem length"""
         data = np.arange(20).reshape((4,5))
         fields = [0,1,4]
         sfpb = SubsetFieldsProblem(data, {}, False, fields)
@@ -146,6 +156,7 @@ class TestSubsetFieldsProblem:
         assert len(sfpb) == 4
 
     def test_iter(self):
+        """SubsetFieldsProblem iteration"""
         data = np.arange(20).reshape((4,5))
         fields = [0,1,4]
         sfpb = SubsetFieldsProblem(data, {}, False, fields)
@@ -157,6 +168,7 @@ class TestSubsetFieldsProblem:
             i+=1
 
     def test_apply_on(self):
+        """SubsetFieldsProblem apply_on uses same subset"""
         data = np.arange(20).reshape((4,5))
         fields = [0,1,4]
         sfpb = SubsetFieldsProblem(data, {}, False, fields)
@@ -177,6 +189,7 @@ class TestSubsetFieldsProblem:
 class TestMergedProblem:
 
     def test_len_serial(self):
+        """MergedProblem length in serial mode"""
         data1 = np.arange(20).reshape((4,5))
         data2 = np.arange(30).reshape((3,10))
         data3 = np.arange(40).reshape((20,2))
@@ -187,6 +200,7 @@ class TestMergedProblem:
         assert len(mergedpb) == 32
 
     def test_len_not_serial(self):
+        """MergedProblem length in normal mode"""
         data1 = np.arange(20).reshape((4,5))
         data2 = np.arange(30).reshape((3,10))
         data3 = np.arange(40).reshape((20,2))
@@ -196,6 +210,7 @@ class TestMergedProblem:
         assert len(mergedpb) == 80 #Max length * number of datasets
 
     def test_iter_serial(self):
+        """MergedProblem iteration in serial mode"""
         data1 = np.arange(6).reshape((2,3))
         data2 = np.arange(9).reshape((3,3))
         data3 = np.arange(12).reshape((4,3))
@@ -209,6 +224,7 @@ class TestMergedProblem:
             i+=1
 
     def test_iter_non_serial(self):
+        """MergedProblem iteration in normal mode"""
         data1 = np.arange(6).reshape((2,3))
         data2 = np.arange(9).reshape((3,3))
         data3 = np.arange(12).reshape((4,3))
@@ -230,6 +246,7 @@ class TestPreprocessedProblem:
         return metadata['scalar'] * nombre
 
     def test_iter(self):
+        """PreprocessedProblem iteration"""
         data = np.arange(30).reshape((10,3))
         metadata = {'scalar': 4}
         pppb = PreprocessedProblem(data,metadata, True, self.foisN)
@@ -241,6 +258,7 @@ class TestPreprocessedProblem:
             i+=1
 
     def test_apply_on(self):
+        """PreprocessedProblem apply_on applies the function on new data"""
         data = np.arange(30).reshape((10,3))
         metadata = {'scalar': 4}
         pppb = PreprocessedProblem(data,metadata, True, self.foisN)
@@ -262,6 +280,7 @@ class TestPreprocessedProblem:
 class TestMinibatchProblem:
 
     def test_metadata(self):
+        """MinibatchProblem constructor sets 'minibatch_size' metadata"""
         data = np.arange(30).reshape((10,3))
         mppb = MinibatchProblem(data,{}, True, 2)
 
@@ -269,6 +288,7 @@ class TestMinibatchProblem:
         assert mppb.metadata['minibatch_size'] == 2
 
     def test_len(self):
+        """MinibatchProblem length"""
         data = np.arange(30).reshape((10,3))
         mppb = MinibatchProblem(data,{}, True, 2)
         mppb2 = MinibatchProblem(data,{}, True, 3)
@@ -277,6 +297,7 @@ class TestMinibatchProblem:
         assert len(mppb2) == 4
 
     def test_iter_single_field(self):
+        """MinibatchProblem iteration in single field mode"""
         data = np.arange(30).reshape((10,3))
         mppb = MinibatchProblem(data,{}, True, 2)
         mppb2 = MinibatchProblem(data,{}, True, 3)
@@ -293,6 +314,7 @@ class TestMinibatchProblem:
             i+=1
 
     def test_iter_multi_fields(self):
+        """MinibatchProblem iteration in multi fields mode"""
         data = np.arange(30).reshape((10,3))
         mppb = MinibatchProblem(data,{}, True, 2, False)
 
@@ -307,6 +329,7 @@ class TestMinibatchProblem:
             i+=1
 
     def test_apply_on_len(self):
+        """MinibatchProblem apply_on doesn't change length"""
         data = np.arange(30).reshape((10,3))
         mppb = MinibatchProblem(data,{}, True, 2)
 
@@ -316,6 +339,7 @@ class TestMinibatchProblem:
         assert len(new_mppd) == 3
 
     def test_apply_on_iter(self):
+        """MinibatchProblem iteration after apply_on"""
         data = np.arange(30).reshape((10,3))
         mppb = MinibatchProblem(data,{}, True, 2)
 
@@ -332,6 +356,7 @@ class TestMinibatchProblem:
 class TestSemisupervisedProblem:
 
     def test_iter(self):
+        """SemisupervisedProblem iteration"""
         data = [[0,1],[2,3],[4,5],[6,7],[8,9]]
         unlabeled = set([0,2,4])
         sspb = SemisupervisedProblem(data,{},True,unlabeled)
@@ -345,6 +370,7 @@ class TestSemisupervisedProblem:
             id +=1
 
     def test_apply_on(self):
+        """SemisupervisedProblem apply_on returns a basic MLProblem"""
         data = [[0,1],[2,3],[4,5],[6,7],[8,9]]
         unlabeled = set([0,2,4])
         sspb = SemisupervisedProblem(data,{},True,unlabeled)
