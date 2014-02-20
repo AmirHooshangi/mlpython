@@ -106,6 +106,7 @@ class TestClassSubsetProblem:
         assert len(cspb) == 20
 
     def test_len(self):
+        """Classification subset problem correctly count data in subset"""
         data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
 
         class_to_id = {'a':0,'c':1,'e':2,'g':3,'i':4}
@@ -113,25 +114,6 @@ class TestClassSubsetProblem:
         subset = ['a', 'g']
 
         cspb = ClassSubsetProblem(data, metadata, True, subset)
-
-        parent_ids = set([])
-        parent_class_to_id = metadata['class_to_id']
-        for c in subset:
-            parent_ids.add(c)
-
-        print parent_ids
-        a=0
-        for input,target in data:
-            if target in parent_ids:
-                a+=1
-
-        print 'taille', a
-
-        print len(cspb)
-        print 'metadata class to id', cspb.metadata['class_to_id']
-
-        for line in cspb:
-            print 'line', line
         assert len(cspb) == 2
 
     
