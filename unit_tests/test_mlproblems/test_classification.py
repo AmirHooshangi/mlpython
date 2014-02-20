@@ -40,83 +40,98 @@ from nose.tools import *
 
 class TestClassificationProblem:
 
-	@raises(KeyError)
-	def test_missing_metadata(self):
-		"""Classification problem needs 'targets' metadata"""
-		data = np.arange(10).reshape(5,2)
-		cpb = ClassificationProblem(data)
+    @raises(KeyError)
+    def test_missing_metadata(self):
+        """Classification problem needs 'targets' metadata"""
+        data = np.arange(10).reshape(5,2)
+        cpb = ClassificationProblem(data)
 
-	def test_class_to_id(self):
-		"""Classification problem creates 'class_to_id' metadata"""
-		metadata = {'targets': ['yes','no']}
-		data = np.arange(10).reshape(5,2)
-		cpb = ClassificationProblem(data, metadata)
+    def test_class_to_id(self):
+        """Classification problem creates 'class_to_id' metadata"""
+        metadata = {'targets': ['yes','no']}
+        data = np.arange(10).reshape(5,2)
+        cpb = ClassificationProblem(data, metadata)
 
-		results = {'yes': 0, 'no': 1}
-		assert results == cpb.metadata['class_to_id']
+        results = {'yes': 0, 'no': 1}
+        assert results == cpb.metadata['class_to_id']
 
-	@raises(AttributeError)
-	def test_iter_missing_metedata(self):
-		"""Classification problem needs 'class_to_id' metadata"""
-		data = np.arange(10).reshape(5,2)
-		cpb = ClassificationProblem(data,{},False)
+    @raises(AttributeError)
+    def test_iter_missing_metedata(self):
+        """Classification problem needs 'class_to_id' metadata"""
+        data = np.arange(10).reshape(5,2)
+        cpb = ClassificationProblem(data,{},False)
 
-		for item in cpb:
-			#Should fail before this
-			assert False
+        for item in cpb:
+            #Should fail before this
+            assert False
 
-	def test_iter(self):
-		"""Classification problem iteration"""
-		metadata = {'targets': ['a','c','e','g','i']}
-		data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
-		cpb = ClassificationProblem(data, metadata)
+    def test_iter(self):
+        """Classification problem iteration"""
+        metadata = {'targets': ['a','c','e','g','i']}
+        data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
+        cpb = ClassificationProblem(data, metadata)
 
-		results = [[0,0], [2,1],[4,2],[6,3],[8,4]]
+        results = [[0,0], [2,1],[4,2],[6,3],[8,4]]
 
-		id = 0
-		for input, target in cpb:
-			assert input == results[id][0]
-			assert target == results[id][1]
-			id+=1
+        id = 0
+        for input, target in cpb:
+            assert input == results[id][0]
+            assert target == results[id][1]
+            id+=1
 
-	def test_apply_on(self):
-		"""Classification problem apply_on passes 'class_to_id' metadata to the new problem"""
-		metadata = {'targets': ['a','c','e','g','i']}
-		data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
-		cpb = ClassificationProblem(data, metadata)
+    def test_apply_on(self):
+        """Classification problem apply_on passes 'class_to_id' metadata to the new problem"""
+        metadata = {'targets': ['a','c','e','g','i']}
+        data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
+        cpb = ClassificationProblem(data, metadata)
 
-		new_data = [[1,'a'],[3,'c'],[5,'e'],[7,'g'],[9,'i']]
-		cpb2 = cpb.apply_on(new_data,{})
+        new_data = [[1,'a'],[3,'c'],[5,'e'],[7,'g'],[9,'i']]
+        cpb2 = cpb.apply_on(new_data,{})
 
-		results = {'a':0,'c':1,'e':2,'g':3,'i':4}
-		assert cpb2.metadata['class_to_id'] == results
+        results = {'a':0,'c':1,'e':2,'g':3,'i':4}
+        assert cpb2.metadata['class_to_id'] == results
 
 
 
 class TestClassSubsetProblem:
 
-	def test_len_meta(self):
-		"""Classification subset problem uses 'class_subset_length' as data length"""
-		data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
-		class_to_id = {'a':0,'c':1,'e':2,'g':3,'i':4}
-		metadata = {'class_to_id':class_to_id, 'class_subset_length':20}
+    def test_len_meta(self):
+        """Classification subset problem uses 'class_subset_length' as data length"""
+        data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
+        class_to_id = {'a':0,'c':1,'e':2,'g':3,'i':4}
+        metadata = {'class_to_id':class_to_id, 'class_subset_length':20}
 
-		cspb = ClassSubsetProblem(data, metadata)
+        cspb = ClassSubsetProblem(data, metadata)
 
-		assert len(cspb) == 20
+        assert len(cspb) == 20
 
-	# def test_len(self):
-	# 	data = [[0,'a'],[2,'c'],[4,'a'],[6,'g'],[8,'i']]
-	# 	class_to_id = {'a':0,'c':1,'e':2,'g':3,'i':4}
-	# 	metadata = {'class_to_id':class_to_id}
+    def test_len(self):
+        data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
 
-	# 	cspb = ClassSubsetProblem(data, metadata, True, [0,1])
+        class_to_id = {'a':0,'c':1,'e':2,'g':3,'i':4}
+        metadata = {'class_to_id':class_to_id}
+        subset = ['a', 'g']
 
-	# 	print len(cspb)
-	# 	print cspb.metadata['class_to_id']
+        cspb = ClassSubsetProblem(data, metadata, True, subset)
 
-	# 	for line in cspb:
-	# 		print 'line', line
-	# 	assert len(cspb) == 2
+        parent_ids = set([])
+        parent_class_to_id = metadata['class_to_id']
+        for c in subset:
+            parent_ids.add(c)
 
-	
+        print parent_ids
+        a=0
+        for input,target in data:
+            if target in parent_ids:
+                a+=1
+
+        print 'taille', a
+
+        print len(cspb)
+        print 'metadata class to id', cspb.metadata['class_to_id']
+
+        for line in cspb:
+            print 'line', line
+        assert len(cspb) == 2
+
+    

@@ -125,14 +125,14 @@ class ClassSubsetProblem(MLProblem):
 
             self.__length__ = 0
             for input,target in self.data:
-                if target in parent_ids:
+                if target in self.subset:
                     self.__length__+=1
 
         if call_setup: ClassSubsetProblem.setup(self) 
 
     def __iter__(self):
         for input,target in self.data:
-            if target in self.parent_id_to_id:
+            if target in self.subset:
                 if self.include_class:
                     yield input,self.parent_id_to_id[target]
                 else:
