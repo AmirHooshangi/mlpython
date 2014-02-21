@@ -36,7 +36,7 @@ This module contains the following classes:
 
 """
 import numpy as np
-from mlpython.mlproblems.ranking import *
+from mlproblems.ranking import *
 from nose.tools import *
 
 class TestRankingProblem:
