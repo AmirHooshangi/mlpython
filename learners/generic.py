@@ -78,7 +78,7 @@ class Learner:
 
 class OnlineLearner(Learner):
     """
-    Class (interface) for Learners that can be traiend "online".
+    Class (interface) for Learners that can be trained "online".
     
     This class interface makes it easier to construct a learner. All
     that must be defined are four following methods:
