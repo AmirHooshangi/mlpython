@@ -97,23 +97,27 @@ class TestClassSubsetProblem:
 
     def test_len_meta(self):
         """Classification subset problem uses 'class_subset_length' as data length"""
-        data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
-        class_to_id = {'a':0,'c':1,'e':2,'g':3,'i':4}
-        metadata = {'class_to_id':class_to_id, 'class_subset_length':20}
 
-        cspb = ClassSubsetProblem(data, metadata)
+        metadata = {'targets': ['a','c','e','g','i']}
+        data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
+        cpb = ClassificationProblem(data, metadata)
+
+        metadata = {'class_subset_length':20}
+
+        cspb = ClassSubsetProblem(cpb, metadata)
 
         assert len(cspb) == 20
 
     def test_len(self):
         """Classification subset problem correctly count data in subset"""
-        data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
 
-        class_to_id = {'a':0,'c':1,'e':2,'g':3,'i':4}
-        metadata = {'class_to_id':class_to_id}
+        metadata = {'targets': ['a','c','e','g','i']}
+        data = [[0,'a'],[2,'c'],[4,'e'],[6,'g'],[8,'i']]
+        cpb = ClassificationProblem(data, metadata)
+
         subset = ['a', 'g']
 
-        cspb = ClassSubsetProblem(data, metadata, True, subset)
+        cspb = ClassSubsetProblem(cpb, {}, True, subset)
         assert len(cspb) == 2
 
     
