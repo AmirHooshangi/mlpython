@@ -107,33 +107,12 @@ def obtain(dir_path):
 
     dir_path = os.path.expanduser(dir_path)
     xmlfolder = os.path.join(dir_path, 'xml')
-    txtfolder = os.path.join(dir_path, 'txt')
 
     if not os.path.isdir(xmlfolder):
         print 'This dataset expects to find xml files in a subfolder named "xml" in the given "dir_path".'
+        print 'The corpus contains 2 files that you must move or delete: "codes.zip" and "dtds.zip".'
         print 'If you have the original zips from the reuters corpus, run the following code in a terminal.'
         print 'This will unzip all xml files contained in your current folder. Make sure you are in your dataset directory before running.'
         print '  unzip "*.zip" -d ./xml'
         print 'This command should take some time to execute.'
-        print 'Once this is done, call this function again to complete preprocessing of the files.'
-        return
 
-    if not os.path.exists(txtfolder):
-        os.makedirs(txtfolder)
-    print 'Listing files'
-
-    listing = os.listdir(xmlfolder)
-
-    print 'Processing', len(listing) ,'files (this may take a while)'
-    for filename in listing:
-        with open(os.path.join(xmlfolder,filename), 'r') as current_file:
-            xml = current_file.read()
-            raw = nltk.clean_html(xml)
-
-            txtname = os.path.join(txtfolder, filename[:-4] + '.txt')
-            target = open (txtname, 'w')
-            target.write(raw)
-            target.close()
-
-
-    print 'Done'
