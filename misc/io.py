@@ -31,6 +31,7 @@ datasets, result tables or objects in general.
 This module contains the following functions:
 
 * ``load_from_file``:        Loads a dataset from a file without allocating memory for it.
+* ``load_from_files``:       Loads a dataset from a list of files without allocating memory for them.
 * ``ascii_load``:            Reads an ASCII file and returns its data and metadata.
 * ``libsvm_load``:           Reads a LIBSVM file and returns its data and metadata.
 * ``libsvm_load_line``:      Converts a line from a LIBSVM file in an example.
@@ -45,6 +46,7 @@ and the following classes:
 * IteratorWithFields:   Iterator which separates the rows of a NumPy array into fields.
 * MemoryDataset:        Iterator over some data put in memory as a NumPy array.
 * FileDataset:          Iterator over a file whose lines are converted in examples.    
+* FilesDataset:         Iterator over list of files whose content is converted in examples.    
 
 """
 
@@ -277,6 +279,30 @@ class FileDataset():
             yield self.load_line(line)
         stream.close()
 
+class FilesDataset():
+    """
+    An iterator over dataset files, wich converts each
+    file of the list into an example.
+
+    The option ``'load_file'`` is a function which, given 
+    a string (the content of a file) outputs an example.
+    """
+
+    def __init__(self, filenames, load_file):
+        self.filenames = filenames
+        self.load_file = load_file
+
+    def __iter__(self):
+        for filename in self.filenames:
+            stream = open(os.path.expanduser(filename))
+            string = stream.read()
+            stream.close()
+            yield self.load_file(string)
+
+    def __len__(self):
+        return len(self.filenames)
+
+
 ### For loading large datasets which don't fit in memory ###
 
 def load_line_default(line):
@@ -290,6 +316,18 @@ def load_from_file(filename,load_line=load_line_default):
     on class ``FileDataset``.
     """
     return FileDataset(filename,load_line)
+
+def load_file_default(file):
+    return np.array([float(i) for i in line.split()]) # Converts each element to a float
+
+def load_from_files(filenames, load_file=load_file_default):
+    """
+    Loads a dataset from a list of files, without loading them in memory.
+
+    It returns an iterator over the examples from these fines. This is based
+    on class ``FilesDataset``.
+    """
+    return FilesDataset(filenames,load_file)
     
 
 # Functions to load datasets in different common formats.
