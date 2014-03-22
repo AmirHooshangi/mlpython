@@ -60,22 +60,35 @@ def load(dir_path,load_to_memory=False):
     """
     
     dir_path = os.path.expanduser(dir_path)
-    txtfolder = os.path.join(dir_path, 'txt')
-    filenames = os.listdir(txtfolder)
-    raw_files = [None]*len(filenames)
-
-    for i, filename in enumerate(filenames):
-        with open(os.path.join(txtfolder,filename), 'r') as current_file:
-            raw_files[i] = current_file.read()
-
-    train = raw_files[:7156]
-    valid = raw_files[7156:8689]
-    test = raw_files[8689:]
+    xmlfolder = os.path.join(dir_path, 'xml')
+    filenames = os.listdir(xmlfolder)
+    
+    def load_file(file):
+        raw = nltk.clean_html(file)
+        return nltk.word_tokenize(raw)
 
     #lengths = [564753,121018,121020]
 
     lengths = [7156,1533,1535]
-    #if load_to_memory:
+    if load_to_memory:
+        filenames = os.listdir(xmlfolder)
+        raw_files = [None]*len(filenames)
+
+        for i, filename in enumerate(filenames):
+            with open(os.path.join(xmlfolder,filename), 'r') as current_file:
+                file = current_file.read()
+                raw_files[i] = load_file(file)
+
+        train = raw_files[:7156]
+        valid = raw_files[7156:8689]
+        test = raw_files[8689:]
+    else:
+        for i, filename in enumerate(filenames):
+            filenames[i] = os.path.join(xmlfolder,filename)
+        train = mlio.load_from_files(filenames[:lengths[0]], load_file)
+        valid = mlio.load_from_files(filenames[7156:8689], load_file)
+        test = mlio.load_from_files(filenames[lengths[1]:], load_file)
+
     #    train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],[np.float64,int],l) for d,l in zip([train,valid,test],lengths)]
         
     # Get metadata
