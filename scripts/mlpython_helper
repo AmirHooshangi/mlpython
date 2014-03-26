@@ -32,13 +32,15 @@ import inspect
 import sys
 import re
 import warnings
-import mlpython
+import mlpythonUnitTests as mlpython
 
 modes = ["-datasets", "-learners"] # parameters of the scripts
+datasetsMode = ["-download", "-delete"]
+usageString = 'Usage:\n     mlpython_helper -datasets [[-download |-delete] dataset] or\n     mlpython_helper -learners [object]'
 
 def VerifyMode():    
     arguments = sys.argv
-    arguments.pop(0);	# Remove first argument
+    arguments.pop(0);   # Remove first argument
     
     if len(arguments) >= 1:
         if arguments[0] == modes[0]:
@@ -46,10 +48,10 @@ def VerifyMode():
         elif arguments[0] == modes[1]:
             VerifyLearnersMode(arguments)
         else:
-            print 'Usage:\n     mlpython_helper -datasets [[-download] dataset] or\n     mlpython_helper -learners [object]'
+            print usageString
     else:
-        print 'Usage:\n     mlpython_helper -datasets [[-download] dataset] or\n     mlpython_helper -learners [object]'
-		
+        print usageString
+        
 
 def VerifyDatasetsMode(args):    
     if len(args) == 1:
@@ -57,9 +59,14 @@ def VerifyDatasetsMode(args):
     elif len(args) == 2:
         ShowDatasetDocstring(args[1])
     elif len(args) == 3:
-        DownloadDataset(args[2])
+        if args[1] == datasetsMode[0]:
+            DownloadDataset(args[2])
+        elif args[1] == datasetsMode[1]:
+            DeleteDataset(args[2])
+        else:
+            print usageString
     elif len(args) >= 4:
-        print 'Usage:\n     mlpython_helper -datasets [[-download] dataset] or\n     mlpython_helper -learners [object]'
+        print usageString
 
  
 def VerifyLearnersMode(args):
@@ -78,7 +85,14 @@ def DownloadDataset(args):
        dataset_store.download(args) 
     except Exception as inst:
         print inst
-  
+
+def DeleteDataset(args):
+    import mlpython.datasets.store as dataset_store
+    
+    try:
+       dataset_store.delete(args) 
+    except Exception as inst:
+        print inst  
     
 def ShowDatasets():
     import mlpython.datasets.store as datasets_store

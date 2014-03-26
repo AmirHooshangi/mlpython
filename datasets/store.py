@@ -108,7 +108,9 @@ ranking_names = set(['yahoo_ltrc1',
                      'letor_mq2007',
                      'letor_mq2008'])
 
-all_names = distribution_names | classification_names | multilabel_names | multiregression_names | regression_names | ranking_names
+#nlp_names = set(['reuters_v1'])
+
+all_names = distribution_names | classification_names | multilabel_names | multiregression_names | regression_names | ranking_names #| nlp_names
 
 def download(name,dataset_dir=None):
     """
@@ -138,6 +140,19 @@ def download(name,dataset_dir=None):
         os.makedirs(dataset_dir)
     mldataset.obtain(dataset_dir)
 
+def delete(name):
+    """Remove the dataset from the hard drive"""
+    import os
+    import shutil
+    repo = os.environ.get('MLPYTHON_DATASET_REPO')
+    if repo is None:
+        raise ValueError('environment variable MLPYTHON_DATASET_REPO is not defined')
+    dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + name
+
+    if not os.path.exists(dataset_dir):
+        raise ValueError('The directory '+ repo +' does not exists')
+    shutil.rmtree(dataset_dir)
+    
 def get_classification_problem(name,dataset_dir=None,load_to_memory=True,**kw):
     """
     Creates train/valid/test classification MLProblems from dataset ``name``.
