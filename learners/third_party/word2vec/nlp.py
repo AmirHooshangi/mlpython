@@ -103,4 +103,17 @@ class Word2Vec(Learner):
         #if(self.delete_temporary_files):"""
 
 
+    def use(self, dataset):
 
+        #Load trained vector
+
+    def forget(self):
+        #Delete temporary files
+
+    def test(self, dataset):
+        raise NotImplementedError
+
+
+    def __del__(self):
+        if self.delete_created_files:
+            self.forget()
