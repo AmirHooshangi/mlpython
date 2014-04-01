@@ -30,6 +30,7 @@ import os
 import tempfile
 import shlex
 from mlpython.learners.generic import Learner
+import numpy as np
 
 
 
@@ -134,14 +135,14 @@ class Word2Vec(Learner):
             os.makedirs(tmp_dir)
 
         input_name = os.path.join(tmp_dir,'inputword2vec'+'.tmp')
-        output_name = os.path.join(tmp_dir, self.train_file_name)
+        self.output_name = os.path.join(tmp_dir, self.train_file_name)
 
         input_file = open(input_name,'w')
         tmplist = list()
         #process_path = os.path.join(os.getenv('PYTHONPATH'),'mlpython/learners/third_party/word2vec/trunk/word2vec')
         #print "potato"
         #print process_path
-        '''iterat through the files'''
+        '''iterate through the files'''
         var = trainset[0]
         for x in var:
             tmplist.append(' '.join(x))
@@ -153,13 +154,13 @@ class Word2Vec(Learner):
 
         # Get the location of the shell script
         process_path = os.getenv('PYTHONPATH') +'/mlpython/learners/third_party/word2vec/trunk/word2vec'#os.path.join(os.getenv('PYTHONPATH'),'mlpython/learners/third_party/word2vec/trunk/word2vec')
-        print process_path
+
         args =list()
         args.append(process_path)
         args.append('-train')
         args.append(input_name)
         args.append('-output')
-        args.append(output_name)
+        args.append(self.output_name)
         args.append('-cbow')
         args.append(str(self.use_continuous_bag_of_words))
         args.append('-size')
@@ -175,19 +176,43 @@ class Word2Vec(Learner):
         args.append('-binary')
         args.append(str(self.save_vector_as_binary))
 
-        subprocess.Popen(args)
+        sub = subprocess.Popen(args)
         #subprocess.call([process_call],stdout=output_file, stderr=self.script_output)
         #stdin=input_file,
 
         #if(self.delete_temporary_files):"""
+        sub.wait()
 
 
-    '''def use(self, dataset):
+    def use(self, dataset):
+        """Returns a list of numpy matrixes containing vector retresentation of each word in each file of the dataset.
+        Out Of Vocabulary words are represented by a zeros array"""
+        print '\n'
+        trained_dict = {}
+        with open(self.output_name) as f:
+            for line in f:
+                line = line.strip().split(' ')
+                trained_dict[line[0]] = line[1:]
+        with open(self.output_name, 'r') as f:
+            first_line = f.readline()
+        nb_of_words, vector_lenght = first_line.split()
 
-        #Load trained vector
+        used_list = []
+        for files in dataset:
+            for file in files:
+                used = np.zeros((len(file),int(vector_lenght)))
+                for index, word in enumerate(file):
+                    try:
+                        used[index] = trained_dict[word]
+                    except KeyError:
+                        pass #since there is no OOF word
+            used_list.append(used)
+
+        return used_list
 
     def forget(self):
         #Delete temporary files
+        return
 
     def test(self, dataset):
         raise NotImplementedError
@@ -195,4 +220,4 @@ class Word2Vec(Learner):
 
     def __del__(self):
         if self.delete_created_files:
-            self.forget()'''
+            self.forget()
