@@ -90,7 +90,7 @@ def obtain(dir_path):
     dir_path = os.path.expanduser(dir_path)
     print 'Downloading the dataset'
     import urllib
-    urllib.urlretrieve('http://mulan.sourceforge.net/files/Corel5k.rar',os.path.join(dir_path,'corel5k.rar'))
+    urllib.urlretrieve('http://sourceforge.net/projects/mulan/files/datasets/corel5k.rar',os.path.join(dir_path,'corel5k.rar'))
 
     print 'Splitting dataset into training/validation/test sets'
     start_class_id = 499

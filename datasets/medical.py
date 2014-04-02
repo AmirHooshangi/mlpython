@@ -93,7 +93,7 @@ def obtain(dir_path):
     dir_path = os.path.expanduser(dir_path)
     print 'Downloading the dataset'
     import urllib
-    urllib.urlretrieve('http://mulan.sourceforge.net/files/medical.rar',os.path.join(dir_path,'medical.rar'))
+    urllib.urlretrieve('http://sourceforge.net/projects/mulan/files/datasets/medical.rar',os.path.join(dir_path,'medical.rar'))
 
     print 'Splitting dataset into training/validation/test sets'
     start_class_id = 1449

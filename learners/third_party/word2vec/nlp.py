@@ -28,7 +28,7 @@ import subprocess
 import uuid
 import os
 import tempfile
-import shlex
+import shutil
 from mlpython.learners.generic import Learner
 import numpy as np
 
@@ -85,7 +85,7 @@ class Word2Vec(Learner):
     Use the continuous bag of words model; default is 0 (skip-gram model)"""
     def __init__(self, 
                  delete_temporary_files = True,
-                 train_file_name = "word2vec_representation",
+                 output_file_name = "word2vec_representation",
                  size = 100,
                  window =5,
                  sample = 0,
@@ -96,11 +96,11 @@ class Word2Vec(Learner):
                  alpha = 0.025,
                  use_classes = 0,
                  save_vector_as_binary = 0,
-                 use_continuous_bag_of_words =0,
+                 use_continuous_bag_of_words = 0,
                  display_script_output = False):
         self.is_trained = False
         self.delete_created_files = delete_temporary_files
-        self.train_file_name = train_file_name
+        self.output_file_name = output_file_name
         self.use_continuous_bag_of_words = use_continuous_bag_of_words
         self.size = size
         self.window = window
@@ -112,7 +112,7 @@ class Word2Vec(Learner):
         self.alpha = alpha
         self.use_classes = use_classes
         self.save_vector_as_binary = save_vector_as_binary
-
+        self.temporary_folder = None
         
         self.script_output = None
         self.display_script_output = display_script_output 
@@ -130,31 +130,25 @@ class Word2Vec(Learner):
         unique_id = uuid.uuid4().hex
 
 
-        tmp_dir = tempfile.gettempdir()+'/word2vectmp_'+unique_id
-        if not os.path.exists(tmp_dir) :
-            os.makedirs(tmp_dir)
+        self.temporary_folder = tempfile.gettempdir()+'/word2vectmp_'+unique_id
+        if not os.path.exists(self.temporary_folder) :
+            os.makedirs(self.temporary_folder)
 
-        input_name = os.path.join(tmp_dir,'inputword2vec'+'.tmp')
-        self.output_name = os.path.join(tmp_dir, self.train_file_name)
+        input_name = os.path.join(self.temporary_folder,'inputword2vec'+'.tmp')
+        self.output_name = os.path.join(self.temporary_folder, self.output_file_name)
 
         input_file = open(input_name,'w')
         tmplist = list()
-        #process_path = os.path.join(os.getenv('PYTHONPATH'),'mlpython/learners/third_party/word2vec/trunk/word2vec')
-        #print "potato"
-        #print process_path
+
         '''iterate through the files'''
         var = trainset[0]
         for x in var:
             tmplist.append(' '.join(x))
-        #print type(var)
         input_file.write(' '.join(tmplist))
         input_file.close()
-        #input_file = open(input_name,'r')
-        #output_file = open(output_name, 'w')
 
         # Get the location of the shell script
-        process_path = os.getenv('PYTHONPATH') +'/mlpython/learners/third_party/word2vec/trunk/word2vec'#os.path.join(os.getenv('PYTHONPATH'),'mlpython/learners/third_party/word2vec/trunk/word2vec')
-
+        process_path = os.getenv('PYTHONPATH') +'/mlpython/learners/third_party/word2vec/trunk/word2vec'
         args =list()
         args.append(process_path)
         args.append('-train')
@@ -177,10 +171,6 @@ class Word2Vec(Learner):
         args.append(str(self.save_vector_as_binary))
 
         sub = subprocess.Popen(args)
-        #subprocess.call([process_call],stdout=output_file, stderr=self.script_output)
-        #stdin=input_file,
-
-        #if(self.delete_temporary_files):"""
         sub.wait()
 
 
@@ -211,7 +201,8 @@ class Word2Vec(Learner):
         return used_list
 
     def forget(self):
-        #Delete temporary files
+        """Remove the tree of the temporary file."""
+        shutil.rmtree(self.temporary_folder)
         return
 
     def test(self, dataset):
