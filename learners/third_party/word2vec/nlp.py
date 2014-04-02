@@ -31,25 +31,88 @@ import tempfile
 import shlex
 from mlpython.learners.generic import Learner
 
+
+
 class Word2Vec(Learner):
+
+
+    """-train <file>
+    Use text data from <file> to train the model
+
+    -output <file>
+    Use <file> to save the resulting word vectors / word clusters
+
+    -size <int>
+    Set size of word vectors; default is 100
+
+    -window <int>
+    Set max skip length between words; default is 5
+
+    -sample <float>
+    Set threshold for occurrence of words. Those that appear with higher frequency
+     in the training data will be randomly down-sampled; default is 0 (off), useful value is 1e-5
+
+    -hs <int>
+    Use Hierarchical Softmax; default is 1 (0 = not used)
+
+    -negative <int>
+    Number of negative examples; default is 0, common values are 5 - 10 (0 = not used)
+
+    -threads <int>
+    Use <int> threads (default 1)
+
+    -min-count <int>
+    This will discard words that appear less than <int> times; default is 5
+
+    -alpha <float>
+    Set the starting learning rate; default is 0.025
+
+    -classes <int>
+    Output word classes rather than word vectors; default number of classes is 0 (vectors are written)
+    Set the debug mode (default = 2 = more info during training)
+
+    -binary <int>
+    Save the resulting vectors in binary moded; default is 0 (off)
+
+    -save-vocab <file>
+    The vocabulary will be saved to <file>
+
+    -read-vocab <file>
+    The vocabulary will be read from <file>, not constructed from the training data
+
+    -cbow <int>
+    Use the continuous bag of words model; default is 0 (skip-gram model)"""
     def __init__(self, 
-                 delete_temporary_files= True,
-                 order=3,
-                 number_of_threads=12,
-                 use_continuous_bag_of_words =0,
+                 delete_temporary_files = True,
+                 train_file_name = "word2vec_representation",
                  size = 100,
+                 window =5,
+                 sample = 0,
+                 use_historical_softmax =1,
+                 negative = 0,
+                 number_of_threads = 1,
+                 minimum_word_count = 5,
+                 alpha = 0.025,
+                 use_classes = 0,
+                 save_vector_as_binary = 0,
+                 use_continuous_bag_of_words =0,
                  display_script_output = False):
         self.is_trained = False
         self.delete_created_files = delete_temporary_files
+        self.train_file_name = train_file_name
         self.use_continuous_bag_of_words = use_continuous_bag_of_words
         self.size = size
-        #self.smoothing = smoothing
-        #self.n_distributed_language_models = n_distributed_language_models
-        #self.pruning = pruning
-        #self.sentence_boundary = sentence_boundary
-        #self.max_dictionary_size = max_dictionary_size
-        #self.min_frequency = min_frequency
+        self.window = window
+        self.sample = sample
+        self.use_historical_softmax = use_historical_softmax
+        self.negative = negative
         self.number_of_threads = number_of_threads
+        self.minimum_word_count = minimum_word_count
+        self.alpha = alpha
+        self.use_classes = use_classes
+        self.save_vector_as_binary = save_vector_as_binary
+
+        
         self.script_output = None
         self.display_script_output = display_script_output 
         #"vectors.bin -window 5 -negative 0 -hs 1 -sample 1e-3 -threads 12 -binary 1 ./distance vectors.bin"
@@ -71,7 +134,7 @@ class Word2Vec(Learner):
             os.makedirs(tmp_dir)
 
         input_name = os.path.join(tmp_dir,'inputword2vec'+'.tmp')
-        output_name = os.path.join(tmp_dir,'vectors.bin')
+        output_name = os.path.join(tmp_dir, self.train_file_name)
 
         input_file = open(input_name,'w')
         tmplist = list()
@@ -91,11 +154,27 @@ class Word2Vec(Learner):
         # Get the location of the shell script
         process_path = os.getenv('PYTHONPATH') +'/mlpython/learners/third_party/word2vec/trunk/word2vec'#os.path.join(os.getenv('PYTHONPATH'),'mlpython/learners/third_party/word2vec/trunk/word2vec')
         print process_path
-        process_call = process_path + ' -train ' + input_name  + ' -output ' + output_name + ' -cbow '+ str(int(self.use_continuous_bag_of_words)) + ' -size ' + str(self.size) + ' -window 5 -negative 0 -hs 1 -sample 1e-3 -threads ' + str(self.number_of_threads) + ' -binary 1 ./distance vectors.bin'
-        args = shlex.split(process_call)
-        print args
+        args =list()
+        args.append(process_path)
+        args.append('-train')
+        args.append(input_name)
+        args.append('-output')
+        args.append(output_name)
+        args.append('-cbow')
+        args.append(str(self.use_continuous_bag_of_words))
+        args.append('-size')
+        args.append(str(self.size))
+        args.append('-window')
+        args.append(str(self.window))
+        args.append('-negative')
+        args.append(str(self.negative))
+        args.append('-sample')
+        args.append(process_path)
+        args.append('-threads')
+        args.append(str(self.number_of_threads))
+        args.append('-binary')
+        args.append(str(self.save_vector_as_binary))
 
-        #output_file = open(output_name,'w')
         subprocess.Popen(args)
         #subprocess.call([process_call],stdout=output_file, stderr=self.script_output)
         #stdin=input_file,
@@ -103,7 +182,7 @@ class Word2Vec(Learner):
         #if(self.delete_temporary_files):"""
 
 
-    def use(self, dataset):
+    '''def use(self, dataset):
 
         #Load trained vector
 
@@ -116,4 +195,4 @@ class Word2Vec(Learner):
 
     def __del__(self):
         if self.delete_created_files:
-            self.forget()
+            self.forget()'''

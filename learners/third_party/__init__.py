@@ -34,5 +34,6 @@ Currently, it contains the following subpackages:
 * ``learning.third_party.milk``:           Learners interfacing with the Milk library.
 * ``learning.third_party.treelearn``:      Learners interfacing with the TreeLearn library.
 * ``learning.third_party.orange``:         Learners interfacing with the Orange library.
+* ``learning.third_party.word2vec``:       Learners interfacing with the word2vec library.
 
 """
