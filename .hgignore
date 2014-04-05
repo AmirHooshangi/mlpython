@@ -8,6 +8,7 @@ learners/third_party/treelearn/test_randomized_tree.py
 learners/third_party/treelearn/test_tree_helpers.py
 learners/third_party/treelearn/tree_helpers.py
 learners/third_party/treelearn/tree_node.py
+learners/third_party/word2vec/trunk
 
 syntax: regexp
 .*\.pyc$

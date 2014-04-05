@@ -18,4 +18,3 @@ The script demo-word.sh downloads a small (100MB) text corpus from the web, and 
 is finished, the user can interactively explore the similarity of the words.
 
 More information about the scripts is provided at https://code.google.com/p/word2vec/
-
