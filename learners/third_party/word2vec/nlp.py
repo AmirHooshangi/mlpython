@@ -141,8 +141,7 @@ class Word2Vec(Learner):
         tmplist = list()
 
         '''iterate through the files'''
-        var = trainset[0]
-        for x in var:
+        for text in trainset:
             tmplist.append(' '.join(x))
         input_file.write(' '.join(tmplist))
         input_file.close()
