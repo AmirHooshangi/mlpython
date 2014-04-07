@@ -67,10 +67,11 @@ def load(dir_path,load_to_memory=False):
         raw = nltk.clean_html(file)
         return nltk.word_tokenize(raw)
 
-    #lengths = [564753,121018,121020]
+    lengths = [564753,121018,121020]
 
+    #lengths = [174800,1533,1535]
     #lengths = [7156,1533,1535]
-    lengths = [939,201,202]
+    #lengths = [939,201,202]
     if load_to_memory:
         filenames = os.listdir(xmlfolder)
         raw_files = [None]*len(filenames)
@@ -87,7 +88,7 @@ def load(dir_path,load_to_memory=False):
         for i, filename in enumerate(filenames):
             filenames[i] = os.path.join(xmlfolder,filename)
         train = mlio.load_from_files(filenames[:lengths[0]], load_file)
-        valid = mlio.load_from_files(filenames[939:1140], load_file)
+        valid = mlio.load_from_files(filenames[7156:8689], load_file)
         test = mlio.load_from_files(filenames[lengths[1]:], load_file)
 
     #    train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],[np.float64,int],l) for d,l in zip([train,valid,test],lengths)]

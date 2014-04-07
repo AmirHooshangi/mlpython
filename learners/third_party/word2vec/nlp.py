@@ -141,7 +141,8 @@ class Word2Vec(Learner):
         tmplist = list()
 
         '''iterate through the files'''
-        for text in trainset:
+
+        for x in trainset:
             tmplist.append(' '.join(x))
         input_file.write(' '.join(tmplist))
         input_file.close()
@@ -171,31 +172,27 @@ class Word2Vec(Learner):
 
         sub = subprocess.Popen(args)
         sub.wait()
+        print '\n' #because the subprocess doesn't end its last line
 
 
     def use(self, dataset):
         """Returns a list of numpy matrixes containing vector retresentation of each word in each file of the dataset.
         Out Of Vocabulary words are represented by a zeros array"""
-        print '\n'
-        trained_dict = {}
-        with open(self.output_name) as f:
-            for line in f:
-                line = line.strip().split(' ')
-                trained_dict[line[0]] = line[1:]
+
+        trained_dict = self.get_word_representations()
         with open(self.output_name, 'r') as f:
             first_line = f.readline()
         nb_of_words, vector_lenght = first_line.split()
 
         used_list = []
-        for files in dataset:
-            for file in files:
-                used = np.zeros((len(file),int(vector_lenght)))
-                for index, word in enumerate(file):
-                    try:
-                        used[index] = trained_dict[word]
-                    except KeyError:
-                        pass #since there is no OOF word
-            used_list.append(used)
+        for file in dataset:
+            used = np.zeros((len(file),int(vector_lenght)))
+            for index, word in enumerate(file):
+                try:
+                    used[index] = trained_dict[word]
+                except KeyError:
+                    pass #since there is no OOF word
+        used_list.append(used)
 
         return used_list
 
@@ -207,6 +204,18 @@ class Word2Vec(Learner):
     def test(self, dataset):
         raise NotImplementedError
 
+    def get_word_representations(self):
+        """Get vector reprensentation for each word in the training corpus
+
+        Returns a dictionnary in the format of ``word => representation``"""
+
+        trained_dict = {}
+        with open(self.output_name) as f:
+            for line in f:
+                line = line.strip().split(' ')
+                trained_dict[line[0]] = np.array(line[1:], dtype=np.float64)
+
+        return trained_dict
 
     def __del__(self):
         if self.delete_created_files:
