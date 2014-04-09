@@ -1,5 +1,5 @@
 To use MLPython's interface with the word2vec library, you'll need to
-install the word2vec libraries.
+install the word2vec library.
 
 1: To install word2vec, you only need to do a checkout source code of word2vec form "http://word2vec.googlecode.com/svn/trunk/"
 and put them in a repository there : learners/third_party/word2vec/trunk
