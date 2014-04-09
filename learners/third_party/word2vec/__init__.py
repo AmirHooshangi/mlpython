@@ -25,8 +25,21 @@
 # or implied, of Hugo Larochelle.
 
 """
-The package ``learners.third_party.word2vec`` contains modules for learning
-algorithms that can use a GPU.
+To use MLPython's interface with the word2vec library, you'll need to
+install the word2vec libraries.
+
+1: To install word2vec, you only need to do a checkout source code of word2vec form "http://word2vec.googlecode.com/svn/trunk/"
+and put them in a repository there : learners/third_party/word2vec/trunk
+
+2: run "make" command on the trunk to compile the tool.3: it should be good, you can run the demo provide with word2vec to test it
+         ./demo-word.sh
+
+see https://code.google.com/p/word2vec/ for more details.
+
+
+
+The package ``learners.third_party.word2vec``
+
 
 Currently, all algorithms are based on the word2vec project: https://code.google.com/p/word2vec/
 

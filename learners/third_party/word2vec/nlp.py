@@ -37,52 +37,33 @@ import numpy as np
 class Word2Vec(Learner):
 
 
-    """-train <file>
-    Use text data from <file> to train the model
+    """
 
-    -output <file>
-    Use <file> to save the resulting word vectors / word clusters
+    Option ``output_file_name`` Use <file> to save the resulting word vectors / word clusters
 
-    -size <int>
-    Set size of word vectors; default is 100
+    Option ``size`` Set size of word vectors; default is 100
 
-    -window <int>
-    Set max skip length between words; default is 5
+    Option ``window`` Set max skip length between words; default is 5
 
-    -sample <float>
-    Set threshold for occurrence of words. Those that appear with higher frequency
-     in the training data will be randomly down-sampled; default is 0 (off), useful value is 1e-5
+    Option ``sample`` Set threshold for occurrence of words. Those that appear with higher frequency
+    in the training data will be randomly down-sampled; default is 0 (off), useful value is 1e-5
 
-    -hs <int>
-    Use Hierarchical Softmax; default is 1 (0 = not used)
+    Option ``use_historical_softmax`` Use Hierarchical Softmax; default is 1 (0 = not used)
 
-    -negative <int>
-    Number of negative examples; default is 0, common values are 5 - 10 (0 = not used)
+    Option ``negative`` Number of negative examples; default is 0, common values are 5 - 10 (0 = not used)
 
-    -threads <int>
-    Use <int> threads (default 1)
+    Option ``number_of_threads`` Use <int> threads (default 1)
 
-    -min-count <int>
-    This will discard words that appear less than <int> times; default is 5
+    Option ``minimum_word_count`` This will discard words that appear less than <int> times; default is 5
 
-    -alpha <float>
-    Set the starting learning rate; default is 0.025
+    Option ``alpha`` Set the starting learning rate; default is 0.025
 
-    -classes <int>
-    Output word classes rather than word vectors; default number of classes is 0 (vectors are written)
+    Option ``use_classes`` Output word classes rather than word vectors; default number of classes is 0 (vectors are written)
     Set the debug mode (default = 2 = more info during training)
 
-    -binary <int>
-    Save the resulting vectors in binary moded; default is 0 (off)
+    Option ``save_vector_as_binary`` Save the resulting vectors in binary moded; default is 0 (off)
 
-    -save-vocab <file>
-    The vocabulary will be saved to <file>
-
-    -read-vocab <file>
-    The vocabulary will be read from <file>, not constructed from the training data
-
-    -cbow <int>
-    Use the continuous bag of words model; default is 0 (skip-gram model)"""
+    Option ``use_continuous_bag_of_words`` Use the continuous bag of words model; default is 0 (skip-gram model)"""
     def __init__(self, 
                  delete_temporary_files = True,
                  output_file_name = "word2vec_representation",
