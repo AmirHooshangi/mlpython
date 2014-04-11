@@ -34,6 +34,9 @@ and put them in a repository there : learners/third_party/word2vec/trunk
 2: run "make" command on the trunk to compile the tool.3: it should be good, you can run the demo provide with word2vec to test it
          ./demo-word.sh
 
+3: You need to add word2vec to your PATH. (in ~/.bashrc if you use bash):
+
+
 see https://code.google.com/p/word2vec/ for more details.
 
 
