@@ -6,7 +6,6 @@ def test_ocr_lettersloadToMemoryTrue():
         dataset_store.download('ocr_letters')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py ocr_letters True')
         dataset_store.delete('ocr_letters')
-        dataset_store.download('ocr_letters')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_ocr_lettersloadToMemoryFalse():
         dataset_store.download('ocr_letters')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py ocr_letters False')
         dataset_store.delete('ocr_letters')
-        dataset_store.download('ocr_letters')
     except:
         assert False
 

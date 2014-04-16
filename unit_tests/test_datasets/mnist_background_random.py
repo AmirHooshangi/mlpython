@@ -6,7 +6,6 @@ def test_mnist_background_randomloadToMemoryTrue():
         dataset_store.download('mnist_background_random')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py mnist_background_random True')
         dataset_store.delete('mnist_background_random')
-        dataset_store.download('mnist_background_random')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_mnist_background_randomloadToMemoryFalse():
         dataset_store.download('mnist_background_random')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py mnist_background_random False')
         dataset_store.delete('mnist_background_random')
-        dataset_store.download('mnist_background_random')
     except:
         assert False
 

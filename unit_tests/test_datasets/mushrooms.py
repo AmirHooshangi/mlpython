@@ -6,7 +6,6 @@ def test_mushroomsloadToMemoryTrue():
         dataset_store.download('mushrooms')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py mushrooms True')
         dataset_store.delete('mushrooms')
-        dataset_store.download('mushrooms')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_mushroomsloadToMemoryFalse():
         dataset_store.download('mushrooms')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py mushrooms False')
         dataset_store.delete('mushrooms')
-        dataset_store.download('mushrooms')
     except:
         assert False
 

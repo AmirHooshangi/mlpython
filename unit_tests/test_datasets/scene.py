@@ -6,7 +6,6 @@ def test_sceneloadToMemoryTrue():
         dataset_store.download('scene')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py scene True')
         dataset_store.delete('scene')
-        dataset_store.download('scene')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_sceneloadToMemoryFalse():
         dataset_store.download('scene')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py scene False')
         dataset_store.delete('scene')
-        dataset_store.download('scene')
     except:
         assert False
 

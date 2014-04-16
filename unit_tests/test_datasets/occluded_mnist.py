@@ -6,7 +6,6 @@ def test_occluded_mnistloadToMemoryTrue():
         dataset_store.download('occluded_mnist')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py occluded_mnist True')
         dataset_store.delete('occluded_mnist')
-        dataset_store.download('occluded_mnist')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_occluded_mnistloadToMemoryFalse():
         dataset_store.download('occluded_mnist')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py occluded_mnist False')
         dataset_store.delete('occluded_mnist')
-        dataset_store.download('occluded_mnist')
     except:
         assert False
 

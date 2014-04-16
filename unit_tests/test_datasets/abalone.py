@@ -6,7 +6,6 @@ def test_abaloneloadToMemoryTrue():
         dataset_store.download('abalone')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py abalone True')
         dataset_store.delete('abalone')
-        dataset_store.download('abalone')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_abaloneloadToMemoryFalse():
         dataset_store.download('abalone')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py abalone False')
         dataset_store.delete('abalone')
-        dataset_store.download('abalone')
     except:
         assert False
 

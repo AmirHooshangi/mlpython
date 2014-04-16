@@ -6,7 +6,6 @@ def test_medicalloadToMemoryTrue():
         dataset_store.download('medical')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py medical True')
         dataset_store.delete('medical')
-        dataset_store.download('medical')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_medicalloadToMemoryFalse():
         dataset_store.download('medical')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py medical False')
         dataset_store.delete('medical')
-        dataset_store.download('medical')
     except:
         assert False
 

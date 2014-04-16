@@ -6,7 +6,6 @@ def test_connect4loadToMemoryTrue():
         dataset_store.download('connect4')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py connect4 True')
         dataset_store.delete('connect4')
-        dataset_store.download('connect4')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_connect4loadToMemoryFalse():
         dataset_store.download('connect4')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py connect4 False')
         dataset_store.delete('connect4')
-        dataset_store.download('connect4')
     except:
         assert False
 

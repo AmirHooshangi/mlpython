@@ -6,7 +6,6 @@ def test_webloadToMemoryTrue():
         dataset_store.download('web')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py web True')
         dataset_store.delete('web')
-        dataset_store.download('web')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_webloadToMemoryFalse():
         dataset_store.download('web')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py web False')
         dataset_store.delete('web')
-        dataset_store.download('web')
     except:
         assert False
 

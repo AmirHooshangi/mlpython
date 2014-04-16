@@ -2,9 +2,9 @@ import os
 import mlpython.datasets.store as dataset_store
 import sys
 
-#datasetThatCannotBeDownload = set(['yahoo_ltrc1', 'yahoo_ltrc2'])
+datasetThatCannotBeDownload = set(['yahoo_ltrc1', 'yahoo_ltrc2'])
 
-datasetToTest = dataset_store.all_names #- datasetThatCannotBeDownload
+datasetToTest = dataset_store.all_names - datasetThatCannotBeDownload
 
 saveoutput = sys.stdout
 for name in datasetToTest:

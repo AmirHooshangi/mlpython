@@ -6,7 +6,6 @@ def test_bibtexloadToMemoryTrue():
         dataset_store.download('bibtex')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py bibtex True')
         dataset_store.delete('bibtex')
-        dataset_store.download('bibtex')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_bibtexloadToMemoryFalse():
         dataset_store.download('bibtex')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py bibtex False')
         dataset_store.delete('bibtex')
-        dataset_store.download('bibtex')
     except:
         assert False
 

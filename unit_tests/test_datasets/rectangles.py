@@ -6,7 +6,6 @@ def test_rectanglesloadToMemoryTrue():
         dataset_store.download('rectangles')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py rectangles True')
         dataset_store.delete('rectangles')
-        dataset_store.download('rectangles')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_rectanglesloadToMemoryFalse():
         dataset_store.download('rectangles')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py rectangles False')
         dataset_store.delete('rectangles')
-        dataset_store.download('rectangles')
     except:
         assert False
 

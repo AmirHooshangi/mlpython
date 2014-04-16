@@ -6,7 +6,6 @@ def test_adultloadToMemoryTrue():
         dataset_store.download('adult')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py adult True')
         dataset_store.delete('adult')
-        dataset_store.download('adult')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_adultloadToMemoryFalse():
         dataset_store.download('adult')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py adult False')
         dataset_store.delete('adult')
-        dataset_store.download('adult')
     except:
         assert False
 

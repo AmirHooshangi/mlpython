@@ -6,7 +6,6 @@ def test_binarized_mnistloadToMemoryTrue():
         dataset_store.download('binarized_mnist')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py binarized_mnist True')
         dataset_store.delete('binarized_mnist')
-        dataset_store.download('binarized_mnist')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_binarized_mnistloadToMemoryFalse():
         dataset_store.download('binarized_mnist')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py binarized_mnist False')
         dataset_store.delete('binarized_mnist')
-        dataset_store.download('binarized_mnist')
     except:
         assert False
 

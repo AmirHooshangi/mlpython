@@ -6,7 +6,6 @@ def test_nipsloadToMemoryTrue():
         dataset_store.download('nips')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py nips True')
         dataset_store.delete('nips')
-        dataset_store.download('nips')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_nipsloadToMemoryFalse():
         dataset_store.download('nips')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py nips False')
         dataset_store.delete('nips')
-        dataset_store.download('nips')
     except:
         assert False
 

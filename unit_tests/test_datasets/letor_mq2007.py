@@ -6,7 +6,6 @@ def test_letor_mq2007loadToMemoryTrue():
         dataset_store.download('letor_mq2007')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py letor_mq2007 True')
         dataset_store.delete('letor_mq2007')
-        dataset_store.download('letor_mq2007')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_letor_mq2007loadToMemoryFalse():
         dataset_store.download('letor_mq2007')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py letor_mq2007 False')
         dataset_store.delete('letor_mq2007')
-        dataset_store.download('letor_mq2007')
     except:
         assert False
 

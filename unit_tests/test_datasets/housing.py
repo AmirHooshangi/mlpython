@@ -6,7 +6,6 @@ def test_housingloadToMemoryTrue():
         dataset_store.download('housing')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py housing True')
         dataset_store.delete('housing')
-        dataset_store.download('housing')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_housingloadToMemoryFalse():
         dataset_store.download('housing')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py housing False')
         dataset_store.delete('housing')
-        dataset_store.download('housing')
     except:
         assert False
 

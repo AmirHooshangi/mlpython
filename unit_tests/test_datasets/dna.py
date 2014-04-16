@@ -6,7 +6,6 @@ def test_dnaloadToMemoryTrue():
         dataset_store.download('dna')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py dna True')
         dataset_store.delete('dna')
-        dataset_store.download('dna')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_dnaloadToMemoryFalse():
         dataset_store.download('dna')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py dna False')
         dataset_store.delete('dna')
-        dataset_store.download('dna')
     except:
         assert False
 

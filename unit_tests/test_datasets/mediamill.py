@@ -6,7 +6,6 @@ def test_mediamillloadToMemoryTrue():
         dataset_store.download('mediamill')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py mediamill True')
         dataset_store.delete('mediamill')
-        dataset_store.download('mediamill')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_mediamillloadToMemoryFalse():
         dataset_store.download('mediamill')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py mediamill False')
         dataset_store.delete('mediamill')
-        dataset_store.download('mediamill')
     except:
         assert False
 

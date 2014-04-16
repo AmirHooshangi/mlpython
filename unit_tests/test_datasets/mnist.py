@@ -6,7 +6,6 @@ def test_mnistloadToMemoryTrue():
         dataset_store.download('mnist')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py mnist True')
         dataset_store.delete('mnist')
-        dataset_store.download('mnist')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_mnistloadToMemoryFalse():
         dataset_store.download('mnist')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py mnist False')
         dataset_store.delete('mnist')
-        dataset_store.download('mnist')
     except:
         assert False
 

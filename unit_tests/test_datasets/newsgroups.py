@@ -6,7 +6,6 @@ def test_newsgroupsloadToMemoryTrue():
         dataset_store.download('newsgroups')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py newsgroups True')
         dataset_store.delete('newsgroups')
-        dataset_store.download('newsgroups')
     except:
         assert False
 
@@ -15,7 +14,6 @@ def test_newsgroupsloadToMemoryFalse():
         dataset_store.download('newsgroups')
         os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py newsgroups False')
         dataset_store.delete('newsgroups')
-        dataset_store.download('newsgroups')
     except:
         assert False
 
