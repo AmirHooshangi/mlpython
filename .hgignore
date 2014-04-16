@@ -11,6 +11,7 @@ learners/third_party/treelearn/tree_node.py
 learners/third_party/word2vec/trunk
 
 syntax: regexp
+.DS_Store
 .*\.pyc$
 .*\.so$
 .*\.o$
