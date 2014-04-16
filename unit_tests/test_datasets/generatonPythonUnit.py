@@ -21,7 +21,6 @@ for name in datasetToTest:
     print "        dataset_store.download('"+name+"')"
     print "        os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py " + name + " True')"
     print "        dataset_store.delete('"+name+"')"
-    print "        dataset_store.download('"+name+"')"
     print "    except:"
     print "        assert False"
     print
@@ -30,7 +29,6 @@ for name in datasetToTest:
     print "        dataset_store.download('"+name+"')"
     print "        os.system(os.environ.get('PYTHONPATH') + '/mlpython/unit_tests/test_datasets/utGenerator.py " + name + " False')"
     print "        dataset_store.delete('"+name+"')"
-    print "        dataset_store.download('"+name+"')"
     print "    except:"
     print "        assert False"
     print
