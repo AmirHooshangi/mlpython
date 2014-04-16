@@ -35,9 +35,8 @@ import numpy as np
 
 
 class Word2Vec(Learner):
-
-
     """
+    Word representation learning with word2vec package.
 
     Option ``output_file_name`` Use <file> to save the resulting word vectors / word clusters
 
@@ -63,7 +62,9 @@ class Word2Vec(Learner):
 
     Option ``save_vector_as_binary`` Save the resulting vectors in binary moded; default is 0 (off)
 
-    Option ``use_continuous_bag_of_words`` Use the continuous bag of words model; default is 0 (skip-gram model)"""
+    Option ``use_continuous_bag_of_words`` Use the continuous bag of words model; default is 0 (skip-gram model)
+    """
+
     def __init__(self, 
                  delete_temporary_files = True,
                  output_file_name = "word2vec_representation",
@@ -78,7 +79,8 @@ class Word2Vec(Learner):
                  use_classes = 0,
                  save_vector_as_binary = 0,
                  use_continuous_bag_of_words = 0,
-                 display_script_output = False):
+                 display_script_output = False,
+                 temporary_dir = None):
         self.is_trained = False
         self.delete_created_files = delete_temporary_files
         self.output_file_name = output_file_name
@@ -99,6 +101,18 @@ class Word2Vec(Learner):
         self.display_script_output = display_script_output 
         #"vectors.bin -window 5 -negative 0 -hs 1 -sample 1e-3 -threads 12 -binary 1 ./distance vectors.bin"
 
+        # Creating temporary directory for word2vec
+        if temporary_dir is None :
+            unique_id = uuid.uuid4().hex
+            self.temporary_folder = tempfile.gettempdir()+'/word2vectmp_'+unique_id
+        else:
+            unique_id = uuid.uuid4().hex
+            self.temporary_folder = temporary_dir+'/word2vectmp_'+unique_id
+
+        if os.path.exists(self.temporary_folder) :
+            raise ValueError('Temporary directory ' + self.temporary_folder + ' already exists')
+        os.makedirs(self.temporary_folder)
+
     def train(self,trainset):
         
         if self.is_trained :
@@ -108,13 +122,6 @@ class Word2Vec(Learner):
         if not self.display_script_output:
             self.script_output = open(os.devnull,'w')
        
-        unique_id = uuid.uuid4().hex
-
-
-        self.temporary_folder = tempfile.gettempdir()+'/word2vectmp_'+unique_id
-        if not os.path.exists(self.temporary_folder) :
-            os.makedirs(self.temporary_folder)
-
         input_name = os.path.join(self.temporary_folder,'inputword2vec'+'.tmp')
         self.output_name = os.path.join(self.temporary_folder, self.output_file_name)
 
