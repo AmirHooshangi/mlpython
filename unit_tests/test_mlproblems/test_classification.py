@@ -34,7 +34,7 @@ This module contains the following classes:
 * TestClassSubsetProblem:      Tests for extraction of examples from a subset of all classes.
 
 """
-from mlproblems.classification import *
+from mlpython.mlproblems.classification import *
 import numpy as np
 from nose.tools import *
 

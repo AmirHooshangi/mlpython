@@ -38,7 +38,7 @@ This module contains the following classes:
 * TestSemisupervisedProblem:  Tests if the SemisupervisedProblem class removed the labels of a subset of the examples in a dataset.
 
 """
-from mlproblems.generic import *
+from mlpython.mlproblems.generic import *
 import numpy as np
 
 class TestMLProblem:

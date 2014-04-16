@@ -39,14 +39,10 @@ def testfirstandlast(myIterator,myFile, numbertotest =10):
     for value in listToTest:
         x = type(load(myFile))
 
-def main(args):
-    usage = """Usage: arg1 = dataset name, arg2 = load_to_memory"""
-    if len(args) != 3:
-        print usage
-        return False
-    datasetName = args[1]
-    load_to_memory = args[2]
-    f = file('./unit_tests/test_datasets/pickles/'+datasetName+'.pkl','rb')
+def run_test(datasetName,load_to_memory):
+
+    pickle_file = os.path.dirname(os.path.realpath(__file__)) + '/pickles/'+datasetName+'.pkl'
+    f = file(pickle_file,'rb')
 
     dataset_dir = os.environ.get('MLPYTHON_DATASET_REPO') + '/' + datasetName
     exec 'import mlpython.datasets.'+datasetName+' as mldataset'
@@ -69,5 +65,3 @@ def main(args):
 
     f.close()
 
-if __name__ == "__main__":
-    main(sys.argv)
