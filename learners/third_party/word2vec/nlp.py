@@ -38,31 +38,30 @@ class Word2Vec(Learner):
     """
     Word representation learning with word2vec package.
 
-    Option ``output_file_name`` Use <file> to save the resulting word vectors / word clusters
+    Option ``output_file_name`` is the file to save the resulting word vectors / word clusters.
 
-    Option ``size`` Set size of word vectors; default is 100
+    Option ``size`` is the size of the word vectors; default is 100.
 
-    Option ``window`` Set max skip length between words; default is 5
+    Option ``window`` is the max skip length between words; default is 5.
 
-    Option ``sample`` Set threshold for occurrence of words. Those that appear with higher frequency
-    in the training data will be randomly down-sampled; default is 0 (off), useful value is 1e-5
+    Option ``sample`` is the threshold for occurrence of words. Those that appear with higher frequency
+    in the training data will be randomly down-sampled; default is 0 (off), useful value is 1e-5.
 
-    Option ``use_historical_softmax`` Use Hierarchical Softmax; default is 1 (0 = not used)
+    Option ``use_historical_softmax`` is whether to use the Hierarchical Softmax; default is 1 (0 = not used).
 
-    Option ``negative`` Number of negative examples; default is 0, common values are 5 - 10 (0 = not used)
+    Option ``negative`` is the number of negative examples; default is 0, common values are 5 - 10 (0 = not used).
 
-    Option ``number_of_threads`` Use <int> threads (default 1)
+    Option ``number_of_threads`` is the self-explanatory (default 1).
 
-    Option ``minimum_word_count`` This will discard words that appear less than <int> times; default is 5
+    Option ``minimum_word_count`` is whether to discard words that appear less than <int> times; default is 5.
 
-    Option ``alpha`` Set the starting learning rate; default is 0.025
+    Option ``alpha`` is the starting learning rate; default is 0.025.
 
-    Option ``use_classes`` Output word classes rather than word vectors; default number of classes is 0 (vectors are written)
-    Set the debug mode (default = 2 = more info during training)
+    Option ``use_classes`` is whether to output word classes rather than word vectors; default number of classes is 0 (vectors are written)
 
-    Option ``save_vector_as_binary`` Save the resulting vectors in binary moded; default is 0 (off)
+    Option ``save_vector_as_binary`` is whetehr to save the resulting vectors in binary mode; default is 0 (off).
 
-    Option ``use_continuous_bag_of_words`` Use the continuous bag of words model; default is 0 (skip-gram model)
+    Option ``use_continuous_bag_of_words`` is whether to use the continuous bag of words model; default is 0 (skip-gram model).
     """
 
     def __init__(self, 
