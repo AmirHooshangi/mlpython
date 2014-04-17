@@ -314,6 +314,9 @@ class PreprocessedProblem(MLProblem):
         self.preprocess = preprocess
         if call_setup: PreprocessedProblem.setup(self)
 
+        # Call preprocess on first example, so that it sets the new_metadata correctly
+        self.__iter__().next()
+
     def __iter__(self):
         for example in self.data:
             yield self.preprocess(example,self.metadata)

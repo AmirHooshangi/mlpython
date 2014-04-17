@@ -242,14 +242,14 @@ class TestMergedProblem:
 
 class TestPreprocessedProblem:
 
-    def foisN(self, nombre, metadata):
+    def timesN(self, nombre, metadata):
         return metadata['scalar'] * nombre
 
     def test_iter(self):
         """PreprocessedProblem iteration"""
         data = np.arange(30).reshape((10,3))
         metadata = {'scalar': 4}
-        pppb = PreprocessedProblem(data,metadata, True, self.foisN)
+        pppb = PreprocessedProblem(data,metadata, True, self.timesN)
 
         results = 4 * data
         i=0
@@ -261,7 +261,7 @@ class TestPreprocessedProblem:
         """PreprocessedProblem apply_on applies the function on new data"""
         data = np.arange(30).reshape((10,3))
         metadata = {'scalar': 4}
-        pppb = PreprocessedProblem(data,metadata, True, self.foisN)
+        pppb = PreprocessedProblem(data,metadata, True, self.timesN)
 
         new_data = np.arange(40).reshape((5,8))
         new_metadata = {'scalar': 8}
@@ -273,7 +273,21 @@ class TestPreprocessedProblem:
         for line in new_pppb:
             assert np.array_equal(line, results[i])
             i+=1
+        
+        # Second test, checker whether preprocess changes 
+        # metadata properly
+        data = np.arange(30).reshape((10,3))
+        metadata = {'dummy': 3}
+        def change_metadata(example,metadata):
+            metadata['dummy'] = 10
+        pppb = PreprocessedProblem(data,metadata, True, change_metadata)
+        result = {'dummy':10}
+        assert cmp(pppb.metadata,result) == 0
 
+        new_data = np.arange(40).reshape((5,8))
+        new_metadata = {'dummy': 6}
+        new_pppb = pppb.apply_on(new_data, new_metadata)
+        assert cmp(new_pppb.metadata,result) == 0
 
 
 
