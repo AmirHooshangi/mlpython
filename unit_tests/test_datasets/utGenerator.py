@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+
+
 import mlpython.datasets.store as dataset_store
 import cPickle,sys
 import numpy as np
@@ -56,12 +58,10 @@ def run_test(datasetName,load_to_memory):
     testfirstandlast(iter(valid[0]),f)
     testfirstandlast(iter(test[0]),f)
 
-    for x in train[1]:
-        assert x ==load(f)
-    for x in valid[1]:
-        assert x ==load(f)
-    for x in test[1]:
-        assert x ==load(f)
+    # Compare the metadata
+    assert cmp(train[1],load(f)) == 0
+    assert cmp(valid[1],load(f)) == 0
+    assert cmp(test[1],load(f)) == 0
 
     f.close()
 
