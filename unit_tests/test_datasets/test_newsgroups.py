@@ -2,19 +2,22 @@ import mlpython.datasets.store as dataset_store
 import os
 from nose.tools import *
 import utGenerator
-def test_newsgroupsloadToMemoryTrue():
+
+def setUp():
     try:
         dataset_store.download('newsgroups')
-        utGenerator.run_test('newsgroups', True)
-        dataset_store.delete('newsgroups')
+        print 'setup'
     except:
+        print 'Could not download the dataset : ', 'newsgroups'
         assert False
+
+def test_newsgroupsloadToMemoryTrue():
+    utGenerator.run_test('newsgroups', True)
 
 def test_newsgroupsloadToMemoryFalse():
-    try:
-        dataset_store.download('newsgroups')
-        utGenerator.run_test('newsgroups', False)
-        dataset_store.delete('newsgroups')
-    except:
-        assert False
+    utGenerator.run_test('newsgroups', False)
+    print 'test2'
 
+def tearDown():
+    dataset_store.delete('newsgroups')
+    print 'teardown'

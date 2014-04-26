@@ -2,19 +2,22 @@ import mlpython.datasets.store as dataset_store
 import os
 from nose.tools import *
 import utGenerator
-def test_adultloadToMemoryTrue():
+
+def setUp():
     try:
         dataset_store.download('adult')
-        utGenerator.run_test('adult', True)
-        dataset_store.delete('adult')
+        print 'setup'
     except:
+        print 'Could not download the dataset : ', 'adult'
         assert False
+
+def test_adultloadToMemoryTrue():
+    utGenerator.run_test('adult', True)
 
 def test_adultloadToMemoryFalse():
-    try:
-        dataset_store.download('adult')
-        utGenerator.run_test('adult', False)
-        dataset_store.delete('adult')
-    except:
-        assert False
+    utGenerator.run_test('adult', False)
+    print 'test2'
 
+def tearDown():
+    dataset_store.delete('adult')
+    print 'teardown'

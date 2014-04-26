@@ -2,19 +2,22 @@ import mlpython.datasets.store as dataset_store
 import os
 from nose.tools import *
 import utGenerator
-def test_sceneloadToMemoryTrue():
+
+def setUp():
     try:
         dataset_store.download('scene')
-        utGenerator.run_test('scene', True)
-        dataset_store.delete('scene')
+        print 'setup'
     except:
+        print 'Could not download the dataset : ', 'scene'
         assert False
+
+def test_sceneloadToMemoryTrue():
+    utGenerator.run_test('scene', True)
 
 def test_sceneloadToMemoryFalse():
-    try:
-        dataset_store.download('scene')
-        utGenerator.run_test('scene', False)
-        dataset_store.delete('scene')
-    except:
-        assert False
+    utGenerator.run_test('scene', False)
+    print 'test2'
 
+def tearDown():
+    dataset_store.delete('scene')
+    print 'teardown'

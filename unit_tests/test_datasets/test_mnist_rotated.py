@@ -2,19 +2,22 @@ import mlpython.datasets.store as dataset_store
 import os
 from nose.tools import *
 import utGenerator
-def test_mnist_rotatedloadToMemoryTrue():
+
+def setUp():
     try:
         dataset_store.download('mnist_rotated')
-        utGenerator.run_test('mnist_rotated', True)
-        dataset_store.delete('mnist_rotated')
+        print 'setup'
     except:
+        print 'Could not download the dataset : ', 'mnist_rotated'
         assert False
+
+def test_mnist_rotatedloadToMemoryTrue():
+    utGenerator.run_test('mnist_rotated', True)
 
 def test_mnist_rotatedloadToMemoryFalse():
-    try:
-        dataset_store.download('mnist_rotated')
-        utGenerator.run_test('mnist_rotated', False)
-        dataset_store.delete('mnist_rotated')
-    except:
-        assert False
+    utGenerator.run_test('mnist_rotated', False)
+    print 'test2'
 
+def tearDown():
+    dataset_store.delete('mnist_rotated')
+    print 'teardown'

@@ -2,19 +2,22 @@ import mlpython.datasets.store as dataset_store
 import os
 from nose.tools import *
 import utGenerator
-def test_corel5kloadToMemoryTrue():
+
+def setUp():
     try:
         dataset_store.download('corel5k')
-        utGenerator.run_test('corel5k', True)
-        dataset_store.delete('corel5k')
+        print 'setup'
     except:
+        print 'Could not download the dataset : ', 'corel5k'
         assert False
+
+def test_corel5kloadToMemoryTrue():
+    utGenerator.run_test('corel5k', True)
 
 def test_corel5kloadToMemoryFalse():
-    try:
-        dataset_store.download('corel5k')
-        utGenerator.run_test('corel5k', False)
-        dataset_store.delete('corel5k')
-    except:
-        assert False
+    utGenerator.run_test('corel5k', False)
+    print 'test2'
 
+def tearDown():
+    dataset_store.delete('corel5k')
+    print 'teardown'

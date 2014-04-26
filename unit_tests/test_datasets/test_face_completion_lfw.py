@@ -2,19 +2,22 @@ import mlpython.datasets.store as dataset_store
 import os
 from nose.tools import *
 import utGenerator
-def test_face_completion_lfwloadToMemoryTrue():
+
+def setUp():
     try:
         dataset_store.download('face_completion_lfw')
-        utGenerator.run_test('face_completion_lfw', True)
-        dataset_store.delete('face_completion_lfw')
+        print 'setup'
     except:
+        print 'Could not download the dataset : ', 'face_completion_lfw'
         assert False
+
+def test_face_completion_lfwloadToMemoryTrue():
+    utGenerator.run_test('face_completion_lfw', True)
 
 def test_face_completion_lfwloadToMemoryFalse():
-    try:
-        dataset_store.download('face_completion_lfw')
-        utGenerator.run_test('face_completion_lfw', False)
-        dataset_store.delete('face_completion_lfw')
-    except:
-        assert False
+    utGenerator.run_test('face_completion_lfw', False)
+    print 'test2'
 
+def tearDown():
+    dataset_store.delete('face_completion_lfw')
+    print 'teardown'

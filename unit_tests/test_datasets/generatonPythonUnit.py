@@ -42,22 +42,26 @@ for name in datasetToTest:
     print "import os"
     print "from nose.tools import *"
     print "import utGenerator"
-    print "def test_"+name+"loadToMemoryTrue():"
+    print
+    print "def setUp():"
     print "    try:"
     print "        dataset_store.download('"+name+"')"
-    print "        utGenerator.run_test('" + name + "', True)"
-    print "        dataset_store.delete('"+name+"')"
+    print "        print 'setup'"
     print "    except:"
+    print "        print 'Could not download the dataset : ', '"+ name+ "'"
     print "        assert False"
+    print
+    print "def test_"+name+"loadToMemoryTrue():"
+    print "    utGenerator.run_test('" + name + "', True)"
     print
     print "def test_"+name+"loadToMemoryFalse():"
-    print "    try:"
-    print "        dataset_store.download('"+name+"')"
-    print "        utGenerator.run_test('" + name + "', False)"
-    print "        dataset_store.delete('"+name+"')"
-    print "    except:"
-    print "        assert False"
+    print "    utGenerator.run_test('" + name + "', False)"
+    print "    print 'test2'"
     print
+    print "def tearDown():"
+    print "    dataset_store.delete('"+name+"')"
+    print "    print 'teardown'"
+
     output_file.close()
 sys.stdout = saveoutput
     

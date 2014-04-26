@@ -2,19 +2,22 @@ import mlpython.datasets.store as dataset_store
 import os
 from nose.tools import *
 import utGenerator
-def test_mushroomsloadToMemoryTrue():
+
+def setUp():
     try:
         dataset_store.download('mushrooms')
-        utGenerator.run_test('mushrooms', True)
-        dataset_store.delete('mushrooms')
+        print 'setup'
     except:
+        print 'Could not download the dataset : ', 'mushrooms'
         assert False
+
+def test_mushroomsloadToMemoryTrue():
+    utGenerator.run_test('mushrooms', True)
 
 def test_mushroomsloadToMemoryFalse():
-    try:
-        dataset_store.download('mushrooms')
-        utGenerator.run_test('mushrooms', False)
-        dataset_store.delete('mushrooms')
-    except:
-        assert False
+    utGenerator.run_test('mushrooms', False)
+    print 'test2'
 
+def tearDown():
+    dataset_store.delete('mushrooms')
+    print 'teardown'

@@ -2,19 +2,22 @@ import mlpython.datasets.store as dataset_store
 import os
 from nose.tools import *
 import utGenerator
-def test_ocr_lettersloadToMemoryTrue():
+
+def setUp():
     try:
         dataset_store.download('ocr_letters')
-        utGenerator.run_test('ocr_letters', True)
-        dataset_store.delete('ocr_letters')
+        print 'setup'
     except:
+        print 'Could not download the dataset : ', 'ocr_letters'
         assert False
+
+def test_ocr_lettersloadToMemoryTrue():
+    utGenerator.run_test('ocr_letters', True)
 
 def test_ocr_lettersloadToMemoryFalse():
-    try:
-        dataset_store.download('ocr_letters')
-        utGenerator.run_test('ocr_letters', False)
-        dataset_store.delete('ocr_letters')
-    except:
-        assert False
+    utGenerator.run_test('ocr_letters', False)
+    print 'test2'
 
+def tearDown():
+    dataset_store.delete('ocr_letters')
+    print 'teardown'

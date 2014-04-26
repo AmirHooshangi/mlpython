@@ -2,19 +2,22 @@ import mlpython.datasets.store as dataset_store
 import os
 from nose.tools import *
 import utGenerator
-def test_yeastloadToMemoryTrue():
+
+def setUp():
     try:
         dataset_store.download('yeast')
-        utGenerator.run_test('yeast', True)
-        dataset_store.delete('yeast')
+        print 'setup'
     except:
+        print 'Could not download the dataset : ', 'yeast'
         assert False
+
+def test_yeastloadToMemoryTrue():
+    utGenerator.run_test('yeast', True)
 
 def test_yeastloadToMemoryFalse():
-    try:
-        dataset_store.download('yeast')
-        utGenerator.run_test('yeast', False)
-        dataset_store.delete('yeast')
-    except:
-        assert False
+    utGenerator.run_test('yeast', False)
+    print 'test2'
 
+def tearDown():
+    dataset_store.delete('yeast')
+    print 'teardown'
