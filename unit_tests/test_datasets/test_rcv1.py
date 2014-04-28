@@ -1,3 +1,4 @@
+'''This file was generate with generatorPythonUnitTest.py'''
 import mlpython.datasets.store as dataset_store
 import os
 from nose.tools import *
@@ -6,7 +7,6 @@ import utGenerator
 def setUp():
     try:
         dataset_store.download('rcv1')
-        print 'setup'
     except:
         print 'Could not download the dataset : ', 'rcv1'
         assert False
@@ -16,8 +16,6 @@ def test_rcv1loadToMemoryTrue():
 
 def test_rcv1loadToMemoryFalse():
     utGenerator.run_test('rcv1', False)
-    print 'test2'
 
 def tearDown():
     dataset_store.delete('rcv1')
-    print 'teardown'
