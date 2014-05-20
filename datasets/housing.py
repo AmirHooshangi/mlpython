@@ -65,7 +65,7 @@ def load(dir_path,load_to_memory=False):
 
     lengths = [404,51,51]
     if load_to_memory:
-        train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],[np.float64,int],l) for d,l in zip([train,valid,test],lengths)]
+        train,valid,test = [mlio.MemoryDataset(d,[(input_size,),(1,)],[np.float64,np.float64],l) for d,l in zip([train,valid,test],lengths)]
         
     # Get metadata
     #train_meta,valid_meta,test_meta = [{'input_size':input_size, 'length':l,'targets':targets} for l in lengths]

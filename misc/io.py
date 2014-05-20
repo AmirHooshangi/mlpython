@@ -257,7 +257,7 @@ class MemoryDataset():
                 yield example
         else:
             for t in range(self.length):
-                yield [ m[t] for m in self.mem_data ]
+                yield tuple( m[t] for m in self.mem_data )
 
 
 class FileDataset():

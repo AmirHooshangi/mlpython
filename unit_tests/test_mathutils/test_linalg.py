@@ -191,13 +191,13 @@ def test_solve():
     B = np.random.rand(30,20)
     X = np.zeros((30,20))
     linalg.solve(A,B,X)
-    assert np.mean(np.abs(X-np.linalg.solve(A,B))) < 1e-10
+    assert np.mean(np.abs(X-np.linalg.solve(A,B))) < 1e-6
     A = np.random.rand(30,30)
     A = np.dot(A,A.T)
     B = np.random.rand(30,30)
     X = np.zeros((30,30))
     linalg.solve(A,B,X)
-    assert np.mean(np.abs(X-np.linalg.solve(A,B))) < 1e-10
+    assert np.mean(np.abs(X-np.linalg.solve(A,B))) < 1e-6
 
 def test_lu():
     """

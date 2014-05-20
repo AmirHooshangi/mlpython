@@ -18,12 +18,13 @@ def load(f):
 
 def recursiveCompare(element1, element2):
     
-    if isinstance(element1,list):
+    if isinstance(element1,list) or isinstance(element1,tuple) :
         for x,y in itertools.izip_longest(element1, element2):
             recursiveCompare(x,y)
     elif isinstance(element1, np.ndarray):
         assert (element1 == element2).all()
     else:
+        print element1,element2
         assert element1 == element2
 
 

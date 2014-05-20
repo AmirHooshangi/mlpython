@@ -32,7 +32,7 @@ import inspect
 import sys
 import re
 import warnings
-import mlpythonUnitTests as mlpython
+import mlpython
 
 modes = ["-datasets", "-learners"] # parameters of the scripts
 datasetsMode = ["-download", "-delete"]
