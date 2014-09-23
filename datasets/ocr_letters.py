@@ -27,7 +27,7 @@
 """
 Module ``datasets.ocr_letters`` gives access to the OCR letters dataset.
 
-The OCR letters dataset is obtained here: http://ai.stanford.edu/~btaskar/ocr/letter.data.gz.
+The OCR letters dataset was first obtained here: http://ai.stanford.edu/~btaskar/ocr/letter.data.gz.
 
 | **Reference:** 
 | Tractable Multivariate Binary Density Estimation and the Restricted Boltzmann Forest
@@ -87,7 +87,7 @@ def obtain(dir_path):
     dir_path = os.path.expanduser(dir_path)
     print 'Downloading the dataset'
     import urllib
-    urllib.urlretrieve('http://ai.stanford.edu/~btaskar/ocr/letter.data.gz',os.path.join(dir_path,'letter.data.gz'))
+    urllib.urlretrieve('http://info.usherbrooke.ca/hlarochelle/public/letter.data.gz',os.path.join(dir_path,'letter.data.gz'))
 
     print 'Splitting dataset into training/validation/test sets'
     file = gfile(os.path.join(dir_path,'letter.data.gz'))
