@@ -7,12 +7,10 @@ Getting MLPython
 ----------------
 
 MLPython is developed under Mercurial and is hosted by `bitbucket
-<http://bitbucket.org/>`_ as a private project. To clone or fork its
-repository, get a `bitbucket <http://bitbucket.org/>`_ account and
-just email me so I can add you as a private user
-(hugo.larochelle<at>usherbrooke.ca). You will then be able to access
-the repository and obtain instructions for how to clone or fork it
-here: https://bitbucket.org/HugoLarochelle/mlpython.
+<http://bitbucket.org/>`_. To get MLPython, get a `bitbucket <http://bitbucket.org/>`_ account 
+and clone MLPython as follows: ::
+
+   hg clone https://bitbucket.org/HugoLarochelle/mlpython
 
 To learn more about Mercurial, see http://mercurial.selenic.com/ (or
 for a very quick-and-dirty presentation, see
