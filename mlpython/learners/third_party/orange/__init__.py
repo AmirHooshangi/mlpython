@@ -33,8 +33,8 @@ To install Orange, download the packed sources from
 http://orange.biolab.si/nightly_builds.html, unzip the sources
 and in the unzipped directory run: ::
 
-   python setup.py build
-   sudo python setup.py install
+   python setup.py.py build
+   sudo python setup.py.py install
 
 or see http://orange.biolab.si/nightly_builds.html for other ways to
 install Orange.

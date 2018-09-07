@@ -1,4 +1,4 @@
-# Copyright 2011 Hugo Larochelle. All rights reserved.
+# Copyright 2011 David Brouillard - Guillaume Roy-Fontaine. All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without modification, are
 # permitted provided that the following conditions are met:
@@ -10,9 +10,9 @@
 #       of conditions and the following disclaimer in the documentation and/or other materials
 #       provided with the distribution.
 # 
-# THIS SOFTWARE IS PROVIDED BY Hugo Larochelle ``AS IS'' AND ANY EXPRESS OR IMPLIED
+# THIS SOFTWARE IS PROVIDED BY David Brouillard - Guillaume Roy-Fontaine ``AS IS'' AND ANY EXPRESS OR IMPLIED
 # WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-# FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Hugo Larochelle OR
+# FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL David Brouillard - Guillaume Roy-Fontaine OR
 # CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 # CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
@@ -25,28 +25,24 @@
 # or implied, of Hugo Larochelle.
 
 """
-The package ``learners.third_party.treelearn`` contains modules for learning
-algorithms implemented by in the TreeLearn library. These modules all require that the
-TreeLearn and scikits-learn libraries be installed.
+The package ``learners.third_party.milk`` contains modules for learning
+algorithms using the Milk library. These modules all require that the
+Milk library be installed.
 
-To install scikits-learn, one option is to use easy_install: ::
+To use milk through mlpython, do the following:
 
-   easy_install -U scikit-learn
+1. download milk from here: http://pypi.python.org/pypi/milk/#downloads
+2. install milk (instructions from Milk's INSTALL.rst)
+   The following should work: ::
 
-For other ways of installing scikits-learn, see http://scikit-learn.sourceforge.net/dev/install.html#installing-an-official-release.
+      python setup.py.py install
 
-To install TreeLearn:
+3. **IMPORTANT** When importing milk for the first time, make sure not to be in its directory.
 
-1. download TreeLearn through this link: https://github.com/capitalk/treelearn/zipball/master
-2. unzip the downloaded content and run (possibly with sudo): ::
+And that should do it! Try 'import milk' to see if your installation is working.
 
-    python setup.py install
+Currently, ``learner.third_party.milk`` contains the following modules:
 
-And that should do it!
-
-Currently, ``learner.third_party.treelearn`` contains the following modules:
-
-* ``learning.third_party.treelearn.classification``:    Classifiers from the TreeLearn library.
-* ``learning.third_party.treelearn.regression``:        Regression models from the TreeLearn library.
+* ``learning.third_party.milk.classification``:    Classifiers from the Milk library.
 
 """
